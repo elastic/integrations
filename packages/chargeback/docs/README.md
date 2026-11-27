@@ -23,17 +23,17 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Monitoring cluster:**
 
 - Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in dashboard queries, running on an **Elastic Cloud Hosted (ECH) or self-managed** monitoring cluster.
-- Run a single Fleet-managed **Elastic Agent** on an agent policy with the **Chargeback** integration enabled (or install assets alongside existing billing and monitoring producers).
+- Supports **Agentless** deployment mode (default, beta) for Elastic Cloud Hosted estates as well as traditional Fleet-managed **Elastic Agent** (**9.2.0+**) policies (required for self-managed / On-Premises or private-network clusters, or assets-only installations alongside existing billing and monitoring producers). Agentless execution uses Elastic Managed integration infrastructure: this functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 - **When to use Chargeback versus Chargeback Serverless:** Use **Chargeback** for ECH and On-Premises estates, including mixed Elastic Cloud organizations where you monitor **Serverless projects** alongside ECH or self-managed clusters from an ECH/self-managed monitoring cluster. For **Serverless-only** estates, or mixed estates where Chargeback itself is deployed onto a **Serverless project**, use the dedicated **Chargeback Serverless** integration instead.
 
 **Self-contained data collection, On-Premises billing prerequisite, and legacy coexistence:**
 
 - Chargeback collects Elastic Cloud billing, index/tier usage, and node utilization telemetry directly via Elastic Agent CEL inputs:
   - `metrics-chargeback.billing-*`: Elastic Cloud Hosted (ECH) and Serverless billing line items across all project types, deployment tags (`chargeback_group:*`), regions, configuration snapshots, and optional organization credit commitments (`collect_ess_credits`).
-  - `metrics-chargeback.usage-*`: 10-minute reset-aware per-index and per-tier usage metrics harvested via shard-level `/_stats` (`level=shards`), `/_nodes`, and `/_settings` (`_tier_preference`, `creation_date`, computed `age`) on ECH and self-managed clusters (`primaries.store.total_data_set_size_in_bytes`) and `/_cat/indices` on Cloud Serverless projects, attributing timestamped counter intervals across UTC days, skipping indices affected by partial shard failures (`_shards.failures` or reduced responding shard counts) to preserve prior counter baselines while emitting deltas from unaffected indices tagged with `elasticsearch.index.partial_shard_stats: true` (`error.code: "partial_shard_stats"`), and bounding stale cursor hold to 24h with explicit `usage_observation_gap` expiry events.
+  - `metrics-chargeback.usage-*`: 10-minute reset-aware per-index and per-tier usage metrics harvested via shard-level `/_stats` (`level=shards`), `/_nodes`, and `/_settings` (`_tier_preference`, `creation_date`, computed `age`) on ECH and self-managed clusters (`primaries.store.total_data_set_size_in_bytes`) and `/_cat/indices` on Cloud Serverless projects, plus optional best-effort harvesting of AI/ML models (`/_ml/trained_models/_stats` and `/_inference`, `doc_type: "ai_model"`) and Synthetics monitors (`.ds-synthetics-*-*` and `synthetics-*`, `doc_type: "synthetics_monitor"`). Attributes timestamped counter intervals across UTC days, skipping indices affected by partial shard failures (`_shards.failures` or reduced responding shard counts) to preserve prior counter baselines while emitting deltas from unaffected indices tagged with `elasticsearch.index.partial_shard_stats: true` (`error.code: "partial_shard_stats"`), and bounding stale cursor hold to 24h with explicit `usage_observation_gap` expiry events.
   - `metrics-chargeback.node_stats-*`: 15-minute `/_nodes/data:true,data_hot:true,data_warm:true,data_cold:true,data_frozen:true,data_content:true/stats/jvm,fs` samples across data-role nodes for realized capacity utilization scoring.
 - **Self-managed / On-Premises billing prerequisite**: Because the native `chargeback.billing` stream queries Elastic Cloud Billing APIs, **self-managed / On-Premises** deployments (including Hub-only policies where `organization_id` and `cloud_api_key` are left empty) **require On-Premises Billing** (`metrics-ess_billing.billing-onprem*`) or a compatible billing producer writing `ess.billing.*` (`onprem_node`) records into `metrics-ess_billing.billing-*` so deployment cost and realized-pool dashboards have billing inputs to allocate.
-- **Existing collector coexistence**: **On-Premises Billing** (`metrics-ess_billing.billing-onprem*`), **ESS Billing** (`metrics-ess_billing.billing-*`), **Elasticsearch** (`monitoring-indices*`, `metrics-elasticsearch.stack_monitoring.node_stats*`, `.monitoring-es-*`, and `metricbeat-*`), and Cross-Cluster Search (`*:monitoring-indices*`) are supported side by side. When both native `chargeback.*` and legacy streams report the same deployment and UTC day, Chargeback transforms retain legacy rows until native samples cover the full day across contributing nodes and indices so totals are neither double-counted nor truncated during mid-day cutover.
+- **Dual data input and zero-double-counting cutover**: **On-Premises Billing** (`metrics-ess_billing.billing-onprem*`), **ESS Billing** (`metrics-ess_billing.billing-*`), **Elasticsearch** (`monitoring-indices*`, `metrics-elasticsearch.stack_monitoring.node_stats*`, `.monitoring-es-*`, and `metricbeat-*`), and Cross-Cluster Search (`*:monitoring-indices*`) are supported side by side. When both native `chargeback.*` and legacy streams report the same deployment and UTC day, Chargeback transforms retain legacy rows until native samples cover the full day across contributing nodes and indices so totals are neither double-counted nor truncated during mid-day cutover.
 
 **Opt-in compatibility aliases for stock ESS Billing and Elasticsearch Consumption dashboards:**
 
@@ -56,7 +56,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Data flow:**
 
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside On-Premises Billing or any existing monitoring streams).
-2. Chargeback continuous transforms (`5m` configuration sync and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into nine `lookup`-mode indices.
+2. Chargeback continuous transforms (`5m` configuration and additive `0.7.0` lookup sync, and `60m` billing, credit commitment, core usage, and utilization rollups) aggregate and enrich this telemetry into fourteen `lookup`-mode indices.
 3. Chargeback dashboards (and optional stock dashboards) query the lookup indices via ES|QL and Lens.
 
 ## Configuration
@@ -66,7 +66,7 @@ Credentials, currency settings, optional credit commitments, and cost/utilizatio
 ### Shared Connection Settings (`Elastic Cloud & Cluster Access`)
 
 - **Organization ID (`organization_id`)**: Optional Elastic Cloud organization ID. Leave empty for On-Premises or local Hub-only collection (requires On-Premises Billing or a compatible billing producer for cost dashboards).
-- **Elastic Cloud API Key (`cloud_api_key`)**: Optional API key with **Billing Admin** role and Cloud deployment or Serverless project read access. Leave empty for On-Premises or local Hub-only collection (requires On-Premises Billing or a compatible billing producer for cost dashboards).
+- **Elastic Cloud API Key (`cloud_api_key`)**: Optional API key with **Billing Admin** role and Cloud deployment or Serverless project read access. For Elastic Cloud Serverless projects, the key (or a per-project entry in `deployment_api_keys`) also needs a project-level role with Elasticsearch cluster `monitor` and index `read` / `view_index_metadata` privileges (for example, project **Viewer** or **Admin** access) so `/_cat/indices` (and optional `_ml/trained_models/_stats`, `_inference`, and `synthetics-*` queries) do not return `403`. Leave empty for On-Premises or local Hub-only collection (requires On-Premises Billing or a compatible billing producer for cost dashboards).
 - **Local / Hub Elasticsearch URL (`hub_es_url`)** and **Local / Hub Elasticsearch API Key (`hub_es_api_key`)**: Optional direct endpoint and API key for harvesting the local or self-managed Hub cluster.
 - **Target Deployment Elasticsearch API Keys (`deployment_api_keys`)**: Optional comma-separated `<deployment_id_or_name>:<encoded_api_key>` entries for direct harvesting of remote ECH deployments or Serverless projects.
 - **Configuration Owner ID (Multi-Policy) (`config_owner_id`)**: Optional identifier designating the single Chargeback policy authorized to write global rate and weight settings to `chargeback_lookup.chargeback_conf` when multiple Chargeback policies write to the same cluster (default: `""`). Leave empty in single-policy deployments; when multiple policies share a cluster, enable `sync_fleet_config` on only one policy and assign it a `config_owner_id` so overlapping policies do not overwrite or mix global rate and weight settings.
@@ -98,6 +98,7 @@ Credentials, currency settings, optional credit commitments, and cost/utilizatio
 
 - **Billing Lookbehind Days (`lookbehind`)**: Historical days backfilled on initial install (default: `60`).
 - **Currency Unit (`currency_unit`)**: Target display currency code, for example `"EUR"`, `"USD"`, `"GBP"`, `"ZAR"` (default: `"EUR"`).
+- **Currency Symbol (`currency_symbol`)**: Target display currency symbol, for example `"€"`, `"$"`, `"£"`, `"R"` (default: `""`, derived from `currency_unit` as `€`, `$`, `£`, or `R`), stored in `chargeback_lookup.chargeback_currency` (and optionally customizable manually via `POST chargeback_lookup.chargeback_currency/_update/config` when `sync_fleet_config` is `false`).
 - **Chargeable Unit Rate (Elastic Cloud ECU) (`unit_rate`)**: Monetary value per Elastic Cloud Consumption Unit (ECU) (default: `0.85`).
 - **On-Premises Unit Rate (per mERU) (`onprem_unit_rate`)**: Optional monetary value per On-Premises milli-ERU (`mERU`) applied to `onprem_node` billing records alongside Elastic Cloud ECU billing (default: `0.00085`, equivalent to `0.85` per full ERU). Leave empty to derive `unit_rate / 1000` per `mERU`.
 - **Configuration Effective Start Date (Optional) (`config_effective_from`)**: Optional UTC day-boundary start date (`YYYY-MM-DD` or `YYYY-MM-DDT00:00:00Z`) applied to `_id: config` and `_id: config_onprem` when preserving earlier non-overlapping historical rate windows in `chargeback_lookup.chargeback_conf`.
@@ -142,25 +143,30 @@ Where:
 
 ## Data and Transforms
 
-The integration creates nine transforms to aggregate cost and usage data:
+The integration creates fourteen transforms to aggregate cost and usage data (all twelve time-series transforms enforce a 365-day `retention_policy` on `@timestamp`):
 
 **Billing transforms:**
 
 1. **`billing_cluster_cost`**: aggregates daily chargeable units (ECU/ERU) per deployment and SKU into `chargeback_lookup.dest_billing_cluster_cost-1` (aliased as `chargeback_lookup.billing_cluster_cost`), adding `cost_type`, `cost_category`, `is_allocatable`, and ESS Billing compatibility fields.
-2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-1` (aliased as `chargeback_lookup.billing_realized_pool`).
-3. **`billing_credits`**: aggregates daily organization credit commitment snapshots into `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`) for the opt-in stock **[Metrics ESS Billing] Credits dashboard** compatibility alias.
-4. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` and `_id: config_onprem`) while carrying over any legacy `chargeback_conf_lookup` custom row or preserving manual configuration rows when Fleet sync is inactive.
+2. **`billing_enrichment`**: materializes daily AI/ML and Synthetics chargeable pools (`ai_chargeable_units`, `synthetics_chargeable_units`, `synthetics_pings_units`, `synthetics_executions_units`) alongside chargeback group replay `group_first_seen` timestamps into `chargeback_lookup.dest_billing_enrichment-1` (aliased as `chargeback_lookup.billing_enrichment`).
+3. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-1` (aliased as `chargeback_lookup.billing_realized_pool`).
+4. **`billing_credits`**: aggregates daily organization credit commitment snapshots into `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`) for the opt-in stock **[Metrics ESS Billing] Credits dashboard** compatibility alias.
+5. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` and `_id: config_onprem`) while preserving manual configuration rows when Fleet sync is inactive.
+6. **`chargeback_currency_lookup`**: syncs display `conf_currency_symbol` and `conf_currency_unit` settings from Fleet configuration snapshots into `chargeback_lookup.dest_chargeback_currency-1` (aliased as `chargeback_lookup.chargeback_currency`) while preserving manual overrides when Fleet sync is inactive.
 
 **Utilization transforms:**
 
-5. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats` using equal-weighted 15-minute node slots.
+7. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats` using equal-weighted 15-minute node slots.
 
 **Usage transforms** (from `metrics-chargeback.usage-*` and `monitoring-indices*`):
 
-6. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day into `chargeback_lookup.dest_cluster_deployment_contribution-1` (aliased as `chargeback_lookup.cluster_deployment_contribution`).
-7. **`cluster_datastream_contribution`**: same metrics split by data stream into `chargeback_lookup.dest_cluster_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_datastream_contribution`). The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (last `-` segment) from the data stream name, or `other` when the name is non-conforming.
-8. **`cluster_tier_contribution`**: same metrics split by data tier into `chargeback_lookup.dest_cluster_tier_contribution-1` (aliased as `chargeback_lookup.cluster_tier_contribution`).
-9. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream into `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution`), including `ds_type` and `ds_namespace`.
+8. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day into `chargeback_lookup.dest_cluster_deployment_contribution-1` (aliased as `chargeback_lookup.cluster_deployment_contribution`).
+9. **`cluster_datastream_contribution`**: same metrics split by data stream into `chargeback_lookup.dest_cluster_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_datastream_contribution`). The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (third and subsequent `-` segments) from the data stream name, or `other` when the name is non-conforming.
+10. **`cluster_tier_contribution`**: same metrics split by data tier into `chargeback_lookup.dest_cluster_tier_contribution-1` (aliased as `chargeback_lookup.cluster_tier_contribution`).
+11. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream into `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution`), including `ds_type` and `ds_namespace`.
+12. **`usage_deployment_metadata`**: materializes daily `deployment_name` and `deployment_group` labels from native usage telemetry into `chargeback_lookup.dest_usage_deployment_metadata-1` (aliased as `chargeback_lookup.usage_deployment_metadata`).
+13. **`cluster_ai_contrib`**: aggregates daily AI/ML trained model and Inference API endpoint metrics (`doc_type: "ai_model"`) per deployment and model into `chargeback_lookup.dest_cluster_ai_model_contribution-1` (aliased as `chargeback_lookup.cluster_ai_model_contribution`).
+14. **`cluster_synthetics_contrib`**: aggregates daily Synthetics monitor check executions, availability, observer locations, and duration (`doc_type: "synthetics_monitor"`) per deployment and monitor into `chargeback_lookup.dest_cluster_synthetics_monitor_contribution-1` (aliased as `chargeback_lookup.cluster_synthetics_monitor_contribution`).
 
 All transform destination documents include ECS `event.ingested` (when the lookup row was written).
 
@@ -180,7 +186,7 @@ The integration includes a **Transform Health Monitoring** alert rule template t
 
 ## Dashboards
 
-Chargeback ships three focused dashboards with a navigation bar linking between them.
+Chargeback ships five focused dashboards with a shared navigation bar linking between them. All visualization panels use standard Kibana Lens and ES|QL visualizations.
 
 ### [Chargeback] Billing Components Overview
 
@@ -199,12 +205,12 @@ Sections:
 
 Answers: *which data streams and tiers drive cost, and how efficiently are we using capacity?*
 
-**Source:** `chargeback_lookup.billing_realized_pool` joined with `chargeback_lookup.cluster_tier_contribution`, `chargeback_lookup.cluster_tier_and_datastream_contribution`, and related usage and utilization lookups. Totals reflect the chargeable pool (allocatable data-tier capacity weighted by utilization and clamped to `conf_utilization_floor`) and do not equal the full invoice. ML, Kibana, snapshots, support, and data transfer are excluded.
+**Source:** `chargeback_lookup.billing_realized_pool` joined with `chargeback_lookup.cluster_tier_contribution`, `chargeback_lookup.cluster_tier_and_datastream_contribution`, and related usage and utilization lookups. Totals reflect the chargeable pool (allocatable data-tier capacity weighted by utilization and clamped to `conf_utilization_floor`) and do not equal the full invoice. ML, Kibana, snapshots, support, and data transfer are excluded. On a fresh installation, **Usage and Cost Allocation** panels remain empty for approximately 24–48 hours because usage `composite_key` days only match once the Elastic Cloud Billing API publishes data for that UTC day.
 
 Sections:
 
 - **Deployment cost allocation (usage-based)**: normalized cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
-- **Datatiers / utilization**: provisioned capacity vs chargeable pool, utilization p95 per deployment.
+- **Datatiers / utilization**: provisioned capacity versus chargeable pool, utilization p95 per deployment.
 - **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, and the **Workload Breakdown by Data Tier** table with columns **Data stream type**, **Namespace**, **Data stream**, **Data tier**, then indexing / querying / storage / blended cost.
 - **Data tier and data stream per day**: time-series panels (indexing, querying, storage, blended) broken out by data stream and data tier (usage-based), including absolute cost and percentage share.
 
@@ -213,6 +219,14 @@ Sections:
 When several teams share one deployment, assign each team a unique Fleet **namespace** so their data lands in distinct data streams (`<type>-<dataset>-<namespace>`). Chargeback parses `ds_namespace` and `ds_type` from the full data stream name and shows them on the Workload Breakdown table. Interactive control-bar filters on those fields are not part of this release line. Use the table columns (or a KQL/ES|QL query) until a later package that ships ES|QL variable controls.
 
 ![Usage and Cost Allocation](../img/chargeback-usage-allocation.png)
+
+### [Chargeback] AI & Machine Learning
+
+Tracks dedicated ML node, Inference API, EIS, and Agent Builder billing SKUs (`chargeback_lookup.billing_cluster_cost`) alongside trained ML model and Inference API endpoint compute activity (`chargeback_lookup.cluster_ai_model_contribution`).
+
+### [Chargeback] Synthetics
+
+Tracks Elastic Synthetics SKU billing (`chargeback_lookup.billing_cluster_cost`) alongside per-monitor check volume, up/down availability, observer locations, average duration (`chargeback_lookup.cluster_synthetics_monitor_contribution`), and `synthetics-*` data stream footprint (`chargeback_lookup.cluster_datastream_contribution`).
 
 ### [Chargeback] Configuration
 
@@ -253,17 +267,37 @@ The `billing_cluster_cost` transform automatically extracts these tags from the 
 
 ## Observability Alerting
 
-Three alert rule templates are included and can be installed from the integration page. Alert rule templates require Elastic Stack version 9.2.0 or later.
+Seven alert rule templates are included and can be installed from the integration page. Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 **[Chargeback] Deployment with chargeback group missing usage data:** alerts when a deployment that has a chargeback group assigned is not sending usage data to the monitoring cluster. This prevents silent gaps in cost allocation.
 
 **[Chargeback] New chargeback group detected:** notifies when a new `chargeback_group` tag appears on a deployment. Use this to ensure new teams or projects are accounted for in your chargeback model.
 
-**[Chargeback] Transform health monitoring:** monitors all Chargeback transforms and alerts when they encounter failures or fall behind on processing. Requires all transforms to be running before activation.
+**[Chargeback] Transform health monitoring:** monitors all Chargeback transforms (including AI/ML and Synthetics contribution transforms) and alerts when they encounter failures or fall behind on processing. Requires all transforms to be running before activation.
+
+**[Chargeback] Rolling 30-day total spend budget exceeded:** evaluates rolling 30-day organization spend and projected 30-day run-rate against a configurable budget and watermark threshold.
+
+**[Chargeback] Deployment daily spend threshold exceeded:** alerts when any deployment's daily normalized spend exceeds a configurable threshold, with breakdown by cost category.
+
+**`[Chargeback] Deployment daily spend spike vs. 7-day baseline`:** detects percentage spend anomalies on the latest completed day relative to each deployment's trailing 7-day baseline average within the same currency (`unit`).
+
+**[Chargeback] Data trust & deployment harvest health issue:** alerts on stale billing ingestion, billed deployments missing usage harvests, or high unallocated spend shares (computed per currency denominator).
+
+All four FinOps spend alert templates aggregate strictly per currency (`unit`) without mixing incompatible currencies and support per-currency threshold overrides (`currency_budgets`, `currency_thresholds`, `currency_min_spends`, `currency_unallocated_thresholds`, for example `"EUR:25000,ZAR:450000"`) when Cloud, On-Premises, or historical periods use different currencies.
 
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 ## Upgrade Notes
+
+### Upgrading to 0.7.0
+
+1. Upgrade the Fleet package to **0.7.0**. Kibana requirement remains `^9.2.0`.
+2. **Agentless deployment mode** is now enabled as the default (`is_default: true`, beta) for new policies while existing Elastic Agent policies continue to work unchanged. Agent-host-only settings (`proxy_url`, `ssl`, `enable_request_tracer`) are hidden in Agentless mode.
+3. **Currency Symbol (`currency_symbol`)** is now configurable on `chargeback.billing` (leave empty to derive `€`, `$`, `£`, or `R` automatically from `currency_unit`) and synced to `chargeback_lookup.chargeback_currency` (`chargeback_lookup.dest_chargeback_currency-1`). Existing `chargeback_lookup.chargeback_conf` configurations without a matching `chargeback_lookup.chargeback_currency` row automatically derive a symbol from `conf_chargeable_unit_rate_unit`.
+4. All twelve time-series transforms now enforce a 365-day `retention_policy` on `@timestamp` and reference `logs-chargeback.lookup-0.7.0-*` destination pipelines.
+5. Five new `0.7.0` transforms (`chargeback_currency_lookup`, `billing_enrichment`, `usage_deployment_metadata`, `cluster_ai_contrib`, and `cluster_synthetics_contrib`), two new standard Lens ES|QL dashboards (`[Chargeback] AI & Machine Learning` and `[Chargeback] Synthetics`), and four FinOps alerting rule templates are installed automatically.
+6. **Zero-mutation in-place lookup upgrade:** All nine existing `0.6.0` transforms retain their `chargeback_lookup.dest_*-1` (`cluster_capacity_utilization_lookup` for utilization) destinations and `0.6.0` field schemas in place with no alias renames or destination rebuilds. Existing manual configuration rows in `chargeback_lookup.dest_chargeback_conf-1` and aged-out `0.6.0` historical rows stay intact across the upgrade, while new `0.7.0` fields are materialized independently in the additive `chargeback_lookup.chargeback_currency`, `chargeback_lookup.billing_enrichment`, `chargeback_lookup.usage_deployment_metadata`, `chargeback_lookup.cluster_ai_model_contribution`, and `chargeback_lookup.cluster_synthetics_monitor_contribution` lookup indices.
+7. **Elasticsearch 9.2.0 data stream rollover:** Version `0.7.0` adds the `cb_sync_ts` field alias (`path: event.ingested`) to the `metrics-chargeback.billing`, `metrics-chargeback.usage`, and `metrics-chargeback.node_stats` index templates so continuous transforms detect incremental changes past their initial checkpoint on Elasticsearch `9.2.0`. On clusters running Elasticsearch `9.2.0`, roll over existing `0.6.0` Chargeback data streams once after upgrading (`POST /metrics-chargeback.billing-<namespace>/_rollover`, and similarly for `metrics-chargeback.usage-<namespace>` and `metrics-chargeback.node_stats-<namespace>`) so active write indices pick up the updated template immediately instead of waiting for the next ILM rollover.
 
 ### Upgrading to 0.6.0
 

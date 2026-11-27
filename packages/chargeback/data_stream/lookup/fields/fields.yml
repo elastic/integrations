@@ -7,6 +7,12 @@
 - name: conf_chargeable_unit_rate_unit
   type: keyword
   description: Currency unit for chargeable unit rate (for example EUR or USD).
+- name: conf_currency_unit
+  type: keyword
+  description: Uppercase ISO currency code paired with the display currency symbol (for example, EUR or USD).
+- name: conf_currency_symbol
+  type: keyword
+  description: Display currency symbol for chargeable unit rate (for example €, $, £, R).
 - name: conf_ecu_rate
   type: alias
   path: conf_chargeable_unit_rate
@@ -45,6 +51,9 @@
 - name: deployment_group
   type: keyword
   description: User-defined group of the deployment (based on tag:chargeback_group).
+- name: group_first_seen
+  type: date
+  description: Earliest timestamp at which the current deployment chargeback group was observed.
 - name: deployment_id
   type: keyword
   description: Unique ID of the deployment.
@@ -90,16 +99,16 @@
   description: Deployment or Serverless project name (ESS Billing symlink).
 - name: ess.billing.deployment_type
   type: keyword
-  description: Instance type (deployment, elasticsearch, observability, security) (ESS Billing symlink).
+  description: Instance type (deployment, elasticsearch, observability, security, vectordb, search, onprem) (ESS Billing symlink).
 - name: ess.billing.sku
   type: keyword
   description: Elastic Cloud billing SKU (ESS Billing symlink).
 - name: ess.billing.type
   type: keyword
-  description: ESS Billing category type (capacity, usage, storage, data_out, data_in, support).
+  description: ESS Billing category type (capacity, data_out, data_in, ingest, storage, support, usage).
 - name: ess.billing.kind
   type: keyword
-  description: Resource kind (elasticsearch, kibana, apm, enterprise_search, integrations_server).
+  description: Resource kind (elasticsearch, observability, security, vectordb, search, kibana, apm, enterprise_search, integrations_server).
 - name: ess.billing.total_ecu
   type: double
   description: Daily billed ECUs (ESS Billing symlink).
@@ -166,6 +175,18 @@
 - name: realized_chargeable_units
   type: double
   description: Raw allocatable pool before utilization (score applied in dashboard ES|QL).
+- name: ai_chargeable_units
+  type: double
+  description: Daily AI and ML chargeable units (ECU) for the deployment.
+- name: synthetics_chargeable_units
+  type: double
+  description: Daily total Synthetics chargeable units (ECU) for the deployment.
+- name: synthetics_pings_units
+  type: double
+  description: Daily Synthetics lightweight ping chargeable units (ECU) for the deployment.
+- name: synthetics_executions_units
+  type: double
+  description: Daily Synthetics browser execution chargeable units (ECU) for the deployment.
 - name: cluster_name
   type: keyword
   description: Elasticsearch cluster name (matches billing deployment_id).
@@ -192,7 +213,7 @@
   description: First segment of the data stream name (for example logs, metrics, traces). Set to other when the name does not contain a hyphen.
 - name: ds_namespace
   type: keyword
-  description: Last segment of the data stream name (team, environment, or cost-center label). Set to other when the name does not contain a hyphen.
+  description: Namespace segment of the data stream name (third and subsequent hyphen-delimited segments, for example, team, environment, or cost-center label). Set to other when the name does not contain a hyphen.
 - name: datastream_sum_indexing_time
   type: long
   description: Total indexing time in milliseconds for the data stream.
@@ -255,7 +276,7 @@
   description: Total dataset size in bytes for the deployment.
 - name: tier
   type: keyword
-  description: The data tier where the index resides (e.g. hot/content, warm, cold, frozen).
+  description: The data tier where the index resides (for example, hot/content, warm, cold, frozen).
 - name: tier_and_datastream_sum_indexing_time
   type: long
   description: Total indexing time in milliseconds for the tier and data stream.
@@ -283,3 +304,48 @@
 - name: tier_sum_data_set_store_size
   type: long
   description: Total dataset size in bytes for the tier.
+- name: model_id
+  type: keyword
+  description: Trained ML model or Inference API endpoint identifier.
+- name: task_type
+  type: keyword
+  description: AI/ML inference task type (ingest_inference, query_inference, or inference endpoint task type).
+- name: inference_count
+  type: long
+  description: Number of ML model inferences observed.
+- name: average_inference_time_ms
+  type: double
+  description: Average latency per ML inference in milliseconds.
+- name: total_inference_time_ms
+  type: long
+  description: Total compute time spent on ML inferences in milliseconds.
+- name: monitor_id
+  type: keyword
+  description: Synthetics monitor identifier.
+- name: monitor_name
+  type: keyword
+  description: Synthetics monitor display name.
+- name: monitor_type
+  type: keyword
+  description: Synthetics monitor type (http, icmp, tcp, dns, browser).
+- name: monitor_namespace
+  type: keyword
+  description: Synthetics monitor data stream namespace.
+- name: check_count
+  type: long
+  description: Number of Synthetics check executions observed for the day.
+- name: up_count
+  type: long
+  description: Number of successful up Synthetics checks for the day.
+- name: down_count
+  type: long
+  description: Number of failed down Synthetics checks for the day.
+- name: locations_count
+  type: long
+  description: Number of distinct observer locations executing the Synthetics monitor.
+- name: average_duration_ms
+  type: double
+  description: Average Synthetics check duration in milliseconds.
+- name: total_duration_ms
+  type: double
+  description: Total Synthetics check duration in milliseconds across all checks for this monitor and day.

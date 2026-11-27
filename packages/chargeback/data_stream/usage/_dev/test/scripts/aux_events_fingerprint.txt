@@ -1,0 +1,88 @@
+# Verify index-less auxiliary and error events survive usage ingest processing and
+# distinct models, monitors, and collector IDs receive non-colliding _id fingerprints.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:sh] skip 'Skipping test requiring absent sh command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+exec sh scripts/verify_aux_fingerprints.sh
+
+-- scripts/verify_aux_fingerprints.sh --
+#!/bin/sh
+set -e
+CA="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+ES="https://localhost:9200"
+DS="metrics-chargeback.usage-test_fp"
+
+# Start from a clean isolated namespace data stream.
+curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_data_stream/${DS}" >/dev/null || true
+
+# Bulk-index 13 items with op_type=create:
+#  1-2: two distinct ai_model models on the same collector
+#  3-6: same ai_model across distinct agent.id, elastic_agent.id, host.id collectors
+#  7-8: cross-field collector value shared-id in agent.id vs host.id
+#    9: exact duplicate replay of item 1 (must conflict with 409)
+# 10-12: two distinct synthetics_monitor entries plus distinct host.name collector
+#   13: index-less collection error event
+#   14-15: identical index_usage observation across distinct policies and collectors (second must conflict 409)
+#   16: empty object dropped as noop
+cat <<'EOF' > bulk_aux.ndjson
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".rerank-v1","task_type":"rerank","inference_count":5}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","agent":{"id":"ag-2"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","elastic_agent":{"id":"ea-3"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","host":{"id":"host-1"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","host":{"id":"host-2"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","agent":{"id":"shared-id"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","host":{"id":"shared-id"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"synthetics_monitor","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"}},"monitor_id":"mon-a","monitor_type":"http","check_count":3}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"synthetics_monitor","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"}},"monitor_id":"mon-b","monitor_type":"browser","check_count":6}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"synthetics_monitor","conf_policy_id":"pol-1","host":{"name":"runner-2"},"elasticsearch":{"cluster":{"name":"dep-1"}},"monitor_id":"mon-a","monitor_type":"http","check_count":4}
+{"create":{}}
+{"@timestamp":"2026-03-16T00:05:00Z","error":{"code":"partial_shard_stats","id":"dep-1","message":"GET https://es.example:9200/*/_stats: partial shards"}}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"index_usage","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"},"index":{"name":"orders-2026.03","tier":"hot/content","primaries":{"docs":{"count":100},"store":{"total_data_set_size_in_bytes":1024}},"total":{"store":{"size_in_bytes":1024}}}}}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"index_usage","conf_policy_id":"pol-2","agent":{"id":"ag-2"},"host":{"id":"host-2"},"elasticsearch":{"cluster":{"name":"dep-1"},"index":{"name":"orders-2026.03","tier":"hot/content","primaries":{"docs":{"count":100},"store":{"total_data_set_size_in_bytes":1024}},"total":{"store":{"size_in_bytes":1024}}}}}
+{"create":{}}
+{}
+EOF
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/x-ndjson" -X POST "$ES/${DS}/_bulk?refresh=true" --data-binary @bulk_aux.ndjson > bulk_res.json
+
+# Verify exact bulk outcome counts: 13 created, 2 duplicate 409 conflicts (item 8 ai_model replay and item 14 cross-collector index_usage), 1 noop drop (item 15).
+jq -e '[.items[].create.status] | length == 16' bulk_res.json >/dev/null
+jq -e '[.items[0,1,2,3,4,5,6,7,9,10,11,12,13].create.status == 201] | all' bulk_res.json >/dev/null
+jq -e '.items[8].create.status == 409 and .items[14].create.status == 409' bulk_res.json >/dev/null
+jq -e '.items[15].create.result == "noop" and .items[15].create.status == 200' bulk_res.json >/dev/null
+
+# Verify all 13 valid documents survived with expected fields and 11 distinct auxiliary _id fingerprints.
+curl -sSf -u elastic:changeme --cacert "$CA" "$ES/${DS}/_search?size=50" > search_res.json
+jq -e '.hits.total.value == 13' search_res.json >/dev/null
+jq -e '[.hits.hits[]._source | select(.doc_type == "ai_model")] | length == 8' search_res.json >/dev/null
+jq -e '[.hits.hits[]._source | select(.doc_type == "synthetics_monitor")] | length == 3' search_res.json >/dev/null
+jq -e '[.hits.hits[]._source | select(.doc_type == "index_usage")] | length == 1' search_res.json >/dev/null
+jq -e '[.hits.hits[]._source | select(.error.code == "partial_shard_stats")] | length == 1' search_res.json >/dev/null
+jq -e '([.hits.hits[] | select(._source.doc_type == "ai_model" or ._source.doc_type == "synthetics_monitor") | ._id] | unique | length) == 11' search_res.json >/dev/null
+jq -e '[.hits.hits[]._source | (.event.ingested != null and (.period_start == null) and (.period_obs_ts == null) and (._cb_fp_key == null))] | all' search_res.json >/dev/null
+
+# Clean up the isolated namespace data stream after verification.
+curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_data_stream/${DS}" >/dev/null || true

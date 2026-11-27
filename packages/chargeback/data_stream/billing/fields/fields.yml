@@ -15,19 +15,22 @@
   description: Deployment or Serverless project display name.
 - name: ess.billing.deployment_type
   type: keyword
-  description: Instance type (deployment, elasticsearch, observability, security, vectordb, onprem).
+  description: Instance type (deployment, elasticsearch, observability, security, vectordb, search, onprem).
 - name: ess.billing.deployment_tags
   type: keyword
   description: Deployment metadata tags formatted as key:value.
+- name: group_first_seen
+  type: date
+  description: Earliest timestamp at which the current deployment chargeback group was observed.
 - name: ess.billing.sku
   type: keyword
   description: Elastic Cloud billing SKU.
 - name: ess.billing.type
   type: keyword
-  description: Billing line item or credit commitment type (capacity, data_out, data_in, storage, support, usage).
+  description: Billing line item or credit commitment type (capacity, data_out, data_in, ingest, storage, support, usage).
 - name: ess.billing.kind
   type: keyword
-  description: Resource kind (elasticsearch, kibana, apm, enterprise_search, integrations_server).
+  description: Resource kind (elasticsearch, observability, security, vectordb, search, kibana, apm, enterprise_search, integrations_server).
 - name: ess.billing.total_ecu
   type: double
   description: Billed Elasticsearch Compute Units (ECU) for the daily window.
@@ -43,6 +46,9 @@
 - name: ess.billing.cloud.service.type
   type: keyword
   description: Serverless cloud service type extracted from SKU.
+- name: ess.billing.unit
+  type: keyword
+  description: Unit of the resource being billed (for example, hour, GB) for ESS Billing compatibility.
 - name: ess.billing.from
   type: date
   description: Billing window start timestamp.
@@ -97,12 +103,18 @@
 - name: conf_chargeable_unit_rate_unit
   type: keyword
   description: Configured currency code from Fleet Billing data stream settings.
+- name: conf_currency_symbol
+  type: keyword
+  description: Configured currency display symbol from Fleet Billing data stream settings.
 - name: conf_effective_from
   type: keyword
   description: Optional ISO-8601 UTC effective start timestamp for non-overlapping configuration periods.
 - name: conf_sync_enabled
   type: boolean
   description: Whether Fleet configuration sync is enabled on the policy snapshot.
+- name: conf_schema_version
+  type: integer
+  description: Schema generation of the configuration snapshot emitted by the collector.
 - name: conf_owner_id
   type: keyword
   description: Optional explicit configuration owner identifier configured on the policy.
@@ -115,3 +127,7 @@
 - name: event.ingested
   type: date
   description: Ingest pipeline execution timestamp.
+- name: cb_sync_ts
+  type: alias
+  path: event.ingested
+  description: Alias of event.ingested used by continuous Chargeback transforms for incremental change detection.

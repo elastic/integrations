@@ -11,7 +11,9 @@ processors:
           Map chosen = ctx;
           if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
             chosen = ctx.native;
-          } else if (ctx.legacy instanceof Map) {
+          } else if (ctx.legacy instanceof Map && ctx.legacy.doc_cnt instanceof Number && ((Number)ctx.legacy.doc_cnt).longValue() > 0L) {
+            chosen = ctx.legacy;
+          } else if (ctx.legacy instanceof Map && !ctx.legacy.containsKey('doc_cnt')) {
             chosen = ctx.legacy;
           }
           if (chosen != ctx) {
@@ -54,7 +56,13 @@ processors:
           ctx.deployment_group = ctx.deployment_group.toString();
         }
         if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
-          ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+          if (ctx.deployment_id != null && ctx.deployment_id.toString().startsWith('unassociated_')) {
+            ctx.deployment_name = 'Unassociated (' + ctx.deployment_id.toString().substring(13) + ')';
+          } else if (ctx.deployment_id != null && ctx.deployment_id.toString().equalsIgnoreCase('unassociated')) {
+            ctx.deployment_name = 'Unassociated';
+          } else {
+            ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+          }
         } else {
           ctx.deployment_name = ctx.deployment_name.toString();
         }
@@ -85,6 +93,7 @@ processors:
         ctx.event.dataset = 'ess_billing.billing';
 
         String s = ctx.sku != null ? ctx.sku.toString() : '';
+        String sLower = s.toLowerCase(Locale.ROOT);
         String orgId = (ctx.organization_id != null && ctx.organization_id != '') ? ctx.organization_id.toString() : 'unknown';
         String depName = ctx.deployment_name;
         String existingEssDepType = (ctx.ess instanceof Map && ctx.ess.billing instanceof Map && ctx.ess.billing.deployment_type != null)
@@ -92,7 +101,7 @@ processors:
           : '';
         String depType = (ctx.deployment_type != null && ctx.deployment_type != '')
           ? ctx.deployment_type.toString()
-          : (existingEssDepType != '' ? existingEssDepType : ((incomingOnprem || s == 'onprem_node') ? 'onprem' : ((s.startsWith('elasticsearch.') || s.startsWith('observability.') || s.startsWith('security.') || s.startsWith('vectordb.') || s.startsWith('serverless.')) ? 'elasticsearch' : 'deployment')));
+          : (existingEssDepType != '' ? existingEssDepType : ((incomingOnprem || s == 'onprem_node') ? 'onprem' : ((sLower.startsWith('observability.') || sLower.contains('.observability.') || sLower.startsWith('oblt.') || sLower.contains('.oblt.') || sLower.startsWith('serverless.observability.') || sLower.startsWith('serverless.oblt.') || sLower.contains('synthetic')) ? 'observability' : ((sLower.startsWith('security.') || sLower.contains('.security.') || sLower.startsWith('sec.') || sLower.contains('.sec.') || sLower.startsWith('serverless.security.') || sLower.startsWith('serverless.sec.')) ? 'security' : ((sLower.startsWith('vectordb.') || sLower.contains('.vectordb.') || sLower.startsWith('serverless.vectordb.')) ? 'vectordb' : ((sLower.startsWith('search.') || sLower.startsWith('serverless.search.')) ? 'search' : ((sLower.startsWith('elasticsearch.') || sLower.contains('.elasticsearch.') || sLower.startsWith('es.') || sLower.startsWith('serverless.elasticsearch.') || sLower.startsWith('serverless.es.') || sLower.startsWith('serverless.') || sLower.contains('-vcu') || sLower.contains('.vcu')) ? 'elasticsearch' : 'deployment')))))));
 
         if (ctx.ess == null) { ctx.ess = [:]; }
         if (ctx.ess.billing == null) { ctx.ess.billing = [:]; }
@@ -105,22 +114,35 @@ processors:
         ctx.ess.billing.quantity = ['value': ctx.quantity_value instanceof Number ? ((Number)ctx.quantity_value).doubleValue() : 0.0];
         if (ctx.billing_kind != null && ctx.billing_kind != '') {
           ctx.ess.billing.kind = ctx.billing_kind.toString();
-        } else if (s.contains('.es.')) {
+        } else if (sLower.contains('.es.') || sLower.contains('.es-') || sLower.startsWith('elasticsearch.') || sLower.startsWith('serverless.elasticsearch.') || sLower.startsWith('es.')) {
           ctx.ess.billing.kind = 'elasticsearch';
+        } else if (sLower.startsWith('observability.') || sLower.startsWith('serverless.observability.') || sLower.contains('.observability.') || sLower.startsWith('oblt.')) {
+          ctx.ess.billing.kind = 'observability';
+        } else if (sLower.startsWith('security.') || sLower.startsWith('serverless.security.') || sLower.contains('.security.') || sLower.startsWith('sec.')) {
+          ctx.ess.billing.kind = 'security';
+        } else if (sLower.startsWith('vectordb.') || sLower.startsWith('serverless.vectordb.') || sLower.contains('.vectordb.')) {
+          ctx.ess.billing.kind = 'vectordb';
+        } else if (sLower.startsWith('search.') || sLower.startsWith('serverless.search.')) {
+          ctx.ess.billing.kind = 'search';
+        } else if (sLower == 'none' && depType != '' && depType != 'deployment') {
+          ctx.ess.billing.kind = depType;
         }
 
         String btype = (ctx.billing_type != null && ctx.billing_type != '') ? ctx.billing_type.toString() : '';
-        if (btype == '') {
-          if (s.contains('data-out') || s.contains('data-transfer-out') || s.contains('egress')) {
+        String tLower = btype.toLowerCase(Locale.ROOT);
+        if (tLower == '' || tLower == 'vcu' || tLower == 'search ai lake' || tLower == 'synthetics' || tLower == 'data transfer') {
+          if (sLower.contains('data-out') || sLower.contains('data-transfer-out') || sLower.contains('egress')) {
             btype = 'data_out';
-          } else if (s.contains('data-in') || s.contains('data-transfer-in') || s.contains('ingress')) {
+          } else if (sLower.contains('data-in') || sLower.contains('data-transfer-in') || sLower.contains('ingress')) {
             btype = 'data_in';
-          } else if (s.contains('snapshot') || s.contains('retained') || s.contains('storage')) {
+          } else if (sLower.contains('snapshot') || sLower.contains('retained') || sLower.contains('storage')) {
             btype = 'storage';
-          } else if (s.contains('support')) {
+          } else if (sLower.contains('support')) {
             btype = 'support';
-          } else if (s.contains('.es.') || s.contains('.kibana.') || s.contains('.apm.') || s.contains('.integrationsserver.') || s.contains('.enterprisesearch.') || s.contains('vcu') || s.contains('complete')) {
+          } else if (sLower.contains('.es.') || sLower.contains('.kibana.') || sLower.contains('.apm.') || sLower.contains('.integrationsserver.') || sLower.contains('.integrations_server.') || sLower.contains('.enterprisesearch.') || sLower.contains('.enterprise_search.') || sLower.contains('vcu') || sLower.contains('complete')) {
             btype = 'capacity';
+          } else if ((sLower.contains('_ingest') || sLower.contains('.ingest') || sLower.contains('-ingest')) && !sLower.contains('vcu')) {
+            btype = 'ingest';
           } else {
             btype = 'usage';
           }
@@ -226,11 +248,11 @@ processors:
           ctx.cloud.provider = sStripped.startsWith('aws.') ? 'aws' : (sStripped.startsWith('gcp.') ? 'gcp' : (sStripped.startsWith('azure.') ? 'azure' : 'cloud'));
         } else {
           ctx.cloud.provider = 'serverless';
-          def slsMatcher = /^[^.]+\.([^_]+)(?:_(.+))?$/.matcher(s);
+          def slsMatcher = /^[^.]+\.(.+?)(?:_((?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\d+))?$/.matcher(s);
           if (slsMatcher.matches()) {
             ctx.ess.billing.cloud = ['service': ['type': slsMatcher.group(1)]];
             String r2 = slsMatcher.group(2);
-            if ((ctx.cloud.region == null || ctx.cloud.region == '') && r2 != null && (regionGeo.containsKey(r2) || /^(?:aws|gcp|azure)-[a-z0-9-]+$/.matcher(r2).matches())) {
+            if ((ctx.cloud.region == null || ctx.cloud.region == '') && r2 != null && (regionGeo.containsKey(r2) || /^(?:(?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\d+)$/.matcher(r2).matches())) {
               ctx.cloud.region = r2;
             }
           }
@@ -296,6 +318,14 @@ processors:
         cost_category: data_tier | platform | transfer | snapshot | support | onprem | other
         is_allocatable: true for ECH data_tier SKUs, Serverless workload/retained SKUs, and onprem_node (matches billing_realized_pool)
       source: |
+        String sku = ctx.sku != null ? ctx.sku.toString() : '';
+        String skuLower = sku.toLowerCase(Locale.ROOT);
+        if (skuLower == '' || skuLower == 'none') {
+          ctx.cost_type = 'other';
+          ctx.cost_category = 'other';
+          ctx.is_allocatable = false;
+          return;
+        }
         if (ctx.sku == 'onprem_node' || ctx.cost_type == 'onprem') {
           ctx.cost_category = 'onprem';
           ctx.is_allocatable = true;
@@ -311,49 +341,60 @@ processors:
           ctx.is_allocatable = false;
           return;
         }
-        String sku = ctx.sku != null ? ctx.sku.toString() : '';
         String depType = ctx.ess?.billing?.deployment_type != null ? ctx.ess.billing.deployment_type.toString() : '';
         if (sku != '') {
-          if (sku.contains('.es.datahot.') || sku.contains('.es.datawarm.')
-              || sku.contains('.es.datacold.') || sku.contains('.es.datafrozen.')
-              || sku.contains('.es.datacontent.')) {
+          if (skuLower.contains('.es.datahot.') || skuLower.contains('.es.datawarm.')
+              || skuLower.contains('.es.datacold.') || skuLower.contains('.es.datafrozen.')
+              || skuLower.contains('.es.datacontent.')) {
             ctx.cost_category = 'data_tier';
             ctx.is_allocatable = true;
             return;
           }
-          if (sku.startsWith('serverless.support-') || sku.contains('support')) {
-            if (sku.startsWith('serverless.support-')) {
+          if (skuLower.startsWith('serverless.support-') || skuLower.contains('support')) {
+            if (skuLower.startsWith('serverless.support-')) {
               ctx.cost_type = 'serverless_premium_support';
             }
             ctx.cost_category = 'support';
             ctx.is_allocatable = false;
             return;
           }
-          if (sku.contains('data-transfer') || sku.contains('data-out') || sku.contains('data-in') || sku.contains('egress') || sku.contains('ingress')) {
+          if (skuLower.contains('data-transfer') || skuLower.contains('data-out') || skuLower.contains('data-in') || skuLower.contains('egress') || skuLower.contains('ingress')) {
             ctx.cost_category = 'transfer';
             ctx.is_allocatable = false;
             return;
           }
-          if (sku.contains('snapshot')) {
+          if (skuLower.contains('snapshot')) {
             ctx.cost_category = 'snapshot';
             ctx.is_allocatable = false;
             return;
           }
-          if (sku.contains('ml-vcu') || sku.contains('.es.ml.') || sku.contains('synthetic')
-              || sku.contains('inference') || sku.contains('llm') || sku.contains('agent-builder')
-              || sku.contains('.eis') || sku.contains('workflow') || sku.contains('cross-project')) {
+          if (skuLower.contains('ml-vcu') || skuLower.contains('.es.ml.') || skuLower.contains('ml.ecu') || skuLower.contains('ml_ecu') || skuLower.contains('ml.vcu') || skuLower.contains('ml_inference') || skuLower.contains('synthetic')
+              || skuLower.contains('inference') || skuLower.contains('llm') || skuLower.contains('agent-builder')
+              || skuLower.contains('.eis') || skuLower.contains('workflow') || skuLower.contains('cross-project') || skuLower.contains('cps')) {
             ctx.cost_category = 'platform';
             ctx.is_allocatable = false;
             return;
           }
-          // Serverless workload & storage pool across elasticsearch, observability, security, vectordb (matches billing_realized_pool)
-          boolean isSlsProject = (depType == 'elasticsearch' || depType == 'observability' || depType == 'security' || depType == 'vectordb');
+          // Serverless workload & storage pool across elasticsearch, observability, security, vectordb, search (matches billing_realized_pool)
+          String normDepType = depType != null ? depType.toLowerCase(Locale.ROOT) : '';
+          if (normDepType == 'oblt') { normDepType = 'observability'; }
+          else if (normDepType == 'sec') { normDepType = 'security'; }
+          else if (normDepType == 'vector') { normDepType = 'vectordb'; }
+          else if (normDepType == 'es') { normDepType = 'elasticsearch'; }
+          else if (normDepType == 'enterprise_search') { normDepType = 'search'; }
+          boolean isSlsProject = (normDepType == 'elasticsearch' || normDepType == 'observability' || normDepType == 'security' || normDepType == 'vectordb' || normDepType == 'search' || normDepType == 'serverless');
           boolean isSlsAllocSku = (
-            sku.contains('search-vcu') || sku.contains('ingest-vcu')
-            || sku.contains('retained') || sku.contains('retention')
-            || sku.startsWith('observability.') || sku.contains('.observability.')
-            || sku.startsWith('security.') || sku.contains('.security.')
-            || sku.startsWith('vectordb.') || sku.contains('.vectordb.')
+            skuLower.contains('search-vcu') || skuLower.contains('ingest-vcu')
+            || skuLower.contains('ingest.ecu') || skuLower.contains('ingest_ecu') || skuLower.contains('ingest.vcu')
+            || skuLower.contains('search.ecu') || skuLower.contains('search_ecu') || skuLower.contains('search.vcu')
+            || skuLower.contains('retained') || skuLower.contains('retention')
+            || skuLower.startsWith('observability.') || skuLower.contains('.observability.')
+            || skuLower.startsWith('oblt.') || skuLower.contains('.oblt.')
+            || skuLower.startsWith('security.') || skuLower.contains('.security.')
+            || skuLower.startsWith('sec.') || skuLower.contains('.sec.')
+            || skuLower.startsWith('vectordb.') || skuLower.contains('.vectordb.')
+            || skuLower.startsWith('serverless.elasticsearch.') || skuLower.startsWith('elasticsearch.') || skuLower.contains('.elasticsearch.')
+            || skuLower.startsWith('serverless.search.') || skuLower.startsWith('search.')
           );
           if (isSlsProject && isSlsAllocSku) {
             ctx.cost_category = 'data_tier';

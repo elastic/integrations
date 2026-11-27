@@ -5,6 +5,81 @@ processors:
       ignore_failure: true
       lang: painless
       source: |
+        boolean isAuxWorkload = (ctx.model_id != null || ctx.monitor_id != null);
+        if (isAuxWorkload) {
+          if (ctx.aux_rollup instanceof Map) {
+            Map ar = (Map)ctx.aux_rollup;
+            for (String nf : [
+              'inference_count', 'total_inference_time_ms', 'max_avg_ms',
+              'check_count', 'up_count', 'down_count',
+              'distinct_locations_count', 'max_locations_count',
+              'total_duration_ms', 'max_avg_duration_ms'
+            ]) {
+              if (ar.get(nf) != null) {
+                ctx[nf] = ar.get(nf);
+              }
+            }
+            for (String sf : ['deployment_name', 'monitor_name', 'monitor_namespace']) {
+              if (ar.get(sf) != null && ar.get(sf).toString() != '') {
+                ctx[sf] = ar.get(sf).toString();
+              }
+            }
+            if (ar.containsKey('deployment_group')) {
+              def adg = ar.get('deployment_group');
+              if (adg != null && adg.toString() != '') {
+                ctx.deployment_group = adg.toString();
+              } else {
+                ctx.remove('deployment_group');
+              }
+            }
+            ctx.remove('aux_rollup');
+          }
+          if (ctx.latest_meta instanceof Map) {
+            Map lm = (Map)ctx.latest_meta;
+            Map tm = null;
+            if (lm.top instanceof List && ((List)lm.top).size() > 0) {
+              def topEntry = ((List)lm.top).get(0);
+              if (topEntry instanceof Map && topEntry.metrics instanceof Map) {
+                tm = (Map)topEntry.metrics;
+              } else if (topEntry instanceof Map) {
+                tm = (Map)topEntry;
+              }
+            } else {
+              tm = lm;
+            }
+            if (tm != null) {
+              for (String fk : ['deployment_name', 'deployment_group', 'monitor_name', 'monitor_namespace']) {
+                if (tm.get(fk) != null && tm.get(fk).toString() != '') {
+                  ctx[fk] = tm.get(fk).toString();
+                } else if (tm.containsKey(fk)) {
+                  ctx.remove(fk);
+                }
+              }
+            }
+          }
+          ctx.remove('latest_meta');
+          if (ctx.model_id != null) {
+            long inf = ctx.inference_count instanceof Number ? ((Number)ctx.inference_count).longValue() : 0L;
+            long totMs = ctx.total_inference_time_ms instanceof Number ? ((Number)ctx.total_inference_time_ms).longValue() : 0L;
+            double maxAvg = ctx.max_avg_ms instanceof Number ? ((Number)ctx.max_avg_ms).doubleValue() : 0.0;
+            ctx.average_inference_time_ms = inf > 0L ? ((double)totMs / (double)inf) : maxAvg;
+            ctx.remove('max_avg_ms');
+          }
+          if (ctx.monitor_id != null) {
+            long chk = ctx.check_count instanceof Number ? ((Number)ctx.check_count).longValue() : 0L;
+            double totDur = ctx.total_duration_ms instanceof Number ? ((Number)ctx.total_duration_ms).doubleValue() : 0.0;
+            double maxDur = ctx.max_avg_duration_ms instanceof Number ? ((Number)ctx.max_avg_duration_ms).doubleValue() : 0.0;
+            ctx.average_duration_ms = chk > 0L ? (totDur / (double)chk) : maxDur;
+            ctx.total_duration_ms = totDur;
+            ctx.remove('max_avg_duration_ms');
+            long cardLoc = ctx.distinct_locations_count instanceof Number ? ((Number)ctx.distinct_locations_count).longValue() : 0L;
+            long maxLoc = ctx.max_locations_count instanceof Number ? ((Number)ctx.max_locations_count).longValue() : (ctx.locations_count instanceof Number ? ((Number)ctx.locations_count).longValue() : 0L);
+            ctx.locations_count = cardLoc > 0L ? cardLoc : maxLoc;
+            ctx.remove('distinct_locations_count');
+            ctx.remove('max_locations_count');
+          }
+          ctx.usage_source = 'native';
+        } else {
         String pfx = (ctx.tier != null && ctx.datastream != null)
           ? 'tier_and_datastream'
           : (ctx.tier != null ? 'tier' : (ctx.datastream != null ? 'datastream' : 'deployment'));
@@ -129,12 +204,46 @@ processors:
         ctx.remove('native');
         ctx.remove('legacy');
         ctx.remove('coverage');
+        }
 
         if (ctx.cluster_name != null) {
           ctx.deployment_id = ctx.cluster_name;
         } else if (ctx.elasticsearch?.cluster?.name != null) {
           ctx.deployment_id = ctx.elasticsearch.cluster.name;
         }
+
+        // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
+        // Normalise backing/downsampled names before deriving composite_datastream_key.
+        if (ctx.datastream != null && ctx.datastream.toString() != '') {
+          String rawDs = ctx.datastream.toString();
+          def dsPattern = /^(?:partial-|restored-|shrink-.{4}-|downsample-[^-]+-)*\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d+)?)?$/;
+          def m = dsPattern.matcher(rawDs);
+          if (m.matches()) {
+            rawDs = m.group(1);
+            ctx.datastream = rawDs;
+          }
+          if (rawDs.startsWith('.') || rawDs == 'system') {
+            ctx.ds_type = 'system';
+            ctx.ds_namespace = 'system';
+          } else {
+            def parts = rawDs.splitOnToken('-');
+            if (parts.length >= 3 && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling')) {
+              ctx.ds_type = parts[0];
+              def nsParts = new ArrayList();
+              for (int i = 2; i < parts.length; i++) {
+                nsParts.add(parts[i]);
+              }
+              ctx.ds_namespace = String.join('-', nsParts);
+            } else if (parts.length >= 2) {
+              ctx.ds_type = parts[0];
+              ctx.ds_namespace = parts[parts.length - 1];
+            } else {
+              ctx.ds_type = 'other';
+              ctx.ds_namespace = 'other';
+            }
+          }
+        }
+
         if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
           def rawTs = ctx['@timestamp'];
           String date = null;
@@ -160,19 +269,6 @@ processors:
             if (ctx.datastream != null) {
               ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
             }
-          }
-        }
-
-        // Parse Fleet data stream naming: <type>-<dataset>-<namespace>
-        // first segment -> ds_type; last segment -> ds_namespace; else other
-        if (ctx.datastream != null && ctx.datastream.toString() != '') {
-          def parts = ctx.datastream.toString().splitOnToken('-');
-          if (parts.length >= 2) {
-            ctx.ds_type = parts[0];
-            ctx.ds_namespace = parts[parts.length - 1];
-          } else {
-            ctx.ds_type = 'other';
-            ctx.ds_namespace = 'other';
           }
         }
   - set:

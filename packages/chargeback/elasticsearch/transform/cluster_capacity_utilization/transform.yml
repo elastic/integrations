@@ -5,6 +5,10 @@ source:
     - metrics-elasticsearch.stack_monitoring.node_stats*
     - .monitoring-es-*
     - metricbeat-*
+    - chargeback_lookup.dest_billing_cluster_cost-1*
+    - metrics-ess_billing.billing-*
+    - -metrics-ess_billing.billing-chargeback*
+    - -chargeback_lookup.dest_cluster_*
     - -partial-*
   query:
     bool:
@@ -173,12 +177,16 @@ source:
           }
 dest:
   index: cluster_capacity_utilization_lookup
-  pipeline: logs-chargeback.lookup-0.6.0-capacity_utilization
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "capacity_utilization" }}'
 frequency: 60m
 sync:
   time:
     field: cb_sync_ts
     delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
 pivot:
   group_by:
     "@timestamp":
@@ -509,5 +517,6 @@ settings:
   unattended: true
 _meta:
   managed: true
+  order: 11
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.7.0

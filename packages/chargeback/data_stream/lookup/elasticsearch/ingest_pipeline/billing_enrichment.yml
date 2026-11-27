@@ -1,0 +1,257 @@
+---
+description: "Chargeback: Populate additive billing_enrichment lookup (AI/Synthetics pools and replay group_first_seen)."
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: billing_enrichment
+      source: |
+        try {
+          if (ctx.by_sku instanceof Map) {
+            double sumAi = 0.0;
+            double sumSyn = 0.0;
+            double sumSynPing = 0.0;
+            double sumSynExec = 0.0;
+            boolean hasNativeSku = false;
+            String nativeGroup = '';
+            long nativeGroupTs = -1L;
+            String legacyGroup = '';
+            long legacyGroupTs = -1L;
+            String nativeName = '';
+            long nativeNameTs = -1L;
+            String legacyName = '';
+            long legacyNameTs = -1L;
+            boolean anyOnprem = false;
+            long minBucketIng = 0L;
+            Map nativeGrpMin = [:];
+            Map legacyGrpMin = [:];
+            Map nativeGrpExplicitGfs = [:];
+            Map legacyGrpExplicitGfs = [:];
+
+            if (ctx.by_sku.buckets instanceof List) {
+              for (def bObj : (List)ctx.by_sku.buckets) {
+                if (bObj instanceof Map && 'onprem_node'.equals(bObj.get('key'))) {
+                  anyOnprem = true;
+                }
+              }
+            } else {
+              for (def kObj : ((Map)ctx.by_sku).keySet()) {
+                if ('onprem_node'.equals(kObj != null ? kObj.toString() : '')) {
+                  anyOnprem = true;
+                }
+              }
+            }
+
+            Collection skuItems = (ctx.by_sku.buckets instanceof List)
+              ? (List)ctx.by_sku.buckets
+              : ((Map)ctx.by_sku).values();
+
+            for (def skuObj : skuItems) {
+              if (skuObj instanceof Map) {
+                Map chosenSku = null;
+                boolean skuIsNative = false;
+                if (skuObj.native instanceof Map && skuObj.native.doc_cnt instanceof Number && ((Number)skuObj.native.doc_cnt).longValue() > 0L) {
+                  chosenSku = (Map)skuObj.native;
+                  skuIsNative = true;
+                } else if (skuObj.legacy instanceof Map && skuObj.legacy.doc_cnt instanceof Number && ((Number)skuObj.legacy.doc_cnt).longValue() > 0L) {
+                  chosenSku = (Map)skuObj.legacy;
+                }
+                if (chosenSku != null) {
+                  if (skuIsNative) { hasNativeSku = true; }
+                  long skuIngTs = (chosenSku.ing_ts instanceof Number) ? ((Number)chosenSku.ing_ts).longValue() : -1L;
+                  if (chosenSku.min_bucket_ing instanceof Number) {
+                    long mbi = ((Number)chosenSku.min_bucket_ing).longValue();
+                    if (mbi > 0L && (minBucketIng <= 0L || mbi < minBucketIng)) {
+                      minBucketIng = mbi;
+                    }
+                  }
+                  Map targetGrpMin = skuIsNative ? nativeGrpMin : legacyGrpMin;
+                  Map targetGrpExpGfs = skuIsNative ? nativeGrpExplicitGfs : legacyGrpExplicitGfs;
+                  if (chosenSku.grp_min_ing instanceof Map) {
+                    for (def ge : ((Map)chosenSku.grp_min_ing).entrySet()) {
+                      String gk = ge.getKey() != null ? ge.getKey().toString() : '';
+                      long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                      if (gk != '' && gv > 0L) {
+                        long cur = targetGrpMin.get(gk) instanceof Number ? ((Number)targetGrpMin.get(gk)).longValue() : 0L;
+                        if (cur <= 0L || gv < cur) { targetGrpMin[gk] = gv; }
+                      }
+                    }
+                  }
+                  if (chosenSku.grp_min_gfs instanceof Map) {
+                    for (def gf : ((Map)chosenSku.grp_min_gfs).entrySet()) {
+                      String gk = gf.getKey() != null ? gf.getKey().toString() : '';
+                      long gv = 0L;
+                      if (gf.getValue() instanceof Number) {
+                        gv = ((Number)gf.getValue()).longValue();
+                      } else if (gf.getValue() != null) {
+                        String gs = gf.getValue().toString().trim();
+                        if (gs != '') {
+                          try { gv = ZonedDateTime.parse(gs).toInstant().toEpochMilli(); } catch (Exception e) {}
+                        }
+                      }
+                      if (gk != '' && gv > 0L) {
+                        long cur = targetGrpExpGfs.get(gk) instanceof Number ? ((Number)targetGrpExpGfs.get(gk)).longValue() : 0L;
+                        if (cur <= 0L || gv < cur) { targetGrpExpGfs[gk] = gv; }
+                      }
+                    }
+                  }
+                  if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) { anyOnprem = true; }
+                  if (chosenSku.ai_chargeable_units instanceof Number) {
+                    double aiVal = ((Number)chosenSku.ai_chargeable_units).doubleValue();
+                    if (!Double.isNaN(aiVal) && !Double.isInfinite(aiVal)) { sumAi += aiVal; }
+                  }
+                  if (chosenSku.synthetics_chargeable_units instanceof Number) {
+                    double synVal = ((Number)chosenSku.synthetics_chargeable_units).doubleValue();
+                    if (!Double.isNaN(synVal) && !Double.isInfinite(synVal)) { sumSyn += synVal; }
+                  }
+                  if (chosenSku.synthetics_pings_units instanceof Number) {
+                    double spVal = ((Number)chosenSku.synthetics_pings_units).doubleValue();
+                    if (!Double.isNaN(spVal) && !Double.isInfinite(spVal)) { sumSynPing += spVal; }
+                  }
+                  if (chosenSku.synthetics_executions_units instanceof Number) {
+                    double seVal = ((Number)chosenSku.synthetics_executions_units).doubleValue();
+                    if (!Double.isNaN(seVal) && !Double.isInfinite(seVal)) { sumSynExec += seVal; }
+                  }
+                  long skuGfs = 0L;
+                  if (chosenSku.group_first_seen instanceof Number) {
+                    skuGfs = ((Number)chosenSku.group_first_seen).longValue();
+                  } else if (chosenSku.group_first_seen != null) {
+                    String sg = chosenSku.group_first_seen.toString().trim();
+                    if (sg != '') {
+                      try { skuGfs = ZonedDateTime.parse(sg).toInstant().toEpochMilli(); } catch (Exception e) {}
+                    }
+                  }
+                  for (String fn : ['deployment_group', 'deployment_name']) {
+                    def rawV = chosenSku.get(fn);
+                    String extracted = '';
+                    if (rawV instanceof Map) {
+                      def b = rawV.buckets;
+                      if (b instanceof List && b.size() > 0) {
+                        def kv = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+                        extracted = kv != null ? kv.toString() : '';
+                      } else if (!(b instanceof List)) {
+                        def ks = new ArrayList(rawV.keySet());
+                        extracted = ks.size() > 0 && ks[0] != null ? ks[0].toString() : '';
+                      }
+                    } else if (rawV != null) {
+                      extracted = rawV.toString();
+                    }
+                    if (fn == 'deployment_group') {
+                      if (extracted != '' && skuGfs > 0L) {
+                        long curExp = targetGrpExpGfs.get(extracted) instanceof Number ? ((Number)targetGrpExpGfs.get(extracted)).longValue() : 0L;
+                        if (curExp <= 0L || skuGfs < curExp) { targetGrpExpGfs[extracted] = skuGfs; }
+                      }
+                      if (skuIsNative) {
+                        if (skuIngTs >= 0L) {
+                          if (skuIngTs > nativeGroupTs || (skuIngTs == nativeGroupTs && extracted != '')) {
+                            nativeGroup = extracted;
+                            nativeGroupTs = skuIngTs;
+                          }
+                        } else if (extracted != '' && nativeGroupTs < 0L) {
+                          nativeGroup = extracted;
+                        }
+                      } else {
+                        if (skuIngTs >= 0L) {
+                          if (skuIngTs > legacyGroupTs || (skuIngTs == legacyGroupTs && extracted != '')) {
+                            legacyGroup = extracted;
+                            legacyGroupTs = skuIngTs;
+                          }
+                        } else if (extracted != '' && legacyGroupTs < 0L) {
+                          legacyGroup = extracted;
+                        }
+                      }
+                    } else if (extracted != '') {
+                      if (skuIsNative) {
+                        if (nativeName == '' || (skuIngTs >= 0L && skuIngTs >= nativeNameTs)) {
+                          nativeName = extracted;
+                          if (skuIngTs >= 0L) { nativeNameTs = skuIngTs; }
+                        }
+                      } else {
+                        if (legacyName == '' || (skuIngTs >= 0L && skuIngTs >= legacyNameTs)) {
+                          legacyName = extracted;
+                          if (skuIngTs >= 0L) { legacyNameTs = skuIngTs; }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            String bestGroup = hasNativeSku ? nativeGroup : legacyGroup;
+            String bestName = nativeName != '' ? nativeName : legacyName;
+            if (sumAi > 0.0) { ctx.ai_chargeable_units = sumAi; }
+            if (sumSyn > 0.0) {
+              ctx.synthetics_chargeable_units = sumSyn;
+              ctx.synthetics_pings_units = sumSynPing;
+              ctx.synthetics_executions_units = sumSynExec;
+            }
+            ctx.is_onprem = anyOnprem;
+            ctx.deployment_group = bestGroup != null ? bestGroup : '';
+
+            long resolvedGfs = 0L;
+            if (ctx.deployment_group != '') {
+              Map chosenGrpMin = hasNativeSku ? nativeGrpMin : legacyGrpMin;
+              Map chosenGrpExp = hasNativeSku ? nativeGrpExplicitGfs : legacyGrpExplicitGfs;
+              long gm = chosenGrpMin.get(ctx.deployment_group) instanceof Number ? ((Number)chosenGrpMin.get(ctx.deployment_group)).longValue() : 0L;
+              long ge = chosenGrpExp.get(ctx.deployment_group) instanceof Number ? ((Number)chosenGrpExp.get(ctx.deployment_group)).longValue() : 0L;
+              long bestReplayIng = (gm > 0L && minBucketIng > 0L && gm > minBucketIng) ? gm : 0L;
+              resolvedGfs = bestReplayIng > ge ? bestReplayIng : ge;
+            }
+            if (resolvedGfs > 0L) {
+              ctx.group_first_seen = Instant.ofEpochMilli(resolvedGfs).toString();
+            } else {
+              ctx.remove('group_first_seen');
+            }
+
+            String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+            if (fallbackName.startsWith('unassociated_')) {
+              fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
+            } else if (fallbackName == 'unassociated') {
+              fallbackName = 'Unassociated';
+            }
+            ctx.deployment_name = (bestName != null && bestName != '') ? bestName : fallbackName;
+          }
+        } catch (Exception e) {
+          ctx.remove('by_sku');
+          throw e;
+        }
+        ctx.remove('by_sku');
+
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+          def rawTs = ctx['@timestamp'];
+          String dateStr = null;
+          if (rawTs instanceof Number) {
+            dateStr = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              dateStr = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                dateStr = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
+          }
+          if (dateStr != null) {
+            ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          }
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback billing enrichment lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup-billing_enrichment@custom
+on_failure:
+  - fail:
+      message: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

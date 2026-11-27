@@ -138,9 +138,15 @@ processors:
               ctx.data_tier_ram_per_zone_mb = maxRam.longValue();
             }
             ctx.deployment_group = bestGroup != null ? bestGroup : '';
+            String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+            if (fallbackName.startsWith('unassociated_')) {
+              fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
+            } else if (fallbackName == 'unassociated') {
+              fallbackName = 'Unassociated';
+            }
             ctx.deployment_name = (bestName != null && bestName != '')
               ? bestName
-              : (ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown');
+              : fallbackName;
           } else {
             Map chosen = ctx;
             if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
@@ -179,7 +185,13 @@ processors:
               ctx.deployment_group = ctx.deployment_group.toString();
             }
             if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
-              ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+              String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+              if (fallbackName.startsWith('unassociated_')) {
+                fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';
+              } else if (fallbackName == 'unassociated') {
+                fallbackName = 'Unassociated';
+              }
+              ctx.deployment_name = fallbackName;
             } else {
               ctx.deployment_name = ctx.deployment_name.toString();
             }

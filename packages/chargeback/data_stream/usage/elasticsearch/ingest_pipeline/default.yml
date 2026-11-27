@@ -2,14 +2,25 @@
 description: "Ingest pipeline for Chargeback self-collected index and tier usage data."
 processors:
   - drop:
-      if: "ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+      if: "ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor' && ctx.error?.message == null"
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       tag: set_event_ingested
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot'
+      if: ctx.error?.message != null && ctx.elasticsearch?.index?.name == null && ctx.doc_type != 'config_snapshot' && ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor'
       description: Terminate early on collection error documents.
   - terminate:
       tag: config_snapshot_complete
@@ -43,6 +54,8 @@ processors:
           if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
           def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
           if (sm.matches()) { stripped = sm.group(1); }
+          def dsm = /^downsample-[^-]+-(.*)$/.matcher(stripped);
+          if (dsm.matches()) { stripped = dsm.group(1); }
           if (stripped.equals(prev)) { break; }
         }
         String cbBase = stripped;
@@ -58,20 +71,21 @@ processors:
         boolean isCbLookup = (
           name.startsWith('chargeback_lookup.') ||
           stripped.startsWith('chargeback_lookup.') ||
-          name == 'monitoring-indices' ||
-          stripped == 'monitoring-indices' ||
-          cbBase == 'monitoring-indices' ||
-          name == 'monitoring-indices-chargeback' ||
-          stripped == 'monitoring-indices-chargeback' ||
-          cbBase == 'monitoring-indices-chargeback' ||
+          name.startsWith('monitoring-indices') ||
+          stripped.startsWith('monitoring-indices') ||
+          (name.startsWith('serverless_') && cbBase.endsWith('_lookup')) ||
+          (stripped.startsWith('serverless_') && cbBase.endsWith('_lookup')) ||
           cbBase == 'billing_cluster_cost_lookup' ||
           cbBase == 'billing_realized_pool_lookup' ||
+          cbBase == 'billing_credits_lookup' ||
           cbBase == 'chargeback_conf_lookup' ||
           cbBase == 'cluster_capacity_utilization_lookup' ||
           cbBase == 'cluster_deployment_contribution_lookup' ||
           cbBase == 'cluster_tier_contribution_lookup' ||
           cbBase == 'cluster_datastream_contribution_lookup' ||
-          cbBase == 'cluster_tier_and_datastream_contribution_lookup'
+          cbBase == 'cluster_tier_and_datastream_contribution_lookup' ||
+          cbBase == 'cluster_ai_model_contribution_lookup' ||
+          cbBase == 'cluster_synthetics_monitor_contribution_lookup'
         );
         // Drop internal non-.ds system indices and explicit Chargeback indices (including partial/restored/shrunk copies) to avoid feedback
         if ((name.startsWith('.') && !name.startsWith('.ds-'))
@@ -84,14 +98,18 @@ processors:
             || name.contains('metrics-chargeback.')
             || stripped.contains('metrics-chargeback.')
             || name.contains('logs-chargeback.')
-            || stripped.contains('logs-chargeback.')) {
+            || stripped.contains('logs-chargeback.')
+            || name.contains('metrics-chargeback_serverless.')
+            || stripped.contains('metrics-chargeback_serverless.')
+            || name.contains('logs-chargeback_serverless.')
+            || stripped.contains('logs-chargeback_serverless.')) {
           ctx._drop_internal = true;
           return;
         }
         if (idx.datastream == null || idx.datastream == '') {
           String resolvedDs = null;
           if (stripped.startsWith('.ds-')) {
-            def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+            def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?)?$/.matcher(stripped);
             if (dm.matches() && !dm.group(1).startsWith('.')) {
               resolvedDs = dm.group(1);
             }
@@ -154,7 +172,81 @@ processors:
         }
   - drop:
       if: "ctx._drop_internal == true"
+  - script:
+      lang: painless
+      tag: build_aux_fingerprint_key
+      if: "ctx.doc_type == 'ai_model' || ctx.doc_type == 'synthetics_monitor'"
+      source: |
+        String ns = (ctx.data_stream instanceof Map && ctx.data_stream.namespace != null)
+          ? ctx.data_stream.namespace.toString().trim()
+          : (ctx.get('data_stream.namespace') != null ? ctx.get('data_stream.namespace').toString().trim() : 'default');
+        if (ns == '') { ns = 'default'; }
+
+        String polId = '';
+        if (ctx.conf_policy_id != null) { polId = ctx.conf_policy_id.toString().trim(); }
+        else if (ctx.package_policy_id != null) { polId = ctx.package_policy_id.toString().trim(); }
+        else if (ctx.input instanceof Map && ctx.input.package_policy_id != null) { polId = ctx.input.package_policy_id.toString().trim(); }
+        else if (ctx.get('input.package_policy_id') != null) { polId = ctx.get('input.package_policy_id').toString().trim(); }
+        else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.package_policy_id != null) { polId = ctx.elastic_agent.package_policy_id.toString().trim(); }
+        else if (ctx.get('elastic_agent.package_policy_id') != null) { polId = ctx.get('elastic_agent.package_policy_id').toString().trim(); }
+        else if (ctx.input instanceof Map && ctx.input.id != null) { polId = ctx.input.id.toString().trim(); }
+        else if (ctx.get('input.id') != null) { polId = ctx.get('input.id').toString().trim(); }
+        else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.policy_id != null) { polId = ctx.elastic_agent.policy_id.toString().trim(); }
+        else if (ctx.get('elastic_agent.policy_id') != null) { polId = ctx.get('elastic_agent.policy_id').toString().trim(); }
+        if (polId == '') { polId = '_default_'; }
+
+        String collectorId = '';
+        if (ctx.agent instanceof Map && ctx.agent.id != null && ctx.agent.id.toString().trim() != '') {
+          collectorId = 'agent:' + ctx.agent.id.toString().trim();
+        } else if (ctx.get('agent.id') != null && ctx.get('agent.id').toString().trim() != '') {
+          collectorId = 'agent:' + ctx.get('agent.id').toString().trim();
+        } else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.id != null && ctx.elastic_agent.id.toString().trim() != '') {
+          collectorId = 'ea:' + ctx.elastic_agent.id.toString().trim();
+        } else if (ctx.get('elastic_agent.id') != null && ctx.get('elastic_agent.id').toString().trim() != '') {
+          collectorId = 'ea:' + ctx.get('elastic_agent.id').toString().trim();
+        } else if (ctx.host instanceof Map && ctx.host.id != null && ctx.host.id.toString().trim() != '') {
+          collectorId = 'host_id:' + ctx.host.id.toString().trim();
+        } else if (ctx.get('host.id') != null && ctx.get('host.id').toString().trim() != '') {
+          collectorId = 'host_id:' + ctx.get('host.id').toString().trim();
+        } else if (ctx.host instanceof Map && ctx.host.name != null && ctx.host.name.toString().trim() != '') {
+          collectorId = 'host_name:' + ctx.host.name.toString().trim();
+        } else if (ctx.get('host.name') != null && ctx.get('host.name').toString().trim() != '') {
+          collectorId = 'host_name:' + ctx.get('host.name').toString().trim();
+        } else {
+          collectorId = '_default_';
+        }
+
+        String clusterName = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.cluster instanceof Map && ctx.elasticsearch.cluster.name != null)
+          ? ctx.elasticsearch.cluster.name.toString().trim()
+          : (ctx.get('elasticsearch.cluster.name') != null ? ctx.get('elasticsearch.cluster.name').toString().trim() : '');
+        String ts = ctx['@timestamp'] != null ? ctx['@timestamp'].toString().trim() : '';
+        String obsTs = ctx.period_obs_ts != null ? ctx.period_obs_ts.toString().trim() : '';
+        String dtype = ctx.doc_type != null ? ctx.doc_type.toString().trim() : '';
+
+        String fpKey = 'v1|ns=' + ns + '|pol=' + polId + '|col=' + collectorId + '|cluster=' + clusterName + '|ts=' + ts + '|obs=' + obsTs + '|type=' + dtype;
+        if (dtype == 'ai_model') {
+          String modelId = ctx.model_id != null ? ctx.model_id.toString().trim() : '';
+          String taskType = ctx.task_type != null ? ctx.task_type.toString().trim() : '';
+          String intStart = ctx.interval_start != null ? ctx.interval_start.toString().trim() : '';
+          String intEnd = ctx.interval_end != null ? ctx.interval_end.toString().trim() : '';
+          fpKey += '|model=' + modelId + '|task=' + taskType + '|istart=' + intStart + '|iend=' + intEnd;
+        } else {
+          String monId = ctx.monitor_id != null ? ctx.monitor_id.toString().trim() : '';
+          String monType = ctx.monitor_type != null ? ctx.monitor_type.toString().trim() : '';
+          String intStart = ctx.interval_start != null ? ctx.interval_start.toString().trim() : '';
+          String intEnd = ctx.interval_end != null ? ctx.interval_end.toString().trim() : '';
+          fpKey += '|mon=' + monId + '|mtype=' + monType + '|istart=' + intStart + '|iend=' + intEnd;
+        }
+        ctx._cb_fp_key = fpKey;
   - fingerprint:
+      if: "ctx._cb_fp_key != null"
+      fields:
+        - _cb_fp_key
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_ai_or_synthetics_event
+  - fingerprint:
+      if: "ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor'"
       fields:
         - elasticsearch.cluster.name
         - "@timestamp"
@@ -165,7 +257,9 @@ processors:
       ignore_missing: true
       tag: fingerprint_usage_event
   - remove:
-      field: period_obs_ts
+      field:
+        - _cb_fp_key
+        - period_obs_ts
       ignore_missing: true
 on_failure:
   - set:

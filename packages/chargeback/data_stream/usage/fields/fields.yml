@@ -3,10 +3,13 @@
   description: Input type used to collect the event.
 - name: doc_type
   type: keyword
-  description: Chargeback usage event record type (index_usage, config_snapshot).
+  description: Chargeback usage event record type (index_usage, ai_model, synthetics_monitor, config_snapshot).
 - name: deployment_name
   type: keyword
   description: Human-readable deployment or Serverless project name.
+- name: deployment_group
+  type: keyword
+  description: User-defined group of the deployment or Serverless project (based on tag:chargeback_group).
 - name: elasticsearch.cluster.name
   type: keyword
   description: Elasticsearch cluster identifier (matches billing deployment_id).
@@ -85,6 +88,9 @@
 - name: conf_sync_enabled
   type: boolean
   description: Whether Fleet configuration sync is enabled on the policy snapshot.
+- name: conf_schema_version
+  type: integer
+  description: Schema generation of the configuration snapshot emitted by the collector.
 - name: conf_owner_id
   type: keyword
   description: Optional explicit configuration owner identifier configured on the policy.
@@ -94,3 +100,61 @@
 - name: event.ingested
   type: date
   description: Ingest pipeline execution timestamp.
+- name: cb_sync_ts
+  type: alias
+  path: event.ingested
+  description: Alias of event.ingested used by continuous Chargeback transforms for incremental change detection.
+- name: interval_start
+  type: date
+  description: Start timestamp of the auxiliary AI or Synthetics observation interval.
+- name: interval_end
+  type: date
+  description: End timestamp of the auxiliary AI or Synthetics observation interval.
+- name: model_id
+  type: keyword
+  description: Trained ML model or Inference API endpoint identifier.
+- name: task_type
+  type: keyword
+  description: AI/ML inference task type (ingest_inference, query_inference, or inference endpoint task type).
+- name: inference_count
+  type: long
+  description: Number of ML model inferences observed.
+- name: average_inference_time_ms
+  type: double
+  description: Average latency per ML inference in milliseconds.
+- name: total_inference_time_ms
+  type: long
+  description: Total compute time spent on ML inferences in milliseconds.
+- name: monitor_id
+  type: keyword
+  description: Synthetics monitor identifier.
+- name: monitor_name
+  type: keyword
+  description: Synthetics monitor display name.
+- name: monitor_type
+  type: keyword
+  description: Synthetics monitor type (http, icmp, tcp, dns, browser).
+- name: monitor_namespace
+  type: keyword
+  description: Synthetics monitor data stream namespace.
+- name: check_count
+  type: long
+  description: Number of Synthetics check executions observed for the day.
+- name: up_count
+  type: long
+  description: Number of successful up Synthetics checks for the day.
+- name: down_count
+  type: long
+  description: Number of failed down Synthetics checks for the day.
+- name: observer_locations
+  type: keyword
+  description: Distinct Synthetics observer location identifiers observed during the polling window.
+- name: locations_count
+  type: long
+  description: Number of distinct observer locations executing the Synthetics monitor.
+- name: average_duration_ms
+  type: double
+  description: Average Synthetics check duration in milliseconds.
+- name: total_duration_ms
+  type: double
+  description: Total Synthetics check duration in milliseconds across checks in the interval.

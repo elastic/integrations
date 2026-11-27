@@ -3,6 +3,17 @@ description: "Ingest pipeline for Chargeback self-collected Elastic Cloud billin
 processors:
   - drop:
       if: "ctx.ess?.billing == null && ctx.doc_type != 'config_snapshot' && ctx.error?.message == null"
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
@@ -60,10 +71,13 @@ processors:
         - ess.billing.organization_id
         - ess.billing.deployment_id
         - ess.billing.deployment_name
+        - ess.billing.deployment_tags
         - ess.billing.from
         - ess.billing.to
         - ess.billing.sku
+        - ess.billing.unit
         - ess.billing.total_ecu
+        - ess.billing.quantity.value
       target_field: _id
       ignore_missing: true
       tag: fingerprint_billing_line_item
@@ -89,6 +103,20 @@ processors:
       copy_from: ess.billing.deployment_name
       ignore_empty_value: true
       tag: cloud_instance_name
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: normalize_deployment_type_early
+      source: |
+        if (ctx.ess?.billing?.deployment_type != null) {
+          String dt = ctx.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
+          if (dt == 'oblt') { dt = 'observability'; }
+          else if (dt == 'sec') { dt = 'security'; }
+          else if (dt == 'vector') { dt = 'vectordb'; }
+          else if (dt == 'es') { dt = 'elasticsearch'; }
+          else if (dt == 'enterprise_search') { dt = 'search'; }
+          ctx.ess.billing.deployment_type = dt;
+        }
   - grok:
       field: "ess.billing.sku"
       patterns:
@@ -126,7 +154,7 @@ processors:
   - grok:
       field: "ess.billing.sku"
       patterns:
-        - "%{DATA}\\.(?<ess.billing.cloud.service.type>[^_]+)(?:_(?<_sls_sku_region>(?:aws|gcp|azure)-[a-z0-9-]+))?"
+        - "^[^.]+\\.(?<ess.billing.cloud.service.type>.+?)(?:_(?<_sls_sku_region>(?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\\d+))?$"
       if: "ctx.ess?.billing?.sku != null && ctx.ess?.billing?.deployment_type != 'deployment' && ctx.cloud?.provider != 'onprem'"
       ignore_failure: true
       tag: grok_serverless_sku
@@ -148,22 +176,37 @@ processors:
       tag: normalize_billing_types_and_geo
       source: |
         if (ctx.ess != null && ctx.ess.billing != null) {
-          def s = ctx.ess.billing.sku != null ? ctx.ess.billing.sku : '';
-          if ((ctx.ess.billing.kind == null || ctx.ess.billing.kind == '') && s.contains('.es.')) {
-            ctx.ess.billing.kind = 'elasticsearch';
+          def s = ctx.ess.billing.sku != null ? ctx.ess.billing.sku.toString() : '';
+          String sLower = s.toLowerCase(Locale.ROOT);
+          if (ctx.ess.billing.kind == null || ctx.ess.billing.kind == '') {
+            if (sLower.contains('.es.') || sLower.contains('.es-') || sLower.startsWith('elasticsearch.') || sLower.startsWith('serverless.elasticsearch.') || sLower.startsWith('es.')) {
+              ctx.ess.billing.kind = 'elasticsearch';
+            } else if (sLower.startsWith('observability.') || sLower.startsWith('serverless.observability.') || sLower.contains('.observability.') || sLower.startsWith('oblt.')) {
+              ctx.ess.billing.kind = 'observability';
+            } else if (sLower.startsWith('security.') || sLower.startsWith('serverless.security.') || sLower.contains('.security.') || sLower.startsWith('sec.')) {
+              ctx.ess.billing.kind = 'security';
+            } else if (sLower.startsWith('vectordb.') || sLower.startsWith('serverless.vectordb.') || sLower.contains('.vectordb.')) {
+              ctx.ess.billing.kind = 'vectordb';
+            } else if (sLower.startsWith('search.') || sLower.startsWith('serverless.search.')) {
+              ctx.ess.billing.kind = 'search';
+            } else if (sLower == 'none' && ctx.ess.billing.deployment_type != null && ctx.ess.billing.deployment_type != '' && ctx.ess.billing.deployment_type != 'deployment') {
+              ctx.ess.billing.kind = ctx.ess.billing.deployment_type.toString();
+            }
           }
-          def t = ctx.ess.billing.type != null ? ctx.ess.billing.type.toString().toLowerCase() : '';
-          if (t == '' || t == 'vcu' || t == 'search ai lake' || t == 'ingest' || t == 'synthetics' || t == 'data transfer') {
-            if (s.contains('data-out') || s.contains('data-transfer-out') || s.contains('egress')) {
+          def t = ctx.ess.billing.type != null ? ctx.ess.billing.type.toString().toLowerCase(Locale.ROOT) : '';
+          if (t == '' || t == 'vcu' || t == 'search ai lake' || t == 'synthetics' || t == 'data transfer') {
+            if (sLower.contains('data-out') || sLower.contains('data-transfer-out') || sLower.contains('egress')) {
               ctx.ess.billing.type = 'data_out';
-            } else if (s.contains('data-in') || s.contains('data-transfer-in') || s.contains('ingress')) {
+            } else if (sLower.contains('data-in') || sLower.contains('data-transfer-in') || sLower.contains('ingress')) {
               ctx.ess.billing.type = 'data_in';
-            } else if (s.contains('snapshot') || s.contains('retained') || s.contains('storage')) {
+            } else if (sLower.contains('snapshot') || sLower.contains('retained') || sLower.contains('storage')) {
               ctx.ess.billing.type = 'storage';
-            } else if (s.contains('support')) {
+            } else if (sLower.contains('support')) {
               ctx.ess.billing.type = 'support';
-            } else if (s.contains('.es.') || s.contains('.kibana.') || s.contains('.apm.') || s.contains('.integrationsserver.') || s.contains('.enterprisesearch.') || s.contains('vcu') || s.contains('complete')) {
+            } else if (sLower.contains('.es.') || sLower.contains('.kibana.') || sLower.contains('.apm.') || sLower.contains('.integrationsserver.') || sLower.contains('.integrations_server.') || sLower.contains('.enterprisesearch.') || sLower.contains('.enterprise_search.') || sLower.contains('vcu') || sLower.contains('complete')) {
               ctx.ess.billing.type = 'capacity';
+            } else if ((sLower.contains('_ingest') || sLower.contains('.ingest') || sLower.contains('-ingest')) && !sLower.contains('vcu')) {
+              ctx.ess.billing.type = 'ingest';
             } else {
               ctx.ess.billing.type = 'usage';
             }

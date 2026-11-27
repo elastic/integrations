@@ -3,7 +3,12 @@ source:
   index:
     - metrics-chargeback.billing-*
     - metrics-ess_billing.credits-*
-    - -metrics-ess_billing.credits-chargeback
+    - metrics-ess_billing.billing-*
+    - monitoring-indices*
+    - -metrics-ess_billing.credits-chargeback*
+    - -metrics-ess_billing.billing-chargeback*
+    - -monitoring-indices-chargeback*
+    - -partial-*
     - -chargeback_lookup.*
   query:
     bool:
@@ -71,12 +76,16 @@ dest:
   aliases:
     - alias: chargeback_lookup.billing_credits
       move_on_creation: true
-  pipeline: logs-chargeback.lookup-0.6.0-credits
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "credits" }}'
 frequency: 60m
 sync:
   time:
     field: cb_sync_ts
     delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
 pivot:
   group_by:
     snapshot_day:
@@ -328,5 +337,6 @@ settings:
   unattended: true
 _meta:
   managed: true
+  order: 5
   run_as_kibana_system: false
-  fleet_transform_version: 0.6.0
+  fleet_transform_version: 0.7.0

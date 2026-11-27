@@ -129,6 +129,20 @@ rules:
             - "application/json"
         body: |-
           {"items":[],"next_page":""}
+  - path: /api/v1/serverless/projects/vectordb
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    query_params:
+      size: "100"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
   - path: /api/v1/billing/organization/1111/line_items
     methods: ["GET"]
     request_headers:
@@ -211,6 +225,51 @@ rules:
                       "quantity": {
                         "value": 50.0
                       }
+                    }
+                  ]
+                }
+              ]
+            }
+          `}}
+  - path: /api/v2/billing/organizations/1111/costs/items
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    query_params:
+      from: "{from:.+}"
+      to: "{to:.+}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "products": [
+                {
+                  "type": "deployment",
+                  "product_line_items": [
+                    {
+                      "sku": "aws.es.datahot.c6gd_us-east-1_4096_2",
+                      "total_ecu": 7.3728,
+                      "quantity": { "value": 24.0 }
+                    },
+                    {
+                      "sku": "aws.data-transfer-in",
+                      "total_ecu": 0.0,
+                      "quantity": { "value": 8.5 }
+                    }
+                  ]
+                },
+                {
+                  "type": "elasticsearch",
+                  "product_line_items": [
+                    {
+                      "sku": "elasticsearch.gcp-search-vcu_gcp-us-central1",
+                      "total_ecu": 12.5,
+                      "quantity": { "value": 50.0 }
                     }
                   ]
                 }
@@ -636,3 +695,197 @@ rules:
               }
             }
           `}}
+  - path: /ech1/_ml/trained_models/_stats
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "trained_model_stats": [
+                {
+                  "model_id": ".elser_model_2_linux-x86_64",
+                  "pipeline_count": 1,
+                  "deployment_stats": {
+                    "deployment_id": ".elser_model_2_linux-x86_64",
+                    "state": "started",
+                    "nodes": [
+                      {
+                        "node": {
+                          "id": "ml-node-1",
+                          "ephemeral_id": "eph-1"
+                        },
+                        "inference_count": 250,
+                        "average_inference_time_ms": 12.5
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          `}}
+  - path: /ech1/_inference
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"endpoints":[]}'
+  - path: /ech1/.ds-synthetics-*-*,synthetics-*/_search
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "aggregations": {
+                "by_type": {
+                  "buckets": [
+                    {
+                      "key": "http",
+                      "doc_count": 1440,
+                      "monitors": {
+                        "sum_other_doc_count": 0,
+                        "buckets": [
+                          {
+                            "key": "mon-api-health",
+                            "doc_count": 1440,
+                            "monitor_name": {
+                              "buckets": [
+                                { "key": "API Health Check", "doc_count": 1440 }
+                              ]
+                            },
+                            "monitor_namespace": {
+                              "buckets": [
+                                { "key": "prod", "doc_count": 1440 }
+                              ]
+                            },
+                            "up_checks": { "doc_count": 1438 },
+                            "down_checks": { "doc_count": 2 },
+                            "locations": { "value": 3 },
+                            "location_names": { "buckets": [{ "key": "us-east", "doc_count": 480 }, { "key": "eu-west", "doc_count": 480 }, { "key": "ap-southeast", "doc_count": 480 }] },
+                            "avg_duration_us": { "value": 125000.0 }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          `}}
+  - path: /hub/_ml/trained_models/_stats
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"trained_model_stats":[]}'
+  - path: /hub/_inference
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"endpoints":[]}'
+  - path: /hub/.ds-synthetics-*-*,synthetics-*/_search
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"aggregations":{"by_type":{"buckets":[]}}}'
+  - path: /sls1/_ml/trained_models/_stats
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"trained_model_stats":[]}'
+  - path: /sls1/_inference
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"endpoints":[]}'
+  - path: /sls1/.ds-synthetics-*-*,synthetics-*/_search
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"aggregations":{"by_type":{"buckets":[]}}}'
+  - path: /sls2/_ml/trained_models/_stats
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"trained_model_stats":[]}'
+  - path: /sls2/_inference
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"endpoints":[]}'
+  - path: /sls2/.ds-synthetics-*-*,synthetics-*/_search
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"aggregations":{"by_type":{"buckets":[]}}}'
