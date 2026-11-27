@@ -170,7 +170,11 @@ processors:
         if (ctx.citrix_adc.log == null) { ctx.citrix_adc.log = [:]; }
         def formatter;
         try {
-          formatter = DateTimeFormatter.ofPattern(fmt + "[ z][ Z][z][Z]", Locale.ENGLISH);
+          formatter = new DateTimeFormatterBuilder()
+            .appendPattern(fmt + "[ z][ Z][z][Z]")
+            .parseDefaulting(ChronoField.ERA, 1)
+            .toFormatter(Locale.ENGLISH)
+            .withResolverStyle(ResolverStyle.STRICT);
         } catch (Exception e) {
           if (ctx.error == null) { ctx.error = [:]; }
           if (ctx.error.message == null) { ctx.error.message = []; }
