@@ -51,6 +51,7 @@ processors:
         String bType = '';
         String bKind = '';
         String bUnit = '';
+        boolean hasNatSnap = false;
         if (ctx.nat_snapshots instanceof Map || ctx.leg_intervals instanceof Map || ctx.grp_obs instanceof Map || ctx.grp_meta instanceof Map || ctx.v1_carryover instanceof Map) {
           String sep = Character.toString((char)31);
           String tab = Character.toString((char)9);
@@ -215,11 +216,13 @@ processors:
               } else {
                 long cTs = ((Number)cand.get('ing_ts')).longValue();
                 long bTs = ((Number)bestNat.get('ing_ts')).longValue();
-                int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
-                int bMeta = (bestNat.get('deployment_group') != '' ? 2 : 0) + (bestNat.get('project_name') != '' ? 1 : 0);
                 double cEcu = ((Number)cand.get('total_ecu')).doubleValue();
                 double bEcu = ((Number)bestNat.get('total_ecu')).doubleValue();
-                if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestNatKey) > 0)))))) {
+                int cPos = (cEcu > 0.0 ? 1 : 0);
+                int bPos = (bEcu > 0.0 ? 1 : 0);
+                int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
+                int bMeta = (bestNat.get('deployment_group') != '' ? 2 : 0) + (bestNat.get('project_name') != '' ? 1 : 0);
+                if (cTs > bTs || (cTs == bTs && (cPos > bPos || (cPos == bPos && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestNatKey) > 0)))))))) {
                   bestNat = cand;
                   bestNatKey = recKey;
                 }
@@ -227,6 +230,7 @@ processors:
             }
           }
           if (bestNat != null) {
+            hasNatSnap = true;
             bestNat.remove('ing_ts');
             if (((Number)bestNat.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
               bestNat.remove('conf_chargeable_unit_rate');
@@ -590,6 +594,9 @@ processors:
           if (fbTs != '') {
             ctx.group_observations = ['9999-12-31T23:59:59.999Z' + fbTab + '1' + fbTab + '_row_' + fbTab + (fbBf ? '1' : '0') + fbTab + fbTs];
           }
+        }
+        if (ctx.has_native_billing == null) {
+          ctx.has_native_billing = hasNatSnap;
         }
         if (ctx.total_ecu instanceof Number) {
           ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();

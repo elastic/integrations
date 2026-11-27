@@ -131,6 +131,8 @@ processors:
             }
           }
           long bestIng = -1L;
+          int bestPosFlag = -1;
+          boolean anyNatBill = false;
           String bestKey = '';
           List bestParts = null;
           for (def pairObj : entries) {
@@ -153,14 +155,18 @@ processors:
             } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
               iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
             }
-            if (bestParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestKey) > 0)) {
+            int posFlag = (parts.size() >= 8 && '1'.equals(parts.get(7).toString())) ? 1 : 0;
+            if (parts.size() >= 9 && '1'.equals(parts.get(8).toString())) { anyNatBill = true; }
+            if (bestParts == null || iMs > bestIng || (iMs == bestIng && (posFlag > bestPosFlag || (posFlag == bestPosFlag && recKey.compareTo(bestKey) > 0)))) {
               bestIng = iMs;
+              bestPosFlag = posFlag;
               bestKey = recKey;
               bestParts = parts;
             }
           }
           if (bestParts != null) {
             hasRawPool = true;
+            if (ctx.has_native_billing == null) { ctx.has_native_billing = anyNatBill; }
             String pName = bestParts.get(1).toString();
             String pType = bestParts.get(2).toString();
             String dGrp = bestParts.get(3).toString();

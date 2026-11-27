@@ -45,6 +45,12 @@ stdout '^0$'
 exec jq -r '.[0].unit' monthly_rows.json
 stdout '^ZAR$'
 
+exec jq -r 'length' tag_removed_spike_rows.json
+stdout '^1$'
+
+exec jq -r '.[0].dep_group' tag_removed_spike_rows.json
+stdout '^ungrouped$'
+
 exec jq -r 'length' new_group_rows.json
 stdout '^3$'
 
@@ -778,6 +784,77 @@ jq '
   .columns as $cols |
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
 ' raw_monthly_resp.json > monthly_rows.json
+
+# Tag-removal spend-spike attribution fixture: project had legacy-cost-center across baseline days and at morning status harvest, then removed chargeback_group tag on spike day replay
+jq -n \
+  --arg ts "${PAST_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-tag-removed-spike",
+    "sku": "es.search-vcu",
+    "has_native_billing": true,
+    "latest_snapshot": {
+      "project_name": "Tag Removed Spike ES",
+      "project_type": "elasticsearch",
+      "deployment_group": "legacy-cost-center",
+      "total_ecu": 50.0,
+      "quantity_value": 50.0,
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-tag-removed-spike",
+    "updated_at": "2020-01-01T02:00:00Z",
+    "last_status": {"last_status": "ok"},
+    "api_key_type": {"api_key_type": "hub_key"},
+    "synthetics_status": {"synthetics_status": "ok"},
+    "latest_currency": {
+      "project_name": "Tag Removed Spike ES",
+      "project_type": "elasticsearch",
+      "deployment_group": "legacy-cost-center",
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_project_status_lookup-2/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq -n \
+  --arg ts "${BILL_DAY}" \
+  --arg ing "${HEALTHY_UPDATED_AT}" \
+  '{
+    "@timestamp": $ts,
+    "project_id": "proj-tag-removed-spike",
+    "sku": "es.search-vcu",
+    "has_native_billing": true,
+    "event": {"ingested": $ing},
+    "latest_snapshot": {
+      "project_name": "Tag Removed Spike ES",
+      "project_type": "elasticsearch",
+      "deployment_group": "",
+      "total_ecu": 200.0,
+      "quantity_value": 200.0,
+      "conf_chargeable_unit_rate": 1.0,
+      "conf_chargeable_unit_rate_unit": "USD",
+      "conf_currency_symbol": "$"
+    }
+  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
+  -H 'Content-Type: application/json' -d @- >/dev/null
+
+jq '{query: .attributes.params.esqlQuery.esql}' "${SPIKE_RULE}" | \
+  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_tag_removed_spike_resp.json
+jq '
+  .columns as $cols |
+  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
+  map(select(.project_id == "proj-tag-removed-spike"))
+' raw_tag_removed_spike_resp.json > tag_removed_spike_rows.json
 
 # 7-day replay new-group fixture: backfill-grp (initial backfill) vs replayed-new-grp (new after backfill)
 jq -n \

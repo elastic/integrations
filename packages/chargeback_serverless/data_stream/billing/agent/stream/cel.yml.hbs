@@ -907,11 +907,22 @@ program: |-
   prev_day_keys.filter(pk,
   !curr_evts.exists(e, string(e.project_id) == string(pk.project_id) && string(e.sku) == string(pk.sku))
   ).map(pk,
+  curr_evts.filter(ce, string(ce.project_id) == string(pk.project_id)).as(curr_proj_evts,
+  projects.filter(p, has(p.id) && p.id != null && string(p.id) == string(pk.project_id)).as(pk_projs,
+  (size(curr_proj_evts) > 0 ?
+  ((has(curr_proj_evts[0].deployment_tags) && curr_proj_evts[0].deployment_tags != null) ? curr_proj_evts[0].deployment_tags : [])
+  : (size(pk_projs) > 0 ?
+  (
+  ((has(pk_projs[0].tags) && pk_projs[0].tags != null && type(pk_projs[0].tags) == list) ? pk_projs[0].tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
+  ((has(pk_projs[0].metadata) && pk_projs[0].metadata != null && has(pk_projs[0].metadata.tags) && pk_projs[0].metadata.tags != null && type(pk_projs[0].metadata.tags) == list) ? pk_projs[0].metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : [])
+  ).filter(t, t != "")
+  : ((has(pk.deployment_tags) && pk.deployment_tags != null) ? pk.deployment_tags : []))).as(pk_tags,
+  ((size(curr_proj_evts) > 0 && has(curr_proj_evts[0].project_name) && string(curr_proj_evts[0].project_name) != "") ? string(curr_proj_evts[0].project_name) : ((size(pk_projs) > 0 && has(pk_projs[0].name) && pk_projs[0].name != null && string(pk_projs[0].name) != "") ? string(pk_projs[0].name) : string(pk.project_name))).as(pk_name,
   {
   "doc_type": "billing_line_item",
   "period_start": req.from.format(time_layout.RFC3339),
   "project_id": string(pk.project_id),
-  "project_name": string(pk.project_name),
+  "project_name": pk_name,
   "project_type": string(pk.project_type),
   "sku": string(pk.sku),
   "total_ecu": 0.0,
@@ -920,8 +931,8 @@ program: |-
   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
   "conf_currency_symbol": state.conf_currency_symbol,
   "ess": { "billing": { "organization_id": clean_org_id } },
-  }.with((has(pk.region) && pk.region != null && string(pk.region) != "") ? { "cloud": { "region": string(pk.region) } } : {}).with((has(pk.deployment_tags) && pk.deployment_tags != null && size(pk.deployment_tags) > 0) ? { "deployment_tags": pk.deployment_tags } : {}).with((has(pk.billing_unit) && pk.billing_unit != null && string(pk.billing_unit) != "") ? { "billing_unit": string(pk.billing_unit) } : {}).with((has(pk.billing_type) && pk.billing_type != null && string(pk.billing_type) != "") ? { "billing_type": string(pk.billing_type) } : {}).with((has(pk.billing_kind) && pk.billing_kind != null && string(pk.billing_kind) != "") ? { "billing_kind": string(pk.billing_kind) } : {})
-  )
+  }.with((has(pk.region) && pk.region != null && string(pk.region) != "") ? { "cloud": { "region": string(pk.region) } } : {}).with(size(pk_tags) > 0 ? { "deployment_tags": pk_tags } : {}).with((has(pk.billing_unit) && pk.billing_unit != null && string(pk.billing_unit) != "") ? { "billing_unit": string(pk.billing_unit) } : {}).with((has(pk.billing_type) && pk.billing_type != null && string(pk.billing_type) != "") ? { "billing_type": string(pk.billing_type) } : {}).with((has(pk.billing_kind) && pk.billing_kind != null && string(pk.billing_kind) != "") ? { "billing_kind": string(pk.billing_kind) } : {})
+  )))))
   ).as(raw_day_evts,
   raw_day_evts.map(e,
   (has(e.deployment_tags) && e.deployment_tags != null) ?

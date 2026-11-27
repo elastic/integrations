@@ -521,14 +521,20 @@ processors:
             Map v1Map = (r.v1 instanceof Map) ? (Map)r.v1 : null;
             long natCnt = (natMap != null && natMap.get('cnt') instanceof Number)
               ? Math.round(((Number)natMap.get('cnt')).doubleValue())
-              : 0L;
+              : ((natMap != null && natMap.get('cnt') instanceof Map && ((Map)natMap.get('cnt')).get('value') instanceof Number)
+                ? Math.round(((Number)((Map)natMap.get('cnt')).get('value')).doubleValue())
+                : 0L);
             long legCnt = (legMap != null && legMap.get('cnt') instanceof Number)
               ? Math.round(((Number)legMap.get('cnt')).doubleValue())
-              : 0L;
+              : ((legMap != null && legMap.get('cnt') instanceof Map && ((Map)legMap.get('cnt')).get('value') instanceof Number)
+                ? Math.round(((Number)((Map)legMap.get('cnt')).get('value')).doubleValue())
+                : 0L);
             boolean hasLeg = (legCnt > 0L) || (legMap != null && legMap.get('by_idx') instanceof Map && !((Map)legMap.get('by_idx')).isEmpty());
             long v1Cnt = (v1Map != null && v1Map.get('cnt') instanceof Number)
               ? Math.round(((Number)v1Map.get('cnt')).doubleValue())
-              : 0L;
+              : ((v1Map != null && v1Map.get('cnt') instanceof Map && ((Map)v1Map.get('cnt')).get('value') instanceof Number)
+                ? Math.round(((Number)((Map)v1Map.get('cnt')).get('value')).doubleValue())
+                : 0L);
             if (isProjLevel && ((natMap != null && natMap.get('by_ds') instanceof Map) || (legMap != null && legMap.get('by_ds') instanceof Map))) {
               long sumIdx = 0L;
               long sumQry = 0L;
@@ -539,12 +545,19 @@ processors:
                   Map.Entry entry = (Map.Entry)entryObj;
                   if (!(entry.getValue() instanceof Map)) { continue; }
                   Map dm = (Map)entry.getValue();
-                  long dsCnt = (dm.get('cnt') instanceof Number) ? Math.round(((Number)dm.get('cnt')).doubleValue()) : 1L;
+                  long dsCnt = (dm.get('cnt') instanceof Number)
+                    ? Math.round(((Number)dm.get('cnt')).doubleValue())
+                    : ((dm.get('cnt') instanceof Map && ((Map)dm.get('cnt')).get('value') instanceof Number)
+                      ? Math.round(((Number)((Map)dm.get('cnt')).get('value')).doubleValue())
+                      : 1L);
                   if (dsCnt <= 0L) { continue; }
                   selectedNatDs.add(entry.getKey().toString());
                   if (dm.get('idx') instanceof Number) { sumIdx += Math.round(((Number)dm.get('idx')).doubleValue()); }
+                  else if (dm.get('idx') instanceof Map && ((Map)dm.get('idx')).get('value') instanceof Number) { sumIdx += Math.round(((Number)((Map)dm.get('idx')).get('value')).doubleValue()); }
                   if (dm.get('qry') instanceof Number) { sumQry += Math.round(((Number)dm.get('qry')).doubleValue()); }
+                  else if (dm.get('qry') instanceof Map && ((Map)dm.get('qry')).get('value') instanceof Number) { sumQry += Math.round(((Number)((Map)dm.get('qry')).get('value')).doubleValue()); }
                   if (dm.get('sto') instanceof Number) { sumSto += Math.round(((Number)dm.get('sto')).doubleValue()); }
+                  else if (dm.get('sto') instanceof Map && ((Map)dm.get('sto')).get('value') instanceof Number) { sumSto += Math.round(((Number)((Map)dm.get('sto')).get('value')).doubleValue()); }
                 }
               }
               if (legMap != null && legMap.get('by_ds') instanceof Map) {
@@ -644,9 +657,9 @@ processors:
                 }
               }
             } else if (natCnt > 0L) {
-              long dsIdx = (natMap.get('idx') instanceof Number) ? Math.round(((Number)natMap.get('idx')).doubleValue()) : 0L;
-              long dsQry = (natMap.get('qry') instanceof Number) ? Math.round(((Number)natMap.get('qry')).doubleValue()) : 0L;
-              long dsSto = (natMap.get('sto') instanceof Number) ? Math.round(((Number)natMap.get('sto')).doubleValue()) : 0L;
+              long dsIdx = (natMap.get('idx') instanceof Number) ? Math.round(((Number)natMap.get('idx')).doubleValue()) : ((natMap.get('idx') instanceof Map && ((Map)natMap.get('idx')).get('value') instanceof Number) ? Math.round(((Number)((Map)natMap.get('idx')).get('value')).doubleValue()) : 0L);
+              long dsQry = (natMap.get('qry') instanceof Number) ? Math.round(((Number)natMap.get('qry')).doubleValue()) : ((natMap.get('qry') instanceof Map && ((Map)natMap.get('qry')).get('value') instanceof Number) ? Math.round(((Number)((Map)natMap.get('qry')).get('value')).doubleValue()) : 0L);
+              long dsSto = (natMap.get('sto') instanceof Number) ? Math.round(((Number)natMap.get('sto')).doubleValue()) : ((natMap.get('sto') instanceof Map && ((Map)natMap.get('sto')).get('value') instanceof Number) ? Math.round(((Number)((Map)natMap.get('sto')).get('value')).doubleValue()) : 0L);
               if (isProjLevel) {
                 ctx.deployment_sum_indexing_time = dsIdx;
                 ctx.deployment_sum_query_time = dsQry;
@@ -764,9 +777,9 @@ processors:
                 ctx.has_native_usage = false;
               }
             } else if (v1Map != null && v1Cnt > 0L) {
-              long dsIdx = (v1Map.get('idx') instanceof Number) ? Math.round(((Number)v1Map.get('idx')).doubleValue()) : 0L;
-              long dsQry = (v1Map.get('qry') instanceof Number) ? Math.round(((Number)v1Map.get('qry')).doubleValue()) : 0L;
-              long dsSto = (v1Map.get('sto') instanceof Number) ? Math.round(((Number)v1Map.get('sto')).doubleValue()) : 0L;
+              long dsIdx = (v1Map.get('idx') instanceof Number) ? Math.round(((Number)v1Map.get('idx')).doubleValue()) : ((v1Map.get('idx') instanceof Map && ((Map)v1Map.get('idx')).get('value') instanceof Number) ? Math.round(((Number)((Map)v1Map.get('idx')).get('value')).doubleValue()) : 0L);
+              long dsQry = (v1Map.get('qry') instanceof Number) ? Math.round(((Number)v1Map.get('qry')).doubleValue()) : ((v1Map.get('qry') instanceof Map && ((Map)v1Map.get('qry')).get('value') instanceof Number) ? Math.round(((Number)((Map)v1Map.get('qry')).get('value')).doubleValue()) : 0L);
+              long dsSto = (v1Map.get('sto') instanceof Number) ? Math.round(((Number)v1Map.get('sto')).doubleValue()) : ((v1Map.get('sto') instanceof Map && ((Map)v1Map.get('sto')).get('value') instanceof Number) ? Math.round(((Number)((Map)v1Map.get('sto')).get('value')).doubleValue()) : 0L);
               if (isProjLevel) {
                 ctx.deployment_sum_indexing_time = dsIdx;
                 ctx.deployment_sum_query_time = dsQry;
