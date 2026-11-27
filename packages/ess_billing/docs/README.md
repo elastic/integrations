@@ -51,7 +51,7 @@ The `cost_and_usage` stream includes the following settings to populate FOCUS 1.
 * **Purchase channel** (`purchase_channel`): How this organization buys Elastic Cloud (`direct`, `gcp_marketplace`, `aws_marketplace`, or `azure_marketplace`; default `direct`). For cloud marketplace purchases, the cloud provider issues the invoice, so `BilledCost` is `0` and `InvoiceIssuerName` is set to the cloud provider (`Google Cloud`, `Amazon Web Services`, or `Microsoft`). This avoids double-counting spend when combined with your cloud provider's own FOCUS dataset, while `ContractedCost`, `EffectiveCost`, and `PricingCurrencyEffectiveCost` continue to reflect your Elastic Cloud consumption.
 * **Contracted price of one ECU (USD)** (`contracted_ecu_rate`, advanced): Price of one Elastic Consumption Unit in your contract in USD (default `"1.0"` for list price; invalid values are treated as `1.0`). Used to calculate `ContractedUnitPrice`, `ContractedCost`, `EffectiveCost`, and (for direct purchases) `BilledCost`. `ListUnitPrice` and `ListCost` always use the `1.00` USD list price.
 * **Billing account name** (`billing_account_name`, advanced): Display name of the Elastic Cloud organization for `BillingAccountName`. When empty, `BillingAccountId` (the organization ID) is used.
-* **Add deployment tags** (`add_deployment_tags`, advanced): When enabled, deployment tags are stored both as a FOCUS JSON object string in `Tags` and as `key:value` entries in `x_DeploymentTags` for filtering and Chargeback allocation.
+* **Add deployment tags** (`add_tags`): Hosted deployments only; Serverless projects have no tags. When enabled, deployment tags are stored both as a FOCUS JSON object string in `Tags` and as `key:value` entries in `x_DeploymentTags` for filtering and Chargeback allocation.
 
 ## Upgrading from 1.x
 
@@ -143,9 +143,9 @@ An example event for `cost_and_usage` looks as following:
     },
     "SkuPriceId": "aws.es.datafrozen.i3en.2_us-east-1_4096_1",
     "agent": {
-        "ephemeral_id": "9d84baa5-4fbb-4a7a-8e52-df69fd247d77",
-        "id": "0c0dba96-f709-4786-8b12-f3df56c7b98d",
-        "name": "elastic-agent-61245",
+        "ephemeral_id": "3522202c-6b82-45ce-89e8-7321920e7285",
+        "id": "7df65fe8-1345-48af-ad04-272cce555b64",
+        "name": "elastic-agent-41018",
         "type": "filebeat",
         "version": "9.4.3"
     },
@@ -175,29 +175,29 @@ An example event for `cost_and_usage` looks as following:
     },
     "data_stream": {
         "dataset": "ess_billing.cost_and_usage",
-        "namespace": "74855",
+        "namespace": "29926",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "0c0dba96-f709-4786-8b12-f3df56c7b98d",
+        "id": "7df65fe8-1345-48af-ad04-272cce555b64",
         "snapshot": false,
         "version": "9.4.3"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2026-11-27T06:04:36.374Z",
+        "created": "2026-11-27T08:32:21.624Z",
         "dataset": "ess_billing.cost_and_usage",
-        "ingested": "2026-11-27T06:04:39Z",
+        "ingested": "2026-11-27T08:32:24Z",
         "module": "ess_billing"
     },
     "input": {
         "type": "cel"
     },
     "labels": {
-        "test_run_id": "50068"
+        "test_run_id": "25713"
     },
     "tags": [
         "billing",

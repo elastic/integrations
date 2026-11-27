@@ -142,7 +142,9 @@ processors:
               sb.append('\\');
               sb.append(c);
             } else if (c < 32) {
-              sb.append(' ');
+              sb.append('\\u00');
+              sb.append('0123456789abcdef'.charAt(((int) c) / 16));
+              sb.append('0123456789abcdef'.charAt(((int) c) % 16));
             } else {
               sb.append(c);
             }
@@ -212,6 +214,9 @@ processors:
             sb.append(parts[i]);
           }
           base = sb.toString();
+        } else if ('serverless'.equals(cloud) && region != null && rest.endsWith('_' + region)) {
+          /* Serverless SKU = <product>.<service>_<region>: the region is in RegionId */
+          base = rest.substring(0, rest.length() - region.length() - 1);
         }
         if (ramMb == null && b.ram_per_zone != null) {
           ramMb = ((Number) b.ram_per_zone).longValue();
@@ -249,7 +254,7 @@ processors:
           ctx.PricingUnit = str(b.unit);
         }
         if (b.rate?.value != null) {
-          double price = Double.parseDouble(Float.toString(((Number) b.rate.value).floatValue()));
+          double price = ((Number) b.rate.value).doubleValue();
           ctx.PricingCurrencyListUnitPrice = price;
           ctx.PricingCurrencyContractedUnitPrice = price;
           ctx.ListUnitPrice = price * params.list_ecu_price;
@@ -378,11 +383,15 @@ processors:
         ctx.PricingCategory = 'Standard';
         ctx.x_FocusVersion = params.focus_version;
   # The FOCUS columns replace the source fields: no duplicated data.
-  - remove:
+  - script:
       tag: remove_source_fields
-      field: ess
-      ignore_missing: true
-      if: ctx.BillingAccountId != null
+      lang: painless
+      if: ctx.BillingAccountId != null && ctx.ess instanceof Map
+      source: |-
+        ctx.ess.remove('billing');
+        if (ctx.ess.isEmpty()) {
+          ctx.remove('ess');
+        }
 on_failure:
   - set:
       field: event.kind
