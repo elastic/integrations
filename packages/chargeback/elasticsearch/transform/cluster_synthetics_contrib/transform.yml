@@ -7,6 +7,39 @@ source:
   query:
     term:
       doc_type: "synthetics_monitor"
+  runtime_mappings:
+    cb_monitor_id:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['monitor_id.keyword', 'monitor_id']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          def sv = params._source?.get('monitor_id');
+          if (sv != null && sv.toString() != '') {
+            emit(sv.toString());
+          }
+    cb_monitor_type:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['monitor_type.keyword', 'monitor_type']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          def sv = params._source?.get('monitor_type');
+          if (sv != null && sv.toString() != '') {
+            emit(sv.toString());
+          }
 dest:
   index: chargeback_lookup.dest_cluster_synthetics_monitor_contribution-1
   aliases:
@@ -33,10 +66,10 @@ pivot:
         field: elasticsearch.cluster.name
     monitor_id:
       terms:
-        field: monitor_id
+        field: cb_monitor_id
     monitor_type:
       terms:
-        field: monitor_type
+        field: cb_monitor_type
   aggregations:
     aux_rollup:
       scripted_metric:
