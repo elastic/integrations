@@ -66,6 +66,12 @@ processors:
       tag: credit_line_item_complete
       if: "ctx.doc_type == 'credit_line_item'"
       description: Credit commitment events retain snapshot @timestamp and ESS credit fields; deduplication occurs in the billing_credits transform.
+  - set:
+      field: _poll_ts
+      copy_from: "@timestamp"
+      ignore_empty_value: true
+      if: "(ctx.doc_type == 'billing_line_item' || (ctx.doc_type == null && ctx.sku != null)) && ctx.error?.message == null"
+      tag: capture_poll_timestamp
   - date:
       field: period_start
       target_field: "@timestamp"
@@ -75,13 +81,10 @@ processors:
       if: ctx.period_start != null
       ignore_failure: true
       tag: restore_period_start_timestamp
-  - remove:
-      field: period_start
-      ignore_missing: true
-      tag: remove_period_start
   - fingerprint:
       if: "(ctx.doc_type == 'billing_line_item' || (ctx.doc_type == null && ctx.sku != null)) && ctx.error?.message == null"
       fields:
+        - _poll_ts
         - conf_policy_id
         - data_stream.namespace
         - project_id
@@ -96,6 +99,12 @@ processors:
       target_field: _id
       ignore_missing: true
       tag: fingerprint_billing_line_item
+  - remove:
+      field:
+        - _poll_ts
+        - period_start
+      ignore_missing: true
+      tag: remove_transient_billing_fields
   - set:
       field: cloud.account.id
       copy_from: ess.billing.organization_id
