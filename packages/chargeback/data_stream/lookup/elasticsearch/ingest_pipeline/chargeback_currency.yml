@@ -7,9 +7,8 @@ processors:
       source: |
         // Pass manual operator documents straight through because Fleet sets this pipeline as index.default_pipeline.
         if (!ctx.containsKey('snapshots')) {
-          if (ctx.config_join_key == null || ctx.config_join_key.toString().trim() == '') {
-            ctx.config_join_key = 'chargeback_config';
-          }
+          String manualKey = ctx.config_join_key != null ? ctx.config_join_key.toString().trim() : '';
+          ctx.config_join_key = manualKey == '' ? 'chargeback_config' : manualKey;
           if (ctx.conf_currency_unit != null) {
             String uTrim = ctx.conf_currency_unit.toString().trim();
             if (uTrim == '') { ctx.remove('conf_currency_unit'); }

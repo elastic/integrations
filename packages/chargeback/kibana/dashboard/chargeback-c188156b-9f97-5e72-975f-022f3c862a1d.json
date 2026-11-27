@@ -30,7 +30,7 @@
                             "options": {
                                 "openInNewTab": false,
                                 "useCurrentDateRange": true,
-                                "useCurrentFilters": true
+                                "useCurrentFilters": false
                             },
                             "order": 0,
                             "type": "dashboardLink"
@@ -42,7 +42,7 @@
                             "options": {
                                 "openInNewTab": false,
                                 "useCurrentDateRange": true,
-                                "useCurrentFilters": true
+                                "useCurrentFilters": false
                             },
                             "order": 1,
                             "type": "dashboardLink"
@@ -54,7 +54,7 @@
                             "options": {
                                 "openInNewTab": false,
                                 "useCurrentDateRange": true,
-                                "useCurrentFilters": true
+                                "useCurrentFilters": false
                             },
                             "order": 2,
                             "type": "dashboardLink"
@@ -66,7 +66,7 @@
                             "options": {
                                 "openInNewTab": false,
                                 "useCurrentDateRange": true,
-                                "useCurrentFilters": true
+                                "useCurrentFilters": false
                             },
                             "order": 3,
                             "type": "dashboardLink"
@@ -78,7 +78,7 @@
                             "options": {
                                 "openInNewTab": false,
                                 "useCurrentDateRange": true,
-                                "useCurrentFilters": true
+                                "useCurrentFilters": false
                             },
                             "order": 4,
                             "type": "dashboardLink"
@@ -1075,7 +1075,7 @@
                                             ],
                                             "index": "cluster-datastream-contribution-dv",
                                             "query": {
-                                                "esql": "FROM chargeback_lookup.cluster_datastream_contribution\n| WHERE @timestamp IS NOT NULL AND (ds_type == \"synthetics\" OR STARTS_WITH(COALESCE(datastream, \"\"), \"synthetics-\"))\n| EVAL ck = composite_key::keyword, u_dep_id = deployment_id, u_cluster = cluster_name\n| DROP composite_key, deployment_id, @timestamp\n| LOOKUP JOIN chargeback_lookup.usage_deployment_metadata ON ck == composite_key\n| EVAL u_dep_name = deployment_name\n| DROP composite_key, deployment_id, deployment_name, deployment_group, cluster_name, @timestamp\n| LOOKUP JOIN chargeback_lookup.billing_realized_pool ON ck == composite_key\n| EVAL deployment = COALESCE(u_dep_name, deployment_name, u_dep_id, u_cluster, \"unknown\")\n| STATS `Storage (GiB)` = ROUND(AVG(TO_DOUBLE(COALESCE(datastream_sum_data_set_store_size, 0))) / 1073741824.0, 3), `Indexing (ms)` = SUM(COALESCE(datastream_sum_indexing_time, 0)), `Query (ms)` = SUM(COALESCE(datastream_sum_query_time, 0)) BY deployment, datastream, ds_namespace\n| RENAME deployment AS `Deployment`, datastream AS `Data Stream`, ds_namespace AS `Namespace`\n| SORT `Storage (GiB)` DESC\n| LIMIT 5000"
+                                                "esql": "FROM chargeback_lookup.billing_realized_pool, chargeback_lookup.usage_deployment_metadata METADATA _index\n| WHERE @timestamp IS NOT NULL AND composite_key IS NOT NULL\n| EVAL ck = composite_key::keyword, dep_name_cand = CASE(deployment_name IS NOT NULL AND deployment_name != \"\", deployment_name, null), dep_id_cand = deployment_id\n| STATS m_dep_name = MV_MAX(VALUES(dep_name_cand)), m_dep_id = MV_MAX(VALUES(dep_id_cand)) BY ck\n| LOOKUP JOIN chargeback_lookup.cluster_datastream_contribution ON ck == composite_key\n| WHERE ds_type == \"synthetics\" OR STARTS_WITH(COALESCE(datastream, \"\"), \"synthetics-\")\n| EVAL deployment = COALESCE(m_dep_name, m_dep_id, deployment_id, cluster_name, \"unknown\")\n| STATS `Storage (GiB)` = ROUND(AVG(TO_DOUBLE(COALESCE(datastream_sum_data_set_store_size, 0))) / 1073741824.0, 3), `Indexing (ms)` = SUM(COALESCE(datastream_sum_indexing_time, 0)), `Query (ms)` = SUM(COALESCE(datastream_sum_query_time, 0)) BY deployment, datastream, ds_namespace\n| RENAME deployment AS `Deployment`, datastream AS `Data Stream`, ds_namespace AS `Namespace`\n| SORT `Storage (GiB)` DESC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1085,7 +1085,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM chargeback_lookup.cluster_datastream_contribution\n| WHERE @timestamp IS NOT NULL AND (ds_type == \"synthetics\" OR STARTS_WITH(COALESCE(datastream, \"\"), \"synthetics-\"))\n| EVAL ck = composite_key::keyword, u_dep_id = deployment_id, u_cluster = cluster_name\n| DROP composite_key, deployment_id, @timestamp\n| LOOKUP JOIN chargeback_lookup.usage_deployment_metadata ON ck == composite_key\n| EVAL u_dep_name = deployment_name\n| DROP composite_key, deployment_id, deployment_name, deployment_group, cluster_name, @timestamp\n| LOOKUP JOIN chargeback_lookup.billing_realized_pool ON ck == composite_key\n| EVAL deployment = COALESCE(u_dep_name, deployment_name, u_dep_id, u_cluster, \"unknown\")\n| STATS `Storage (GiB)` = ROUND(AVG(TO_DOUBLE(COALESCE(datastream_sum_data_set_store_size, 0))) / 1073741824.0, 3), `Indexing (ms)` = SUM(COALESCE(datastream_sum_indexing_time, 0)), `Query (ms)` = SUM(COALESCE(datastream_sum_query_time, 0)) BY deployment, datastream, ds_namespace\n| RENAME deployment AS `Deployment`, datastream AS `Data Stream`, ds_namespace AS `Namespace`\n| SORT `Storage (GiB)` DESC\n| LIMIT 5000"
+                                "esql": "FROM chargeback_lookup.billing_realized_pool, chargeback_lookup.usage_deployment_metadata METADATA _index\n| WHERE @timestamp IS NOT NULL AND composite_key IS NOT NULL\n| EVAL ck = composite_key::keyword, dep_name_cand = CASE(deployment_name IS NOT NULL AND deployment_name != \"\", deployment_name, null), dep_id_cand = deployment_id\n| STATS m_dep_name = MV_MAX(VALUES(dep_name_cand)), m_dep_id = MV_MAX(VALUES(dep_id_cand)) BY ck\n| LOOKUP JOIN chargeback_lookup.cluster_datastream_contribution ON ck == composite_key\n| WHERE ds_type == \"synthetics\" OR STARTS_WITH(COALESCE(datastream, \"\"), \"synthetics-\")\n| EVAL deployment = COALESCE(m_dep_name, m_dep_id, deployment_id, cluster_name, \"unknown\")\n| STATS `Storage (GiB)` = ROUND(AVG(TO_DOUBLE(COALESCE(datastream_sum_data_set_store_size, 0))) / 1073741824.0, 3), `Indexing (ms)` = SUM(COALESCE(datastream_sum_indexing_time, 0)), `Query (ms)` = SUM(COALESCE(datastream_sum_query_time, 0)) BY deployment, datastream, ds_namespace\n| RENAME deployment AS `Deployment`, datastream AS `Data Stream`, ds_namespace AS `Namespace`\n| SORT `Storage (GiB)` DESC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "columns": [
