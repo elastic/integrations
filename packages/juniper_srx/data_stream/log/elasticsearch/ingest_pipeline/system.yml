@@ -536,16 +536,18 @@ processors:
 # An sshd connection closed before or after login names the user, so it is an
 # authentication event that has ended. It is a failure only for an invalid
 # (unknown) user; for an authenticating user the outcome is not known.
+# Gate on what grok_sshd_connection_closed captured, not on user.name, which
+# agent processors may already have set on unrelated sshd messages.
 - append:
     tag: append_event_category_sshd_connection_closed
     field: event.category
     value: authentication
-    if: ctx.juniper?.srx?.process == 'sshd' && ctx.juniper?.srx?.tag == null && (ctx.user?.name != null || ctx._temp_?.sshd?.user_kind != null)
+    if: ctx._temp_?.sshd?.user_name != null
 - append:
     tag: append_event_type_sshd_connection_closed
     field: event.type
     value: end
-    if: ctx.juniper?.srx?.process == 'sshd' && ctx.juniper?.srx?.tag == null && (ctx.user?.name != null || ctx._temp_?.sshd?.user_kind != null)
+    if: ctx._temp_?.sshd?.user_name != null
 - set:
     tag: set_event_outcome_sshd_invalid_user
     field: event.outcome
