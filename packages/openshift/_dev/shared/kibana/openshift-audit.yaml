@@ -226,7 +226,7 @@ dashboards:
                 type: datatable
                 query: |
                   FROM logs-openshift.audit-*
-                  | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI") AND event.outcome == "failure"
+                  | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI") AND http.response.status_code == 403
                   | EVAL acting_as = COALESCE(user.effective.name, user.name)
                   | STATS requests = COUNT(*) BY acting_as, event.action, orchestrator.resource.type, orchestrator.namespace
                   | SORT requests DESC

@@ -288,6 +288,59 @@ processors:
           field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
+  - script:
+      tag: script_drop_empty_audit_values
+      description: >-
+        Drops nulls, empty strings, and empty objects and lists from kubernetes.audit,
+        except the request and response bodies,
+        after the fields above have been moved out of it.
+      lang: painless
+      if: ctx.kubernetes?.audit instanceof Map
+      source: |
+        boolean isEmpty(def v) {
+          return v == null || (v instanceof String && v == '') || (v instanceof Map && v.isEmpty()) || (v instanceof List && v.isEmpty());
+        }
+        void cleanMap(Map m) {
+          m.values().removeIf(v -> {
+            if (v instanceof Map) {
+              cleanMap(v);
+            } else if (v instanceof List) {
+              cleanList(v);
+            }
+            return isEmpty(v);
+          });
+        }
+        void cleanList(List l) {
+          l.removeIf(v -> {
+            if (v instanceof Map) {
+              cleanMap(v);
+            } else if (v instanceof List) {
+              cleanList(v);
+            }
+            return isEmpty(v);
+          });
+        }
+        // requestObject and responseObject are the API payload, where an empty
+        // value is data (for example an empty ConfigMap entry); keep them as sent.
+        Map audit = ctx.kubernetes.audit;
+        for (def key : new ArrayList(audit.keySet())) {
+          if (key == 'requestObject' || key == 'responseObject') {
+            continue;
+          }
+          def v = audit.get(key);
+          if (v instanceof Map) {
+            cleanMap(v);
+          } else if (v instanceof List) {
+            cleanList(v);
+          }
+          if (isEmpty(v)) {
+            audit.remove(key);
+          }
+        }
+  - remove:
+      tag: remove_empty_kubernetes_audit
+      field: kubernetes.audit
+      if: ctx.kubernetes?.audit instanceof Map && ctx.kubernetes.audit.isEmpty()
 on_failure:
   - append:
       tag: append_error_message

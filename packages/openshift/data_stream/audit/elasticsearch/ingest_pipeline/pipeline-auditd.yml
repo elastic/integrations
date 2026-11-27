@@ -156,9 +156,10 @@ processors:
       description: >-
         auditd writes values that contain spaces, quotes, or control characters
         hex encoded and other text values in double quotes. Decodes hex values
-        of the keys that can be encoded, with the same rule as the auditd
-        integration (a value stays as is unless the decoded text contains such
-        a character), and strips the quotes of all other values.
+        of the keys that can be encoded as UTF-8, with the rule of the auditd
+        integration (a value stays as is unless the decoded bytes contain a
+        character that requires encoding, including non-ASCII bytes), and
+        strips the quotes of all other values.
       lang: painless
       if: ctx.auditd?.log instanceof Map
       params:
@@ -188,20 +189,60 @@ processors:
               return hex;
             }
           }
-          StringBuilder sb = new StringBuilder();
+          int n = hex.length() / 2;
+          int[] b = new int[n];
           boolean neededEncoding = false;
-          for (int i = 0; i < hex.length() - 1; i += 2) {
-            int cp = Integer.parseInt(hex.substring(i, i + 2), 16);
-            if (cp < 33 || cp == 34 || cp == 127) {
+          for (int i = 0; i < n; i++) {
+            b[i] = Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
+            if (b[i] < 33 || b[i] == 34 || b[i] >= 127) {
               neededEncoding = true;
             }
-            if (cp < 32 || cp == 127) {
-              sb.append('^');
-              cp ^= 64;
-            }
-            sb.append((char) cp);
           }
-          return neededEncoding ? sb.toString() : hex;
+          if (!neededEncoding) {
+            return hex;
+          }
+          // Decode the bytes as UTF-8; control characters use the ^X notation.
+          StringBuilder sb = new StringBuilder();
+          int i = 0;
+          while (i < n) {
+            int c = b[i];
+            if (c < 128) {
+              if (c < 32 || c == 127) {
+                sb.append('^');
+                c ^= 64;
+              }
+              sb.append((char) c);
+              i++;
+              continue;
+            }
+            int len = 0;
+            int cp = 0;
+            if (c >= 0xC2 && c <= 0xDF) { len = 1; cp = c & 0x1F; }
+            else if (c >= 0xE0 && c <= 0xEF) { len = 2; cp = c & 0x0F; }
+            else if (c >= 0xF0 && c <= 0xF4) { len = 3; cp = c & 0x07; }
+            boolean valid = len > 0 && i + len < n + 1;
+            for (int k = 1; valid && k <= len; k++) {
+              if (i + k >= n || (b[i + k] & 0xC0) != 0x80) {
+                valid = false;
+              } else {
+                cp = (cp << 6) | (b[i + k] & 0x3F);
+              }
+            }
+            if (!valid) {
+              sb.append((char) 0xFFFD);
+              i++;
+              continue;
+            }
+            if (cp >= 0x10000) {
+              int v = cp - 0x10000;
+              sb.append((char) (0xD800 + (v >> 10)));
+              sb.append((char) (0xDC00 + (v & 0x3FF)));
+            } else {
+              sb.append((char) cp);
+            }
+            i += len + 1;
+          }
+          return sb.toString();
         }
         Map audit = ctx.auditd.log;
         for (def key : new ArrayList(audit.keySet())) {

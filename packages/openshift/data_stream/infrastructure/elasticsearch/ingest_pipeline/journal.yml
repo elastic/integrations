@@ -113,6 +113,42 @@ processors:
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
+  - script:
+      tag: script_drop_empty_journal_values
+      description: >-
+        Drops nulls, empty strings, and empty objects and lists from openshift.journal
+        after the fields above have been moved out of it.
+      lang: painless
+      if: ctx.openshift?.journal instanceof Map
+      source: |
+        boolean isEmpty(def v) {
+          return v == null || (v instanceof String && v == '') || (v instanceof Map && v.isEmpty()) || (v instanceof List && v.isEmpty());
+        }
+        void cleanMap(Map m) {
+          m.values().removeIf(v -> {
+            if (v instanceof Map) {
+              cleanMap(v);
+            } else if (v instanceof List) {
+              cleanList(v);
+            }
+            return isEmpty(v);
+          });
+        }
+        void cleanList(List l) {
+          l.removeIf(v -> {
+            if (v instanceof Map) {
+              cleanMap(v);
+            } else if (v instanceof List) {
+              cleanList(v);
+            }
+            return isEmpty(v);
+          });
+        }
+        cleanMap(ctx.openshift.journal);
+  - remove:
+      tag: remove_empty_openshift_journal
+      field: openshift.journal
+      if: ctx.openshift?.journal instanceof Map && ctx.openshift.journal.isEmpty()
 on_failure:
   - append:
       tag: append_error_message
