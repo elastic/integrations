@@ -1,0 +1,401 @@
+---
+description: Pipeline for Zscaler Microsegmentation Flow logs.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      tag: json_event_original_to_json
+      field: event.original
+      target_field: json
+  - fail:
+      tag: fail_json_not_object
+      message: 'expected event.original to be a JSON object'
+      if: '!(ctx.json instanceof Map)'
+  - script:
+      tag: script_check_template
+      description: In strict mode, reports records that don't match the expected log template.
+      lang: painless
+      if: ctx._conf?.strict_fields == true
+      params:
+        expect:
+          version: v1
+          sourcetype: zscaler_zpa.microsegmentation_flow
+      source: |-
+        List msgs = new ArrayList();
+        def version = ctx.json.version;
+        def sourcetype = ctx.json.sourcetype;
+        if (version == null) {
+          msgs.add("template version missing: expected " + params.expect.version);
+        } else if (version != params.expect.version) {
+          msgs.add("template version mismatch: " + version + " is not expected version " + params.expect.version);
+        }
+        if (sourcetype == null) {
+          msgs.add("sourcetype missing: expected " + params.expect.sourcetype);
+        } else if (sourcetype != params.expect.sourcetype) {
+          msgs.add("sourcetype mismatch: " + sourcetype + " is not expected sourcetype " + params.expect.sourcetype);
+        }
+        if (!msgs.isEmpty()) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          if (!(ctx.error.message instanceof List)) {
+            ctx.error.message = new ArrayList([ctx.error.message]);
+          }
+          ctx.error.message.addAll(msgs);
+        }
+  - remove:
+      tag: remove_json_template_keys
+      description: Removes the log template keys after the strict check. They are not kept as vendored fields; event.original still has them.
+      field:
+        - json.version
+        - json.sourcetype
+      ignore_missing: true
+  - script:
+      tag: script_drop_empty_and_snake_case_json_keys
+      description: >-
+        Drops null, empty string, empty array and empty object values from the top level of the parsed record,
+        and converts the remaining keys to snake_case. The record is flat, so this is the only empty-value
+        handling the pipeline needs. If two keys have the same snake_case name, the first in sorted order
+        is kept and the other is dropped and reported (the parsed record has no key order).
+      lang: painless
+      source: |-
+        String snakeCase(String s) {
+          StringBuilder b = new StringBuilder();
+          int n = s.length();
+          for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (i > 0 && Character.isUpperCase(c)) {
+              char prev = s.charAt(i - 1);
+              boolean nextLower = i + 1 < n && Character.isLowerCase(s.charAt(i + 1));
+              if (Character.isLowerCase(prev) || Character.isDigit(prev) || (Character.isUpperCase(prev) && nextLower)) {
+                b.append('_');
+              }
+            }
+            b.append(Character.toLowerCase(c));
+          }
+          return b.toString();
+        }
+        Map out = new LinkedHashMap();
+        Map from = new HashMap();
+        List msgs = new ArrayList();
+        List keys = new ArrayList(ctx.json.keySet());
+        Collections.sort(keys);
+        for (String k : keys) {
+          def v = ctx.json.get(k);
+          if (v == null || v == '' || (v instanceof List && ((List) v).isEmpty()) || (v instanceof Map && ((Map) v).isEmpty())) {
+            continue;
+          }
+          String sk = snakeCase(k);
+          if (out.containsKey(sk)) {
+            msgs.add("dropped key '" + k + "' because its snake_case name '" + sk + "' is already used by key '" + from.get(sk) + "'");
+            continue;
+          }
+          out.put(sk, v);
+          from.put(sk, k);
+        }
+        ctx.json = out;
+        if (!msgs.isEmpty()) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          if (!(ctx.error.message instanceof List)) {
+            ctx.error.message = new ArrayList([ctx.error.message]);
+          }
+          ctx.error.message.addAll(msgs);
+        }
+  - date:
+      tag: date_json_log_timestamp_to_timestamp
+      field: json.log_timestamp
+      target_field: '@timestamp'
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+      if: ctx.json.log_timestamp != null
+      on_failure:
+        - append:
+            tag: append_error_message_date_json_log_timestamp_to_timestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_customer_to_organization_name
+      field: json.customer
+      target_field: organization.name
+      ignore_missing: true
+  - set:
+      tag: set_host_id_from_json_resource_id
+      field: host.id
+      copy_from: json.resource_id
+      if: ctx.json.resource_id != null
+  - set:
+      tag: set_host_name_from_json_resource_name
+      field: host.name
+      copy_from: json.resource_name
+      if: ctx.json.resource_name != null
+  - date:
+      tag: date_json_connection_start_time_to_event_start
+      field: json.connection_start_time
+      target_field: event.start
+      formats:
+        - ISO8601
+      if: ctx.json.connection_start_time != null
+      on_failure:
+        - append:
+            tag: append_error_message_date_json_connection_start_time_to_event_start
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_source_ip_to_source_ip
+      field: json.source_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_convert_json_source_ip_to_source_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_json_destination_ip_to_destination_ip
+      field: json.destination_ip
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_convert_json_destination_ip_to_destination_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_source_port_from_json_source_ports
+      field: source.port
+      copy_from: json.source_ports.0
+      description: Only when the aggregated source port list holds exactly one port.
+      if: ctx.json.source_ports?.size() == 1
+  - rename:
+      tag: rename_json_destination_port_to_destination_port
+      field: json.destination_port
+      target_field: destination.port
+      ignore_missing: true
+  - convert:
+      tag: convert_json_protocol_to_network_iana_number
+      field: json.protocol
+      target_field: network.iana_number
+      type: string
+      ignore_missing: true
+  - script:
+      tag: script_set_network_transport
+      description: Sets network.transport from the IANA protocol number, using the same table as user_activity.
+      lang: painless
+      if: ctx.network?.iana_number != null
+      params:
+        iana_numbers:
+          "1": icmp
+          "2": igmp
+          "6": tcp
+          "17": udp
+          "41": ip6in4
+          "47": gre
+          "50": esp
+          "58": icmp6
+          "88": eigrp
+          "97": etherip
+          "103": pim
+          "112": vrrp
+          "132": sctp
+      source: |-
+        def transport = params.iana_numbers[ctx.network.iana_number];
+        if (transport != null) {
+          ctx.network.transport = transport;
+        }
+  - script:
+      tag: script_process_arrays
+      description: >-
+        Moves the application name and path arrays to process.name and process.executable,
+        keeping them index-aligned. Arrays with no non-empty values are dropped.
+      lang: painless
+      params:
+        targets:
+          app_name: name
+          app_executable_path: executable
+      source: |-
+        for (def e : params.targets.entrySet()) {
+          def v = ctx.json.remove(e.getKey());
+          if (v == null) {
+            continue;
+          }
+          List out = new ArrayList();
+          boolean hasValue = false;
+          for (def x : v) {
+            String s = x?.toString();
+            out.add(s);
+            if (s != null && !s.trim().isEmpty()) {
+              hasValue = true;
+            }
+          }
+          if (!hasValue) {
+            continue;
+          }
+          if (ctx.process == null) {
+            ctx.process = new HashMap();
+          }
+          ctx.process[e.getValue()] = out;
+        }
+  - set:
+      tag: set_network_direction_ingress
+      field: network.direction
+      value: ingress
+      if: ctx.json.direction == 'INBOUND'
+  - set:
+      tag: set_network_direction_egress
+      field: network.direction
+      value: egress
+      if: ctx.json.direction == 'OUTBOUND'
+  - set:
+      tag: set_network_direction_unknown
+      field: network.direction
+      value: unknown
+      if: ctx.json.direction == 'UNKNOWN'
+  - remove:
+      tag: remove_json_direction
+      field: json.direction
+      description: Unrecognised values are kept under zscaler_zpa.microsegmentation_flow.
+      if: ctx.network?.direction != null
+  - rename:
+      tag: rename_json_policy_id_to_rule_id
+      field: json.policy_id
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_policy_name_to_rule_name
+      field: json.policy_name
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_enforcement_reason_to_event_reason
+      field: json.enforcement_reason
+      target_field: event.reason
+      ignore_missing: true
+  - script:
+      tag: script_categorize_enforcement
+      description: >-
+        Sets event.kind, event.category and event.type, and derives allowed/denied, event.action
+        and event.outcome from the enforcement fields. SIMBLOCK (simulated block) is allowed.
+      lang: painless
+      params:
+        type:
+          ALLOW: allowed
+          SIMBLOCK: allowed
+          BLOCK: denied
+        outcome:
+          CONNECTED: success
+          REJECTED: failure
+          DROPPED: failure
+          UNKNOWN: unknown
+      source: |-
+        ctx.event.kind = 'event';
+        ctx.event.category = ['network'];
+        List types = new ArrayList();
+        types.add('connection');
+        Map flow = ctx.json;
+        def action = flow.enforcement_action;
+        if (action != null) {
+          String a = action.toString().trim();
+          def t = params.type.get(a.toUpperCase());
+          if (t != null) {
+            types.add(t);
+          }
+          ctx.event.action = a.toLowerCase();
+        }
+        def disposition = flow.enforcement_disposition;
+        if (disposition != null) {
+          def o = params.outcome.get(disposition.toString().trim().toUpperCase());
+          if (o != null) {
+            ctx.event.outcome = o;
+          }
+        }
+        ctx.event.type = types;
+  - append:
+      tag: append_related_ip_source_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      tag: append_related_ip_destination_ip
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      tag: append_related_hosts_host_name
+      field: related.hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - remove:
+      tag: remove_json_fields_mapped_to_ecs
+      description: Removes the json keys whose values were written to ECS fields only, so they are not kept as vendored fields.
+      field:
+        - json.log_timestamp
+        - json.resource_id
+        - json.resource_name
+        - json.connection_start_time
+        - json.source_ip
+        - json.destination_ip
+        - json.protocol
+      ignore_missing: true
+  - rename:
+      tag: rename_json_to_zscaler_zpa_microsegmentation_flow
+      field: json
+      target_field: zscaler_zpa.microsegmentation_flow
+      description: Keeps the remaining keys, which all have snake_case names now.
+      if: ctx.json instanceof Map && !ctx.json.isEmpty()
+  - remove:
+      tag: remove_conf
+      field: _conf
+      ignore_missing: true
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_error_message_on_failure
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - remove:
+      tag: remove_json_and_conf_on_failure
+      description: Remove undefined fields to avoid dynamic mappings.
+      field:
+        - json
+        - _conf
+      ignore_missing: true
