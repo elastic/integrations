@@ -166,7 +166,20 @@ processors:
           Map bestNat = null;
           String bestNatKey = '';
           if (ctx.nat_snapshots instanceof Map && !((Map)ctx.nat_snapshots).isEmpty()) {
-            for (def keyObj : ((Map)ctx.nat_snapshots).keySet()) {
+            Map natMap = (Map)ctx.nat_snapshots;
+            List natKeys = new ArrayList();
+            if (natMap.get('buckets') instanceof List) {
+              for (def bObj : (List)natMap.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  natKeys.add(((Map)bObj).get('key').toString());
+                }
+              }
+            } else {
+              for (def kObj : natMap.keySet()) {
+                if (kObj != null) { natKeys.add(kObj.toString()); }
+              }
+            }
+            for (def keyObj : natKeys) {
               String recKey = keyObj.toString();
               List parts = new ArrayList();
               int pStart = 0;
@@ -233,13 +246,38 @@ processors:
               }
             }
             ctx.latest_snapshot = bestNat;
-          } else if (ctx.leg_intervals instanceof Map && !((Map)ctx.leg_intervals).isEmpty()) {
+          }
+          if (ctx.latest_snapshot == null && ctx.leg_intervals instanceof Map && !((Map)ctx.leg_intervals).isEmpty()) {
+            Map legMap = (Map)ctx.leg_intervals;
+            List ivList = new ArrayList();
+            if (legMap.get('buckets') instanceof List) {
+              for (def bObj : (List)legMap.get('buckets')) {
+                if (bObj instanceof Map) { ivList.add(bObj); }
+              }
+            } else {
+              for (def vObj : legMap.values()) {
+                if (vObj instanceof Map) { ivList.add(vObj); }
+              }
+            }
             List legWinners = new ArrayList();
-            for (def ivObj : ((Map)ctx.leg_intervals).values()) {
+            for (def ivObj : ivList) {
               if (!(ivObj instanceof Map) || !(((Map)ivObj).get('snaps') instanceof Map)) { continue; }
+              Map snapsMap = (Map)((Map)ivObj).get('snaps');
+              List snapKeys = new ArrayList();
+              if (snapsMap.get('buckets') instanceof List) {
+                for (def sbObj : (List)snapsMap.get('buckets')) {
+                  if (sbObj instanceof Map && ((Map)sbObj).get('key') != null) {
+                    snapKeys.add(((Map)sbObj).get('key').toString());
+                  }
+                }
+              } else {
+                for (def skObj : snapsMap.keySet()) {
+                  if (skObj != null) { snapKeys.add(skObj.toString()); }
+                }
+              }
               Map bestRec = null;
               String bestRecKey = '';
-              for (def keyObj : ((Map)((Map)ivObj).get('snaps')).keySet()) {
+              for (def keyObj : snapKeys) {
                 String recKey = keyObj.toString();
                 List parts = new ArrayList();
                 int pStart = 0;
@@ -357,7 +395,8 @@ processors:
               }
               ctx.latest_snapshot = legOut;
             }
-          } else if (ctx.v1_carryover instanceof Map && !((Map)ctx.v1_carryover).isEmpty()) {
+          }
+          if (ctx.latest_snapshot == null && ctx.v1_carryover instanceof Map && !((Map)ctx.v1_carryover).isEmpty()) {
             Map vc = (Map)ctx.v1_carryover;
             List vcKeys = new ArrayList();
             if (vc.get('buckets') instanceof List) {
@@ -565,6 +604,7 @@ processors:
 
         // Populate ESS Billing compatibility fields for opt-in compatibility aliases
         // (e.g. metrics-ess_billing.billing-chargeback).
+        ctx.doc_type = 'billing_line_item';
         ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.billing', 'namespace': 'default'];
         if (ctx.event == null) { ctx.event = [:]; }
         ctx.event.dataset = 'ess_billing.billing';

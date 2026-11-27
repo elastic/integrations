@@ -209,14 +209,21 @@ inputs:
             : { "evts": [], "credit_day": prev_credit_day }).as(cred_res,
             (conf_evts + cred_res.evts).as(meta_evts,
             max(
+            (now - duration(string(min(max(int(state.lookbehind), 0), 365) * 24) + "h")).format(
+            time_layout.DateOnly
+            ).parse_time(time_layout.DateOnly),
+            timestamp("2023-01-01T00:00:00Z")
+            ).as(lookbehind_from,
+            max(
             state.?cursor.initial_from.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
-            now - duration(string(min(max(int(state.lookbehind), 0), 365) * 24) + "h")
+            lookbehind_from
             ).format(
             time_layout.DateOnly
             ).parse_time(time_layout.DateOnly),
             timestamp("2023-01-01T00:00:00Z")
-            ).as(initial_from,
+            ).as(saved_initial_from,
             (!is_continuation && state.?cursor.last_to.hasValue() && !state.?cursor.backfill_complete.hasValue()).as(is_v1_cursor,
+            (is_v1_cursor ? min(saved_initial_from, lookbehind_from) : saved_initial_from).as(initial_from,
             (is_v1_cursor ? max(initial_from, (now - duration("8760h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly)) : max(
             state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
             initial_from
@@ -1045,7 +1052,7 @@ inputs:
             )
             )
             )
-            ))))))))))))))))))))))))))
+            ))))))))))))))))))))))))))))
             )
           publisher_pipeline.disable_host: true
           redact:

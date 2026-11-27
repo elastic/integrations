@@ -596,10 +596,23 @@ processors:
               ctx.deployment_sum_query_time = sumQry;
               ctx.deployment_sum_data_set_store_size = sumSto;
               if (natCnt > 0L && natMap.get('meta') instanceof Map) {
+                Map metaMap = (Map)natMap.get('meta');
+                List metaKeys = new ArrayList();
+                if (metaMap.get('buckets') instanceof List) {
+                  for (def mbObj : (List)metaMap.get('buckets')) {
+                    if (mbObj instanceof Map && ((Map)mbObj).get('key') != null) {
+                      metaKeys.add(((Map)mbObj).get('key').toString());
+                    }
+                  }
+                } else {
+                  for (def mkObj : metaMap.keySet()) {
+                    if (mkObj != null) { metaKeys.add(mkObj.toString()); }
+                  }
+                }
                 long bestSyncTs = -1L;
                 String bestKey = '';
                 List bestParts = null;
-                for (def keyObj : ((Map)natMap.get('meta')).keySet()) {
+                for (def keyObj : metaKeys) {
                   String recKey = keyObj.toString();
                   List parts = new ArrayList();
                   int pStart = 0;
@@ -648,7 +661,20 @@ processors:
               String bestKey = '';
               List bestParts = null;
               if (natMap.get('meta') instanceof Map) {
-                for (def keyObj : ((Map)natMap.get('meta')).keySet()) {
+                Map metaMap = (Map)natMap.get('meta');
+                List metaKeys = new ArrayList();
+                if (metaMap.get('buckets') instanceof List) {
+                  for (def mbObj : (List)metaMap.get('buckets')) {
+                    if (mbObj instanceof Map && ((Map)mbObj).get('key') != null) {
+                      metaKeys.add(((Map)mbObj).get('key').toString());
+                    }
+                  }
+                } else {
+                  for (def mkObj : metaMap.keySet()) {
+                    if (mkObj != null) { metaKeys.add(mkObj.toString()); }
+                  }
+                }
+                for (def keyObj : metaKeys) {
                   String recKey = keyObj.toString();
                   List parts = new ArrayList();
                   int pStart = 0;
@@ -755,7 +781,20 @@ processors:
               String bestKey = '';
               List bestParts = null;
               if (v1Map.get('meta') instanceof Map) {
-                for (def keyObj : ((Map)v1Map.get('meta')).keySet()) {
+                Map metaMap = (Map)v1Map.get('meta');
+                List metaKeys = new ArrayList();
+                if (metaMap.get('buckets') instanceof List) {
+                  for (def mbObj : (List)metaMap.get('buckets')) {
+                    if (mbObj instanceof Map && ((Map)mbObj).get('key') != null) {
+                      metaKeys.add(((Map)mbObj).get('key').toString());
+                    }
+                  }
+                } else {
+                  for (def mkObj : metaMap.keySet()) {
+                    if (mkObj != null) { metaKeys.add(mkObj.toString()); }
+                  }
+                }
+                for (def keyObj : metaKeys) {
                   String recKey = keyObj.toString();
                   List parts = new ArrayList();
                   int pStart = 0;

@@ -20,15 +20,37 @@ source:
   - '*:-serverless_billing_credits_lines*'
   query:
     bool:
-      must_not:
-      - terms:
-          doc_type:
-          - config_snapshot
-          - ai_model
-          - project_status
-          - synthetics_monitor
-      - term:
-          cb_excluded_index: true
+      minimum_should_match: 1
+      should:
+      - bool:
+          filter:
+          - term:
+              _index: serverless_datastream_contribution_lookup-1
+          must_not:
+          - wildcard:
+              datastream: '*chargeback_serverless.*'
+          - wildcard:
+              datastream: '*chargeback.*'
+          - wildcard:
+              datastream: 'serverless_*_lookup*'
+          - wildcard:
+              datastream: 'serverless_billing_credits_lines*'
+          - wildcard:
+              datastream: 'chargeback_lookup.*'
+          - wildcard:
+              datastream: 'monitoring-indices*'
+      - bool:
+          must_not:
+          - term:
+              _index: serverless_datastream_contribution_lookup-1
+          - terms:
+              doc_type:
+              - config_snapshot
+              - ai_model
+              - project_status
+              - synthetics_monitor
+          - term:
+              cb_excluded_index: true
   runtime_mappings:
     cb_sync_ts:
       type: date
