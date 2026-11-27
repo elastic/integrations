@@ -1,0 +1,302 @@
+---
+description: >-
+  Maps audit events of the Kubernetes API server (log source kubeAPI) and of
+  the OpenShift API and OAuth servers (log source openshiftAPI). The collector
+  merges the audit.k8s.io/v1 Event into the top level of the record.
+processors:
+  # Collect the audit event under kubernetes.audit, as the Kubernetes integration does.
+  - rename:
+      tag: rename_annotations
+      field: annotations
+      target_field: kubernetes.audit.annotations
+      ignore_missing: true
+  - rename:
+      tag: rename_api_version
+      field: apiVersion
+      target_field: kubernetes.audit.apiVersion
+      ignore_missing: true
+  - rename:
+      tag: rename_audit_id
+      field: auditID
+      target_field: kubernetes.audit.auditID
+      ignore_missing: true
+  - rename:
+      tag: rename_authentication_metadata
+      field: authenticationMetadata
+      target_field: kubernetes.audit.authenticationMetadata
+      ignore_missing: true
+  - rename:
+      tag: rename_impersonated_user
+      field: impersonatedUser
+      target_field: kubernetes.audit.impersonatedUser
+      ignore_missing: true
+  - rename:
+      tag: rename_kind
+      field: kind
+      target_field: kubernetes.audit.kind
+      ignore_missing: true
+  - rename:
+      tag: rename_object_ref
+      field: objectRef
+      target_field: kubernetes.audit.objectRef
+      ignore_missing: true
+  - rename:
+      tag: rename_request_object
+      field: requestObject
+      target_field: kubernetes.audit.requestObject
+      ignore_missing: true
+  - rename:
+      tag: rename_response_object
+      field: responseObject
+      target_field: kubernetes.audit.responseObject
+      ignore_missing: true
+  - rename:
+      tag: rename_request_received_timestamp
+      field: requestReceivedTimestamp
+      target_field: kubernetes.audit.requestReceivedTimestamp
+      ignore_missing: true
+  - rename:
+      tag: rename_response_status
+      field: responseStatus
+      target_field: kubernetes.audit.responseStatus
+      ignore_missing: true
+  - rename:
+      tag: rename_source_ips
+      field: sourceIPs
+      target_field: kubernetes.audit.sourceIPs
+      ignore_missing: true
+  - rename:
+      tag: rename_stage
+      field: stage
+      target_field: kubernetes.audit.stage
+      ignore_missing: true
+  - rename:
+      tag: rename_audit_user
+      field: user
+      target_field: kubernetes.audit.user
+      ignore_missing: true
+  - rename:
+      tag: rename_k8s_audit_level
+      field: k8s_audit_level
+      target_field: kubernetes.audit.level
+      ignore_missing: true
+  - rename:
+      tag: rename_openshift_audit_level
+      field: openshift_audit_level
+      target_field: kubernetes.audit.level
+      ignore_missing: true
+  - remove:
+      tag: remove_stage_timestamp
+      description: The collector already uses stageTimestamp as @timestamp.
+      field: stageTimestamp
+      ignore_missing: true
+  - remove:
+      tag: remove_object_metadata
+      description: Request and response object metadata duplicate objectRef and can be large.
+      field:
+        - kubernetes.audit.requestObject.metadata
+        - kubernetes.audit.responseObject.metadata
+      ignore_missing: true
+
+  # ECS mapping.
+  - rename:
+      tag: rename_verb_to_event_action
+      field: verb
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      tag: rename_request_uri_to_url_original
+      field: requestURI
+      target_field: url.original
+      ignore_missing: true
+  - rename:
+      tag: rename_user_agent
+      field: userAgent
+      target_field: user_agent.original
+      ignore_missing: true
+  - rename:
+      tag: rename_response_code
+      field: kubernetes.audit.responseStatus.code
+      target_field: http.response.status_code
+      ignore_missing: true
+  - date:
+      tag: date_request_received
+      field: kubernetes.audit.requestReceivedTimestamp
+      target_field: event.start
+      formats:
+        - ISO8601
+      if: ctx.kubernetes?.audit?.requestReceivedTimestamp != null
+  - remove:
+      tag: remove_request_received_timestamp
+      field: kubernetes.audit.requestReceivedTimestamp
+      ignore_missing: true
+  - rename:
+      tag: rename_user_name
+      field: kubernetes.audit.user.username
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      tag: rename_user_id
+      field: kubernetes.audit.user.uid
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      tag: rename_user_groups
+      field: kubernetes.audit.user.groups
+      target_field: user.group.name
+      ignore_missing: true
+  - rename:
+      tag: rename_impersonated_user_name
+      field: kubernetes.audit.impersonatedUser.username
+      target_field: user.effective.name
+      ignore_missing: true
+  - rename:
+      tag: rename_impersonated_user_id
+      field: kubernetes.audit.impersonatedUser.uid
+      target_field: user.effective.id
+      ignore_missing: true
+  - rename:
+      tag: rename_impersonated_user_groups
+      field: kubernetes.audit.impersonatedUser.groups
+      target_field: user.effective.group.name
+      ignore_missing: true
+  - remove:
+      tag: remove_empty_impersonated_user
+      field: kubernetes.audit.impersonatedUser
+      if: ctx.kubernetes?.audit?.impersonatedUser instanceof Map && ctx.kubernetes.audit.impersonatedUser.isEmpty()
+  - remove:
+      tag: remove_empty_audit_user
+      field: kubernetes.audit.user
+      if: ctx.kubernetes?.audit?.user instanceof Map && ctx.kubernetes.audit.user.isEmpty()
+  - set:
+      tag: set_source_ip
+      description: The first entry of sourceIPs is the client; the others are proxies.
+      field: source.ip
+      copy_from: kubernetes.audit.sourceIPs.0
+      if: ctx.kubernetes?.audit?.sourceIPs instanceof List && ctx.kubernetes.audit.sourceIPs.size() > 0
+  - rename:
+      tag: rename_object_namespace
+      field: kubernetes.audit.objectRef.namespace
+      target_field: orchestrator.namespace
+      ignore_missing: true
+  - rename:
+      tag: rename_object_resource
+      field: kubernetes.audit.objectRef.resource
+      target_field: orchestrator.resource.type
+      ignore_missing: true
+  - rename:
+      tag: rename_object_name
+      field: kubernetes.audit.objectRef.name
+      target_field: orchestrator.resource.name
+      ignore_missing: true
+  - set:
+      tag: set_orchestrator_api_version_group
+      field: orchestrator.api_version
+      value: '{{{kubernetes.audit.objectRef.apiGroup}}}/{{{kubernetes.audit.objectRef.apiVersion}}}'
+      if: ctx.kubernetes?.audit?.objectRef?.apiGroup != null && ctx.kubernetes.audit.objectRef.apiGroup != '' && ctx.kubernetes.audit.objectRef.apiVersion != null
+  - set:
+      tag: set_orchestrator_api_version_core
+      field: orchestrator.api_version
+      copy_from: kubernetes.audit.objectRef.apiVersion
+      if: ctx.orchestrator?.api_version == null && ctx.kubernetes?.audit?.objectRef?.apiVersion != null
+  - script:
+      tag: script_annotations_and_outcome
+      description: >-
+        Replaces dots in annotation keys with underscores and derives
+        event.outcome from the authorization decision, as the Kubernetes
+        integration does.
+      lang: painless
+      if: ctx.kubernetes?.audit?.annotations instanceof Map
+      source: |
+        Map annotations = ctx.kubernetes.audit.annotations;
+        Map dedotted = new HashMap();
+        for (def entry : annotations.entrySet()) {
+          dedotted.put(entry.getKey().replace('.', '_'), entry.getValue());
+        }
+        ctx.kubernetes.audit.annotations = dedotted;
+        def decision = annotations.get('authorization.k8s.io/decision');
+        if (decision == 'allow') {
+          ctx.event.outcome = 'success';
+        } else if (decision == 'forbid') {
+          ctx.event.outcome = 'failure';
+        }
+  - set:
+      tag: set_outcome_success_from_status
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null && ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
+  - set:
+      tag: set_outcome_failure_from_status
+      field: event.outcome
+      value: failure
+      if: ctx.event?.outcome == null && ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - append:
+      tag: append_event_category_api
+      field: event.category
+      value: api
+  - script:
+      tag: script_event_type_from_verb
+      description: Maps the Kubernetes API verb to event.type.
+      lang: painless
+      params:
+        get: access
+        head: access
+        list: access
+        watch: access
+        create: creation
+        update: change
+        patch: change
+        delete: deletion
+        deletecollection: deletion
+      source: |
+        def types = new ArrayList();
+        def verb = ctx.event.action;
+        if (verb != null && params.containsKey(verb)) {
+          types.add(params.get(verb));
+        } else {
+          types.add('info');
+        }
+        if (ctx.event.outcome == 'failure' && ctx.http != null && ctx.http.response != null && ctx.http.response.status_code == 403) {
+          types.add('denied');
+        }
+        ctx.event.type = types;
+  - append:
+      tag: append_related_user_name
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      tag: append_related_user_effective_name
+      field: related.user
+      value: '{{{user.effective.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.effective?.name != null
+  - foreach:
+      tag: foreach_source_ips
+      field: kubernetes.audit.sourceIPs
+      if: ctx.kubernetes?.audit?.sourceIPs instanceof List
+      processor:
+        append:
+          tag: append_related_ip_source_ips
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

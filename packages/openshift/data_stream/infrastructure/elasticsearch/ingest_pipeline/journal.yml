@@ -1,0 +1,133 @@
+---
+description: >-
+  Maps the journald fields of node logs, which the collector stores under
+  systemd.t (trusted fields) and systemd.u (user fields), to ECS and to the
+  field names of the journald integration.
+processors:
+  - rename:
+      tag: rename_systemd_unit
+      field: systemd.t.SYSTEMD_UNIT
+      target_field: systemd.unit
+      ignore_missing: true
+  - rename:
+      tag: rename_systemd_slice
+      field: systemd.t.SYSTEMD_SLICE
+      target_field: systemd.slice
+      ignore_missing: true
+  - rename:
+      tag: rename_systemd_cgroup
+      field: systemd.t.SYSTEMD_CGROUP
+      target_field: systemd.cgroup
+      ignore_missing: true
+  - rename:
+      tag: rename_systemd_invocation_id
+      field: systemd.t.SYSTEMD_INVOCATION_ID
+      target_field: systemd.invocation_id
+      ignore_missing: true
+  - rename:
+      tag: rename_systemd_transport
+      field: systemd.t.TRANSPORT
+      target_field: systemd.transport
+      ignore_missing: true
+  - convert:
+      tag: convert_process_pid
+      field: systemd.t.PID
+      target_field: process.pid
+      type: long
+      ignore_missing: true
+  - rename:
+      tag: rename_process_name
+      field: systemd.t.COMM
+      target_field: process.name
+      ignore_missing: true
+  - rename:
+      tag: rename_process_executable
+      field: systemd.t.EXE
+      target_field: process.executable
+      ignore_missing: true
+  - rename:
+      tag: rename_process_command_line
+      field: systemd.t.CMDLINE
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      tag: rename_user_id
+      field: systemd.t.UID
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      tag: rename_user_group_id
+      field: systemd.t.GID
+      target_field: user.group.id
+      ignore_missing: true
+  - rename:
+      tag: rename_host_id
+      field: systemd.t.MACHINE_ID
+      target_field: host.id
+      ignore_missing: true
+  - rename:
+      tag: rename_boot_id
+      field: systemd.t.BOOT_ID
+      target_field: journald.host.boot_id
+      ignore_missing: true
+  - rename:
+      tag: rename_capabilities
+      field: systemd.t.CAP_EFFECTIVE
+      target_field: journald.process.capabilities
+      ignore_missing: true
+  - rename:
+      tag: rename_syslog_identifier
+      field: systemd.u.SYSLOG_IDENTIFIER
+      target_field: log.syslog.appname
+      ignore_missing: true
+  - convert:
+      tag: convert_syslog_facility
+      field: systemd.u.SYSLOG_FACILITY
+      target_field: log.syslog.facility.code
+      type: long
+      ignore_missing: true
+  - remove:
+      tag: remove_converted_journal_fields
+      field:
+        - systemd.t.PID
+        - systemd.u.SYSLOG_FACILITY
+      ignore_missing: true
+  - rename:
+      tag: rename_remaining_trusted_fields
+      field: systemd.t
+      target_field: openshift.journal.trusted
+      ignore_missing: true
+  - rename:
+      tag: rename_remaining_user_fields
+      field: systemd.u
+      target_field: openshift.journal.user
+      ignore_missing: true
+  - set:
+      tag: set_kubernetes_node_name
+      field: kubernetes.node.name
+      copy_from: host.name
+      ignore_empty_value: true
+  - append:
+      tag: append_related_user
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

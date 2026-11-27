@@ -1,0 +1,23 @@
+- name: openshift
+  type: group
+  fields:
+    - name: cluster_id
+      type: keyword
+      description: ID of the OpenShift cluster that produced the record.
+    - name: sequence
+      type: long
+      description: Sequence number the collector assigns to each record, in nanoseconds since the epoch.
+    - name: log_type
+      type: keyword
+      description: Log type assigned by the collector (application, infrastructure, or audit).
+    - name: log_source
+      type: keyword
+      description: Log source assigned by the collector, for example container, node, kubeAPI, openshiftAPI, auditd, or ovn.
+    - name: labels.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Labels added to the record by the openshiftLabels filter of the ClusterLogForwarder.
+    - name: structured
+      type: flattened
+      description: Application log line parsed as JSON by the parse filter of the ClusterLogForwarder.

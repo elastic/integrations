@@ -1,0 +1,78 @@
+---
+description: >-
+  Routes audit logs forwarded by the OpenShift Logging collector to the
+  pipeline of their log source: API server audit events (kubeAPI,
+  openshiftAPI), Linux audit records (auditd), and OVN ACL logs (ovn).
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - remove:
+      tag: remove_api_server_level
+      description: >-
+        For API server audit events the collector overwrites `level` with the
+        audit level of the event, which is kept in k8s_audit_level or
+        openshift_audit_level. It is not a log level.
+      field: level
+      ignore_missing: true
+      if: ctx.log_source == 'kubeAPI' || ctx.log_source == 'openshiftAPI'
+  - pipeline:
+      tag: pipeline_common
+      name: '{{ IngestPipeline "common" }}'
+  - dot_expander:
+      tag: dot_expander_audit_linux
+      description: The collector adds the record type and ID as the literal key "audit.linux"; both are parsed again from the record.
+      field: audit.linux
+      if: ctx['audit.linux'] != null
+  - remove:
+      tag: remove_audit_linux
+      field: audit.linux
+      ignore_missing: true
+  - remove:
+      tag: remove_empty_audit
+      field: audit
+      if: ctx.audit instanceof Map && ctx.audit.isEmpty()
+  - pipeline:
+      tag: pipeline_api_server
+      name: '{{ IngestPipeline "pipeline-api_server" }}'
+      if: ctx.openshift?.log_source == 'kubeAPI' || ctx.openshift?.log_source == 'openshiftAPI'
+  - pipeline:
+      tag: pipeline_auditd
+      name: '{{ IngestPipeline "pipeline-auditd" }}'
+      if: ctx.openshift?.log_source == 'auditd'
+  - pipeline:
+      tag: pipeline_ovn
+      name: '{{ IngestPipeline "pipeline-ovn" }}'
+      if: ctx.openshift?.log_source == 'ovn'
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

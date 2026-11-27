@@ -1,0 +1,30 @@
+---
+description: >-
+  Entry pipeline for records that the OpenShift Logging collector writes to
+  logs-openshift-<namespace>. The routing rules of this data stream forward
+  each record unchanged to openshift.application, openshift.infrastructure, or
+  openshift.audit by its log_type, where the data stream pipelines map it to
+  ECS. Records with any other log type stay in this data stream.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

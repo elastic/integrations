@@ -1,0 +1,70 @@
+---
+description: >-
+  Normalizes the ViaQ envelope fields that the OpenShift Logging collector adds
+  to every record (host, log type and source, cluster ID, level).
+processors:
+  - rename:
+      tag: rename_hostname_to_host_name
+      field: hostname
+      target_field: host.name
+      ignore_missing: true
+  - rename:
+      tag: rename_log_type
+      field: log_type
+      target_field: openshift.log_type
+      ignore_missing: true
+  - rename:
+      tag: rename_log_source
+      field: log_source
+      target_field: openshift.log_source
+      ignore_missing: true
+  - set:
+      tag: set_orchestrator_type
+      field: orchestrator.type
+      value: kubernetes
+  - set:
+      tag: set_orchestrator_cluster_id
+      description: Keeps openshift.cluster_id as well, the ClusterLogForwarder documentation refers to it by this name.
+      field: orchestrator.cluster.id
+      copy_from: openshift.cluster_id
+      ignore_empty_value: true
+  - remove:
+      tag: remove_default_level
+      description: The collector sets the placeholder level "default" when a record has no level.
+      field: level
+      if: ctx.level == 'default'
+  - rename:
+      tag: rename_level_to_log_level
+      field: level
+      target_field: log.level
+      ignore_missing: true
+  - remove:
+      tag: remove_duplicate_timestamp_and_tag
+      description: >-
+        `timestamp` duplicates `@timestamp`; `tag` is a fixed collector routing tag.
+      field:
+        - timestamp
+        - tag
+      ignore_missing: true
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

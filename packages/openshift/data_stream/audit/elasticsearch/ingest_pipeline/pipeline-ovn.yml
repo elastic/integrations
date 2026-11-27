@@ -1,0 +1,229 @@
+---
+description: >-
+  Parses OVN-Kubernetes ACL audit log lines (log source ovn) written for
+  network policies, admin network policies, baseline admin network policies,
+  and egress firewalls.
+processors:
+  - grok:
+      tag: grok_ovn_acl_log
+      description: >-
+        Format: <timestamp>|<serial>|acl_log(<thread>)|<level>|name="<acl_name>",
+        verdict=<verdict>, severity=<severity>, direction=<direction>: <flow>.
+        Older OVN versions omit severity, direction, and the flow.
+      field: event.original
+      pattern_definitions:
+        ACL_NAME: '(?:"%{DATA:rule.name}"|%{DATA:rule.name})'
+      patterns:
+        - '^%{TIMESTAMP_ISO8601:_tmp.timestamp}\|%{INT:openshift.ovn.serial}\|acl_log\(%{DATA:openshift.ovn.thread}\)\|%{WORD:_tmp.vlog_level}\|name=%{ACL_NAME}, verdict=%{WORD:_tmp.verdict}(?:, severity=%{WORD:openshift.ovn.severity})?(?:, direction=%{NOTSPACE:_tmp.direction})?(?:: %{GREEDYDATA:_tmp.flow})?$'
+  - lowercase:
+      tag: lowercase_verdict
+      field: _tmp.verdict
+  - rename:
+      tag: rename_verdict_to_event_action
+      field: _tmp.verdict
+      target_field: event.action
+  - dissect:
+      tag: dissect_acl_name
+      description: >-
+        ACL names start with the kind of policy that created them, for example
+        "NP:<namespace>:<policy>:Ingress:0", "ANP:<policy>:Egress:1",
+        "BANP:default:Ingress:0", or "EF:<namespace>:0".
+      field: rule.name
+      pattern: '%{rule.ruleset}:%{_tmp.acl_rest}'
+      if: ctx.rule?.name instanceof String && ctx.rule.name =~ /^(NP|ANP|BANP|EF):/
+  - dissect:
+      tag: dissect_acl_namespace
+      description: Network policy and egress firewall ACL names carry the namespace.
+      field: _tmp.acl_rest
+      pattern: '%{orchestrator.namespace}:%{}'
+      if: (ctx.rule?.ruleset == 'NP' || ctx.rule?.ruleset == 'EF') && ctx._tmp?.acl_rest instanceof String && ctx._tmp.acl_rest.contains(':')
+  - set:
+      tag: set_network_direction_ingress
+      description: to-lport is traffic going to the pod's logical port.
+      field: network.direction
+      value: ingress
+      if: ctx._tmp?.direction == 'to-lport'
+  - set:
+      tag: set_network_direction_egress
+      description: from-lport is traffic leaving the pod's logical port.
+      field: network.direction
+      value: egress
+      if: ctx._tmp?.direction == 'from-lport'
+  - rename:
+      tag: rename_direction
+      field: _tmp.direction
+      target_field: openshift.ovn.direction
+      ignore_missing: true
+  - dissect:
+      tag: dissect_flow_protocol
+      description: The flow starts with the protocol, followed by comma separated key=value pairs.
+      field: _tmp.flow
+      pattern: '%{_tmp.protocol},%{_tmp.flow_kv}'
+      if: ctx._tmp?.flow instanceof String && ctx._tmp.flow.contains(',')
+  - kv:
+      tag: kv_flow
+      field: _tmp.flow_kv
+      field_split: ','
+      value_split: '='
+      target_field: _tmp.f
+      ignore_missing: true
+  - gsub:
+      tag: gsub_protocol_ipv6
+      description: OVN suffixes IPv6 protocols with 6, for example tcp6 or icmp6.
+      field: _tmp.protocol
+      pattern: '^(tcp|udp|sctp)6$'
+      replacement: '$1'
+      ignore_missing: true
+  - rename:
+      tag: rename_network_transport
+      field: _tmp.protocol
+      target_field: network.transport
+      ignore_missing: true
+  - rename:
+      tag: rename_source_ipv4
+      field: _tmp.f.nw_src
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_ipv4
+      field: _tmp.f.nw_dst
+      target_field: destination.ip
+      ignore_missing: true
+  - rename:
+      tag: rename_source_ipv6
+      field: _tmp.f.ipv6_src
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      tag: rename_destination_ipv6
+      field: _tmp.f.ipv6_dst
+      target_field: destination.ip
+      ignore_missing: true
+  - set:
+      tag: set_network_type_ipv4
+      field: network.type
+      value: ipv4
+      if: ctx.source?.ip instanceof String && ctx.source.ip.contains('.')
+  - set:
+      tag: set_network_type_ipv6
+      field: network.type
+      value: ipv6
+      if: ctx.source?.ip instanceof String && ctx.source.ip.contains(':')
+  - convert:
+      tag: convert_source_port
+      field: _tmp.f.tp_src
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_destination_port
+      field: _tmp.f.tp_dst
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - uppercase:
+      tag: uppercase_source_mac
+      field: _tmp.f.dl_src
+      target_field: source.mac
+      ignore_missing: true
+  - gsub:
+      tag: gsub_source_mac
+      field: source.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      tag: uppercase_destination_mac
+      field: _tmp.f.dl_dst
+      target_field: destination.mac
+      ignore_missing: true
+  - gsub:
+      tag: gsub_destination_mac
+      field: destination.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - rename:
+      tag: rename_icmp_type
+      field: _tmp.f.icmp_type
+      target_field: openshift.ovn.icmp_type
+      ignore_missing: true
+  - rename:
+      tag: rename_icmp_code
+      field: _tmp.f.icmp_code
+      target_field: openshift.ovn.icmp_code
+      ignore_missing: true
+  - rename:
+      tag: rename_icmpv6_type
+      field: _tmp.f.icmpv6_type
+      target_field: openshift.ovn.icmp_type
+      ignore_missing: true
+  - rename:
+      tag: rename_icmpv6_code
+      field: _tmp.f.icmpv6_code
+      target_field: openshift.ovn.icmp_code
+      ignore_missing: true
+  - rename:
+      tag: rename_tcp_flags
+      field: _tmp.f.tcp_flags
+      target_field: openshift.ovn.tcp_flags
+      ignore_missing: true
+  - convert:
+      tag: convert_ttl
+      field: _tmp.f.nw_ttl
+      target_field: openshift.ovn.ttl
+      type: long
+      ignore_missing: true
+  - rename:
+      tag: rename_vlan_tci
+      field: _tmp.f.vlan_tci
+      target_field: openshift.ovn.vlan_tci
+      ignore_missing: true
+  - set:
+      tag: set_event_category_network
+      field: event.category
+      value: [network]
+  - set:
+      tag: set_event_type_allowed
+      field: event.type
+      value: [connection, allowed]
+      if: ctx.event?.action == 'allow' || ctx.event?.action == 'pass'
+  - set:
+      tag: set_event_type_denied
+      field: event.type
+      value: [connection, denied]
+      if: ctx.event?.action == 'drop' || ctx.event?.action == 'reject'
+  - append:
+      tag: append_related_source_ip
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      tag: append_related_destination_ip
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - remove:
+      tag: remove_tmp
+      field: _tmp
+      ignore_missing: true
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,143 @@
+- name: openshift
+  type: group
+  fields:
+    - name: cluster_id
+      type: keyword
+      description: ID of the OpenShift cluster that produced the record.
+    - name: sequence
+      type: long
+      description: Sequence number the collector assigns to each record, in nanoseconds since the epoch.
+    - name: log_type
+      type: keyword
+      description: Log type assigned by the collector (always audit in this data stream).
+    - name: log_source
+      type: keyword
+      description: Audit log source assigned by the collector (kubeAPI, openshiftAPI, auditd, or ovn).
+    - name: labels.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Labels added to the record by the openshiftLabels filter of the ClusterLogForwarder.
+    - name: ovn
+      type: group
+      description: Fields of OVN-Kubernetes ACL audit log records.
+      fields:
+        - name: serial
+          type: keyword
+          description: Serial number of the log message.
+        - name: thread
+          type: keyword
+          description: OVN thread that wrote the message, for example ovn_pinctrl0.
+        - name: severity
+          type: keyword
+          description: Severity configured for the ACL logging (alert, warning, notice, info, or debug).
+        - name: direction
+          type: keyword
+          description: Direction of the ACL, to-lport (traffic to the pod) or from-lport (traffic from the pod).
+        - name: icmp_type
+          type: keyword
+          description: ICMP type of the packet.
+        - name: icmp_code
+          type: keyword
+          description: ICMP code of the packet.
+        - name: tcp_flags
+          type: keyword
+          description: TCP flags of the packet, for example syn or fin|ack.
+        - name: ttl
+          type: long
+          description: IP time to live of the packet.
+        - name: vlan_tci
+          type: keyword
+          description: VLAN tag control information of the packet.
+- name: auditd
+  type: group
+  fields:
+    - name: log
+      type: flattened
+      description: >-
+        Fields of the Linux audit record that have no ECS equivalent, as key-value pairs, for example record_type, auid, ses, syscall, key, or the resolved names of the ENRICHED log format (AUID, UID, ...).
+- name: kubernetes
+  type: group
+  fields:
+    - name: audit
+      type: group
+      description: Kubernetes, OpenShift API, and OAuth server audit event.
+      fields:
+        - name: apiVersion
+          type: keyword
+          description: Audit event API version.
+        - name: kind
+          type: keyword
+          description: Kind of the audit event object.
+        - name: level
+          type: keyword
+          description: Audit level at which the event was generated (None, Metadata, Request, or RequestResponse).
+        - name: auditID
+          type: keyword
+          description: Unique audit ID, generated for each request.
+        - name: stage
+          type: keyword
+          description: Stage of the request handling when this event instance was generated.
+        - name: annotations
+          type: flattened
+          description: Annotations of the audit event. Dots in the keys are replaced with underscores.
+        - name: authenticationMetadata
+          type: flattened
+          description: Authentication metadata of the request, for example the impersonation constraint.
+        - name: user
+          type: group
+          fields:
+            - name: extra
+              type: flattened
+              description: Any additional information provided by the authenticator.
+        - name: impersonatedUser
+          type: group
+          fields:
+            - name: extra
+              type: flattened
+              description: Any additional information provided by the authenticator.
+        - name: sourceIPs
+          type: ip
+          description: Source IPs, from where the request originated and intermediate proxies.
+        - name: objectRef
+          type: group
+          fields:
+            - name: uid
+              type: keyword
+              description: UID of the object.
+            - name: apiGroup
+              type: keyword
+              description: API group of the object. Empty for the core group.
+            - name: apiVersion
+              type: keyword
+              description: API version of the object.
+            - name: resourceVersion
+              type: keyword
+              description: Resource version of the object.
+            - name: subresource
+              type: keyword
+              description: Subresource of the request, for example exec or scale.
+        - name: responseStatus
+          type: group
+          fields:
+            - name: status
+              type: keyword
+              description: Status of the operation, Success or Failure.
+            - name: message
+              type: text
+              description: Human-readable description of the status of the operation.
+            - name: reason
+              type: keyword
+              description: Machine-readable reason for a Failure status.
+            - name: details
+              type: flattened
+              description: Extended data associated with the reason.
+            - name: metadata
+              type: flattened
+              description: Standard list metadata of the response status.
+        - name: requestObject
+          type: flattened
+          description: API object from the request, logged at the Request and RequestResponse levels.
+        - name: responseObject
+          type: flattened
+          description: API object returned in the response, logged at the RequestResponse level.

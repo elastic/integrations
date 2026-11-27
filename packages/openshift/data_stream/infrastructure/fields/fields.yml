@@ -1,0 +1,56 @@
+- name: openshift
+  type: group
+  fields:
+    - name: cluster_id
+      type: keyword
+      description: ID of the OpenShift cluster that produced the record.
+    - name: sequence
+      type: long
+      description: Sequence number the collector assigns to each record, in nanoseconds since the epoch.
+    - name: log_type
+      type: keyword
+      description: Log type assigned by the collector (application, infrastructure, or audit).
+    - name: log_source
+      type: keyword
+      description: Log source assigned by the collector, for example container, node, kubeAPI, openshiftAPI, auditd, or ovn.
+    - name: labels.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Labels added to the record by the openshiftLabels filter of the ClusterLogForwarder.
+    - name: structured
+      type: flattened
+      description: Container log line parsed as JSON by the parse filter of the ClusterLogForwarder.
+    - name: journal.trusted
+      type: flattened
+      description: Remaining trusted journald fields of a node log record (journald fields that start with an underscore), without the leading underscore.
+    - name: journal.user
+      type: flattened
+      description: Remaining user journald fields of a node log record, for example CODE_FILE, MESSAGE_ID, or UNIT.
+- name: journald
+  type: group
+  fields:
+    - name: host.boot_id
+      type: keyword
+      description: The kernel boot ID for the boot the message was generated in.
+    - name: process.capabilities
+      type: keyword
+      description: The effective capabilities of the process that logged the message.
+- name: systemd
+  type: group
+  fields:
+    - name: unit
+      type: keyword
+      description: The systemd unit of the process that logged the message.
+    - name: slice
+      type: keyword
+      description: The systemd slice of the process that logged the message.
+    - name: cgroup
+      type: keyword
+      description: The control group path in the systemd hierarchy.
+    - name: invocation_id
+      type: keyword
+      description: The invocation ID of the systemd unit run.
+    - name: transport
+      type: keyword
+      description: How the entry was received by the journal service, for example stdout, syslog, or journal.

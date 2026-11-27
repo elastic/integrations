@@ -1,0 +1,39 @@
+---
+description: >-
+  Pipeline for infrastructure logs forwarded by the OpenShift Logging collector:
+  container logs from the default, kube-*, and openshift-* namespaces, and
+  journald logs of the nodes.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '9.3.0'
+  - pipeline:
+      tag: pipeline_common
+      name: '{{ IngestPipeline "common" }}'
+  - pipeline:
+      tag: pipeline_container
+      name: '{{ IngestPipeline "container" }}'
+      if: ctx.openshift?.log_source == 'container'
+  - pipeline:
+      tag: pipeline_journal
+      name: '{{ IngestPipeline "journal" }}'
+      if: ctx.openshift?.log_source == 'node'
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
