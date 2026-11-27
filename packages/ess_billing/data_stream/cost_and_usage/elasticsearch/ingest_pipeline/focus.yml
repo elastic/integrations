@@ -1,0 +1,404 @@
+---
+# FOCUS 1.4 Cost and Usage columns for every billing line item (ess_billing 2.0.0).
+#
+# Called at the end of default.yml, after the existing processors (timestamp, _id fingerprint,
+# cloud.* fields from the SKU). Each billing line item becomes one FOCUS row: one day, one
+# billing SKU, one deployment or project. Monthly figures are an ES|QL STATS over these rows.
+#
+# Reads ess.billing.* as returned by the billing API, plus three settings that the agent
+# stamps on every event (see agent/stream/cel.yml.hbs):
+#   ess.billing.purchase_channel      direct | gcp_marketplace | aws_marketplace | azure_marketplace
+#   ess.billing.contracted_ecu_rate   price of one ECU in the contract, in USD (text, default 1.0)
+#   ess.billing.billing_account_name  display name of the organization (optional)
+# Writes the FOCUS columns at the top level with their FOCUS names, then removes ess.billing.
+# Columns that are not part of FOCUS start with x_ (FOCUS custom column rule).
+description: FOCUS 1.4 Cost and Usage columns for Elastic Cloud billing line items
+processors:
+  # Elastic Agent's add_fields processor can deliver the stamped settings as a top-level key with dots,
+  # "ess.billing": {...}, next to the "ess": {"billing": {...}} object from the CEL program. Merge them,
+  # so that the settings are read and the key is removed with the other source fields.
+  - script:
+      tag: merge_stamped_settings
+      lang: painless
+      if: ctx.containsKey('ess.billing')
+      source: |-
+        def stamped = ctx.remove('ess.billing');
+        if (stamped instanceof Map) {
+          if (!(ctx.ess instanceof Map)) {
+            ctx.ess = new HashMap();
+          }
+          if (!(ctx.ess.billing instanceof Map)) {
+            ctx.ess.billing = new HashMap();
+          }
+          for (def e : stamped.entrySet()) {
+            ctx.ess.billing.putIfAbsent(e.getKey(), e.getValue());
+          }
+        }
+  - script:
+      tag: focus_columns
+      lang: painless
+      description: Derive the FOCUS columns from the billing line item
+      params:
+        focus_version: "1.4"
+        service_provider_name: Elastic
+        billing_currency: USD
+        pricing_currency: ECU
+        # List price of one ECU in the billing currency (nominal value)
+        list_ecu_price: 1.0
+        region_for_global_skus: global
+        # Who invoices the customer, by purchase channel. For a marketplace purchase the
+        # marketplace invoices: BilledCost is 0 here so that the charge is not counted twice
+        # next to the cloud provider's own FOCUS data.
+        invoice_issuer_by_channel:
+          direct: Elastic
+          gcp_marketplace: Google Cloud
+          aws_marketplace: Amazon Web Services
+          azure_marketplace: Microsoft
+        host_provider_by_cloud:
+          aws: Amazon Web Services
+          azure: Microsoft Azure
+          gcp: Google Cloud
+        # Ordered rules, first match wins. A rule matches when all of its conditions match:
+        # type_prefix (ess.billing.type), kind (ess.billing.kind), sku_contains (ess.billing.sku)
+        # and deployment_type (ess.billing.deployment_type). category and subcategory are
+        # FOCUS 1.4 allowed values.
+        service_taxonomy:
+          - match: { sku_contains: inference }
+            service_name: Elastic Inference Service
+            category: AI and Machine Learning
+            subcategory: Natural Language Processing
+          - match: { type_prefix: data }
+            service_name: Elastic Cloud Data Transfer
+            category: Networking
+            subcategory: Network Connectivity
+          - match: { type_prefix: storage }
+            service_name: Elastic Cloud Snapshot Storage
+            category: Storage
+            subcategory: Backup Storage
+          - match: { type_prefix: synthetics }
+            service_name: Elastic Synthetics
+            category: Management and Governance
+            subcategory: Observability
+          - match: { sku_contains: .es.ml. }
+            service_name: Elasticsearch Machine Learning
+            category: AI and Machine Learning
+            subcategory: Machine Learning
+          - match: { kind: elasticsearch }
+            service_name: Elasticsearch
+            category: Analytics
+            subcategory: Search
+          - match: { kind: enterprise_search }
+            service_name: Enterprise Search
+            category: Analytics
+            subcategory: Search
+          - match: { kind: kibana }
+            service_name: Kibana
+            category: Analytics
+            subcategory: Business Intelligence
+          - match: { kind: apm }
+            service_name: Elastic APM
+            category: Management and Governance
+            subcategory: Observability
+          - match: { kind: integrations_server }
+            service_name: Integrations Server
+            category: Management and Governance
+            subcategory: Observability
+          - match: { deployment_type: observability }
+            service_name: Elastic Observability
+            category: Management and Governance
+            subcategory: Observability
+          - match: { deployment_type: security }
+            service_name: Elastic Security
+            category: Security
+            subcategory: Threat Detection and Response
+          - match: { deployment_type: elasticsearch }
+            service_name: Elasticsearch
+            category: Analytics
+            subcategory: Search
+        service_default:
+          service_name: Elastic Cloud
+          category: Other
+          subcategory: Other (Other)
+      source: |-
+        String str(def v) {
+          return v == null ? null : v.toString();
+        }
+        boolean isInt(String s) {
+          if (s == null || s.length() == 0 || s.length() > 9) {
+            return false;
+          }
+          for (int i = 0; i < s.length(); i++) {
+            if (!Character.isDigit(s.charAt(i))) {
+              return false;
+            }
+          }
+          return true;
+        }
+        String jsonString(String s) {
+          StringBuilder sb = new StringBuilder('"');
+          for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == (char) '"' || c == (char) '\\') {
+              sb.append('\\');
+              sb.append(c);
+            } else if (c < 32) {
+              sb.append('\\u00');
+              sb.append('0123456789abcdef'.charAt(((int) c) / 16));
+              sb.append('0123456789abcdef'.charAt(((int) c) % 16));
+            } else {
+              sb.append(c);
+            }
+          }
+          return sb.append('"').toString();
+        }
+
+        def b = ctx.ess?.billing;
+        if (b == null || b.sku == null || b.from == null) {
+          return;
+        }
+        String sku = str(b.sku);
+        String type = str(b.type);
+        String kind = str(b.kind);
+        String deploymentType = str(b.deployment_type);
+        String cloud = str(ctx.cloud?.provider);
+        String region = str(ctx.cloud?.region);
+
+        /* Customer settings stamped by the agent. Missing or unknown values: direct, list price. */
+        String channel = str(b.purchase_channel);
+        if (channel == null || !params.invoice_issuer_by_channel.containsKey(channel)) {
+          channel = 'direct';
+        }
+        double ecuRate = params.list_ecu_price;
+        String rateText = str(b.contracted_ecu_rate);
+        if (rateText != null) {
+          try {
+            double r = Double.parseDouble(rateText.trim());
+            if (r > 0 && r <= 10) {
+              ecuRate = r;
+            }
+          } catch (NumberFormatException e) {
+            /* keep the list price */
+          }
+        }
+        String orgId = str(b.organization_id);
+        String accountName = str(b.billing_account_name);
+        ctx.BillingAccountId = orgId;
+        ctx.BillingAccountName = (accountName != null && accountName.length() > 0) ? accountName : orgId;
+        ctx.InvoiceIssuerName = params.invoice_issuer_by_channel.get(channel);
+        ctx.x_PurchaseChannel = channel;
+        ctx.x_ContractedEcuRate = ecuRate;
+
+        /* Billing SKU = [Cloud-<Tier>_]<pricing-table SKU>[_<region>_<RAM MB>_<zones>] */
+        String rest = sku;
+        String tier = null;
+        def ramMb = null;
+        def zones = null;
+        if (rest.startsWith('Cloud-')) {
+          int u = rest.indexOf('_');
+          if (u > 6) {
+            tier = rest.substring(6, u);
+            rest = rest.substring(u + 1);
+          }
+        }
+        String base = rest;
+        String[] parts = rest.splitOnToken('_');
+        int n = parts.length;
+        if (n >= 4 && isInt(parts[n - 1]) && isInt(parts[n - 2]) && ('capacity'.equals(type) || parts[n - 3].contains('-'))) {
+          zones = Long.parseLong(parts[n - 1]);
+          ramMb = Long.parseLong(parts[n - 2]);
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < n - 3; i++) {
+            if (i > 0) {
+              sb.append('_');
+            }
+            sb.append(parts[i]);
+          }
+          base = sb.toString();
+        } else if ('serverless'.equals(cloud) && region != null && rest.endsWith('_' + region)) {
+          /* Serverless SKU = <product>.<service>_<region>: the region is in RegionId */
+          base = rest.substring(0, rest.length() - region.length() - 1);
+        }
+        if (ramMb == null && b.ram_per_zone != null) {
+          ramMb = ((Number) b.ram_per_zone).longValue();
+        }
+        if (zones == null && b.zone_count != null) {
+          zones = ((Number) b.zone_count).longValue();
+        }
+        ctx.SkuPriceId = sku;
+        ctx.SkuId = base;
+        ctx.SkuMeter = type;
+        Map details = new TreeMap();
+        if (ramMb != null && ramMb > 0) {
+          details.put('InstanceType', base);
+          details.put('MemorySize', Math.round(ramMb / 1024.0 * 100.0) / 100.0);
+        }
+        if (zones != null && zones > 0) {
+          details.put('x_ZoneCount', zones);
+        }
+        if (tier != null) {
+          details.put('x_SubscriptionLevel', tier);
+        }
+        if (!details.isEmpty()) {
+          ctx.SkuPriceDetails = details;
+        }
+
+        /* Quantities, unit prices and costs */
+        double ecu = b.total_ecu == null ? 0.0 : ((Number) b.total_ecu).doubleValue();
+        if (b.quantity?.value != null) {
+          double q = ((Number) b.quantity.value).doubleValue();
+          ctx.ConsumedQuantity = q;
+          ctx.PricingQuantity = q;
+        }
+        if (b.unit != null) {
+          ctx.ConsumedUnit = str(b.unit);
+          ctx.PricingUnit = str(b.unit);
+        }
+        if (b.rate?.value != null) {
+          double price = ((Number) b.rate.value).doubleValue();
+          ctx.PricingCurrencyListUnitPrice = price;
+          ctx.PricingCurrencyContractedUnitPrice = price;
+          ctx.ListUnitPrice = price * params.list_ecu_price;
+          ctx.ContractedUnitPrice = price * ecuRate;
+          ctx.x_ZeroRated = price == 0.0;
+        }
+        double contracted = ecu * ecuRate;
+        ctx.PricingCurrencyEffectiveCost = ecu;
+        ctx.ListCost = ecu * params.list_ecu_price;
+        ctx.ContractedCost = contracted;
+        ctx.EffectiveCost = contracted;
+        ctx.BilledCost = 'direct'.equals(channel) ? contracted : 0.0;
+
+        /* Region and host provider */
+        if (region == null && ('global'.equals(cloud) || base.startsWith('global.'))) {
+          region = params.region_for_global_skus;
+        }
+        if (region != null) {
+          ctx.RegionId = region;
+          ctx.RegionName = region;
+        }
+        String host = null;
+        if (cloud != null) {
+          host = params.host_provider_by_cloud.get(cloud.toLowerCase());
+          if (host == null && region != null && region.indexOf('-') > 0) {
+            host = params.host_provider_by_cloud.get(region.substring(0, region.indexOf('-')).toLowerCase());
+          }
+        }
+        ctx.HostProviderName = host != null ? host : params.service_provider_name;
+
+        /* Service taxonomy */
+        def rule = null;
+        for (def r : params.service_taxonomy) {
+          def m = r.get('match');
+          boolean ok = true;
+          if (m.containsKey('type_prefix')) {
+            ok = ok && type != null && type.startsWith(m.get('type_prefix').toString());
+          }
+          if (m.containsKey('kind')) {
+            ok = ok && kind != null && kind.equals(m.get('kind').toString());
+          }
+          if (m.containsKey('sku_contains')) {
+            ok = ok && sku.contains(m.get('sku_contains').toString());
+          }
+          if (m.containsKey('deployment_type')) {
+            ok = ok && deploymentType != null && deploymentType.equals(m.get('deployment_type').toString());
+          }
+          if (ok) {
+            rule = r;
+            break;
+          }
+        }
+        if (rule == null) {
+          rule = params.service_default;
+        }
+        ctx.ServiceName = rule.get('service_name');
+        ctx.ServiceCategory = rule.get('category');
+        ctx.ServiceSubcategory = rule.get('subcategory');
+        ctx.ServiceProviderName = params.service_provider_name;
+        String name = str(b.name);
+        ctx.ChargeDescription = name != null ? name : (type != null ? type : base);
+
+        /* Resource: the deployment or Serverless project. The billing API can return an empty name. */
+        if (b.deployment_id != null) {
+          ctx.ResourceId = str(b.deployment_id);
+        }
+        String resourceName = str(b.deployment_name);
+        if (resourceName != null && resourceName.length() > 0) {
+          ctx.ResourceName = resourceName;
+        }
+        if (deploymentType != null) {
+          ctx.ResourceType = deploymentType;
+        }
+        if (b.cloud?.service?.type != null) {
+          ctx.x_ServerlessServiceType = str(b.cloud.service.type);
+        }
+
+        /* Tags: "key:value" terms become one JSON object with sorted keys (FOCUS key-value format).
+           x_DeploymentTags keeps the original terms for filtering and for the Chargeback integration. */
+        if (b.deployment_tags instanceof List && b.deployment_tags.size() > 0) {
+          TreeMap tags = new TreeMap();
+          List raw = new ArrayList();
+          for (def t : b.deployment_tags) {
+            String kv = str(t);
+            if (kv == null || kv.length() == 0) {
+              continue;
+            }
+            raw.add(kv);
+            int c = kv.indexOf(':');
+            if (c > 0) {
+              tags.put(kv.substring(0, c), jsonString(kv.substring(c + 1)));
+            } else if (c < 0) {
+              tags.put(kv, 'true');
+            }
+          }
+          if (!raw.isEmpty()) {
+            ctx.x_DeploymentTags = raw;
+          }
+          if (!tags.isEmpty()) {
+            StringBuilder json = new StringBuilder('{');
+            boolean first = true;
+            for (def e : tags.entrySet()) {
+              if (!first) {
+                json.append(',');
+              }
+              first = false;
+              json.append(jsonString(e.getKey().toString())).append(':').append(e.getValue().toString());
+            }
+            ctx.Tags = json.append('}').toString();
+          }
+        }
+
+        /* Charge period = the day of the line item. Billing period = its calendar month, UTC. End dates are exclusive. */
+        ZonedDateTime from = ZonedDateTime.parse(str(b.from));
+        ZonedDateTime monthStart = ZonedDateTime.of(from.getYear(), from.getMonthValue(), 1, 0, 0, 0, 0, ZoneId.of('Z'));
+        ctx.ChargePeriodStart = str(b.from);
+        ctx.ChargePeriodEnd = b.to != null ? str(b.to) : from.plusDays(1).toInstant().toString();
+        ctx.BillingPeriodStart = monthStart.toInstant().toString();
+        ctx.BillingPeriodEnd = monthStart.plusMonths(1).toInstant().toString();
+
+        /* Constants */
+        ctx.BillingCurrency = params.billing_currency;
+        ctx.PricingCurrency = params.pricing_currency;
+        ctx.ChargeCategory = 'Usage';
+        ctx.ChargeFrequency = 'Usage-Based';
+        ctx.PricingCategory = 'Standard';
+        ctx.x_FocusVersion = params.focus_version;
+  # The FOCUS columns replace the source fields: no duplicated data.
+  - script:
+      tag: remove_source_fields
+      lang: painless
+      if: ctx.BillingAccountId != null && ctx.ess instanceof Map
+      source: |-
+        ctx.ess.remove('billing');
+        if (ctx.ess.isEmpty()) {
+          ctx.remove('ess');
+        }
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

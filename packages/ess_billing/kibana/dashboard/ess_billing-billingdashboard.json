@@ -35,7 +35,7 @@
                         "dataViewId": "metrics-*",
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "ess.billing.deployment_type",
+                        "fieldName": "ResourceType",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -53,7 +53,7 @@
                         "dataViewId": "metrics-*",
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "ess.billing.deployment_name",
+                        "fieldName": "ResourceName",
                         "searchTechnique": "wildcard",
                         "selectedOptions": [],
                         "sort": {
@@ -136,11 +136,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -150,7 +150,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -179,7 +179,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu)"
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -189,7 +189,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu)"
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost)"
                             },
                             "visualization": {
                                 "layerId": "1ff02993-1e4e-42c5-83bf-27ead7063ffa",
@@ -209,7 +209,7 @@
                     "filters": [],
                     "hidePanelTitles": true,
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu)"
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -238,11 +238,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -252,7 +252,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -281,7 +281,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(PricingCurrencyEffectiveCost),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -291,7 +291,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(PricingCurrencyEffectiveCost),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
                             },
                             "visualization": {
                                 "icon": "temperature",
@@ -313,7 +313,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(PricingCurrencyEffectiveCost),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -342,11 +342,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -356,7 +356,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -384,7 +384,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -394,7 +394,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId)"
                             },
                             "visualization": {
                                 "icon": "globe",
@@ -416,7 +416,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -445,11 +445,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -459,7 +459,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -477,7 +477,7 @@
                                                             "id": "number"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "metrics-ess_billing.billing-*",
+                                                            "indexPattern": "metrics-ess_billing.cost_and_usage-*",
                                                             "sourceField": "ml_enabled"
                                                         },
                                                         "type": "number"
@@ -501,7 +501,7 @@
                                                             "id": "number"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "metrics-ess_billing.billing-*",
+                                                            "indexPattern": "metrics-ess_billing.cost_and_usage-*",
                                                             "sourceField": "dep_count"
                                                         },
                                                         "type": "number"
@@ -510,7 +510,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId),\n  ml_enabled = COUNT_DISTINCT(ResourceId) WHERE SkuPriceId LIKE \"*ml*\""
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -520,7 +520,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId),\n  ml_enabled = COUNT_DISTINCT(ResourceId) WHERE SkuPriceId LIKE \"*ml*\""
                             },
                             "visualization": {
                                 "color": "#EE72A6",
@@ -545,7 +545,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId),\n  ml_enabled = COUNT_DISTINCT(ResourceId) WHERE SkuPriceId LIKE \"*ml*\""
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -574,11 +574,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -588,7 +588,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -606,7 +606,7 @@
                                                             "id": "number"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "metrics-ess_billing.billing-*",
+                                                            "indexPattern": "metrics-ess_billing.cost_and_usage-*",
                                                             "sourceField": "frozen_enabled"
                                                         },
                                                         "type": "number"
@@ -641,7 +641,7 @@
                                                             "id": "number"
                                                         },
                                                         "sourceParams": {
-                                                            "indexPattern": "metrics-ess_billing.billing-*",
+                                                            "indexPattern": "metrics-ess_billing.cost_and_usage-*",
                                                             "sourceField": "dep_count"
                                                         },
                                                         "type": "number"
@@ -650,7 +650,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId),\n  frozen_enabled = COUNT_DISTINCT(ResourceId) WHERE SkuPriceId LIKE \"*frozen*\""
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -660,7 +660,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId),\n  frozen_enabled = COUNT_DISTINCT(ResourceId) WHERE SkuPriceId LIKE \"*frozen*\""
                             },
                             "visualization": {
                                 "color": "#16C5C0",
@@ -685,7 +685,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ResourceId),\n  frozen_enabled = COUNT_DISTINCT(ResourceId) WHERE SkuPriceId LIKE \"*frozen*\""
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -714,11 +714,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -728,7 +728,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -768,7 +768,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY cloud.provider"
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY cloud.provider"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -778,7 +778,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY cloud.provider"
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY cloud.provider"
                             },
                             "visualization": {
                                 "layers": [
@@ -832,7 +832,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY cloud.provider"
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY cloud.provider"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -861,11 +861,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -875,7 +875,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -924,7 +924,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY month = BUCKET(@timestamp, 1 month)\n\n| EVAL month_str = DATE_FORMAT(\"MMM yyyy\", month)"
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY month = BUCKET(@timestamp, 1 month)\n\n| EVAL month_str = DATE_FORMAT(\"MMM yyyy\", month)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -934,7 +934,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY month = BUCKET(@timestamp, 1 month)\n\n| EVAL month_str = DATE_FORMAT(\"MMM yyyy\", month)"
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY month = BUCKET(@timestamp, 1 month)\n\n| EVAL month_str = DATE_FORMAT(\"MMM yyyy\", month)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1011,7 +1011,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY month = BUCKET(@timestamp, 1 month)\n\n| EVAL month_str = DATE_FORMAT(\"MMM yyyy\", month)"
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY month = BUCKET(@timestamp, 1 month)\n\n| EVAL month_str = DATE_FORMAT(\"MMM yyyy\", month)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1117,7 +1117,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 },
                                                 "fa9067f0-7641-4988-9297-58dd983cb390": {
                                                     "customLabel": true,
@@ -1149,14 +1149,14 @@
                                                 "822c4ce3-c29c-4c14-8986-09b4190dc5cb": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 9 values of ess.billing.deployment_name",
+                                                    "label": "Top 9 values of ResourceName",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": false,
+                                                        "missingBucket": true,
                                                         "orderBy": {
                                                             "columnId": "f3a939b5-e9dc-4164-a59f-56e7a9aced2a",
                                                             "type": "column"
@@ -1169,7 +1169,7 @@
                                                         "secondaryFields": [],
                                                         "size": 9
                                                     },
-                                                    "sourceField": "ess.billing.deployment_name"
+                                                    "sourceField": "ResourceName"
                                                 },
                                                 "964a9602-36b4-4143-a4a5-4ef2ae4eeb20": {
                                                     "customLabel": true,
@@ -1203,7 +1203,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1232,7 +1232,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"ess_billing.billing\" "
+                                "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1319,7 +1319,7 @@
                     "filters": [],
                     "query": {
                         "language": "kuery",
-                        "query": "data_stream.dataset :\"ess_billing.billing\" "
+                        "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" "
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1348,11 +1348,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -1362,7 +1362,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -1389,20 +1389,20 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "ess.billing.deployment_type",
+                                                    "columnId": "ResourceType",
                                                     "customLabel": false,
-                                                    "fieldName": "ess.billing.deployment_type",
-                                                    "label": "ess.billing.deployment_type",
+                                                    "fieldName": "ResourceType",
+                                                    "label": "ResourceType",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "ess.billing.deployment_name",
+                                                    "columnId": "ResourceName",
                                                     "customLabel": false,
-                                                    "fieldName": "ess.billing.deployment_name",
-                                                    "label": "ess.billing.deployment_name",
+                                                    "fieldName": "ResourceName",
+                                                    "label": "ResourceName",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -1411,7 +1411,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY ess.billing.deployment_type, ess.billing.deployment_name"
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY ResourceType, ResourceName"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1421,7 +1421,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY ess.billing.deployment_type, ess.billing.deployment_name"
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY ResourceType, ResourceName"
                             },
                             "visualization": {
                                 "layers": [
@@ -1437,8 +1437,8 @@
                                         "nestedLegend": false,
                                         "numberDisplay": "value",
                                         "primaryGroups": [
-                                            "ess.billing.deployment_type",
-                                            "ess.billing.deployment_name"
+                                            "ResourceType",
+                                            "ResourceName"
                                         ]
                                     }
                                 ],
@@ -1456,7 +1456,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY ess.billing.deployment_type, ess.billing.deployment_name"
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY ResourceType, ResourceName"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1518,7 +1518,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 },
                                                 "fa9067f0-7641-4988-9297-58dd983cb390": {
                                                     "customLabel": true,
@@ -1550,7 +1550,7 @@
                                                 "10cdba83-4b9f-446e-a858-86576c05ff37": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of ess.billing.deployment_type + 1 other",
+                                                    "label": "Top values of ResourceType + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1568,12 +1568,12 @@
                                                             "id": "multi_terms"
                                                         },
                                                         "secondaryFields": [
-                                                            "ess.billing.type"
+                                                            "SkuMeter"
                                                         ],
                                                         "size": 9
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "ess.billing.deployment_type"
+                                                    "sourceField": "ResourceType"
                                                 },
                                                 "964a9602-36b4-4143-a4a5-4ef2ae4eeb20": {
                                                     "customLabel": true,
@@ -1607,7 +1607,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1636,7 +1636,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"ess_billing.billing\" "
+                                "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1723,7 +1723,7 @@
                     "filters": [],
                     "query": {
                         "language": "kuery",
-                        "query": "data_stream.dataset :\"ess_billing.billing\" "
+                        "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" "
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1752,11 +1752,11 @@
                                     "fieldFormats": {},
                                     "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                     "managed": false,
-                                    "name": "metrics-ess_billing.billing-*",
+                                    "name": "metrics-ess_billing.cost_and_usage-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-ess_billing.billing-*",
+                                    "title": "metrics-ess_billing.cost_and_usage-*",
                                     "type": "esql"
                                 }
                             },
@@ -1766,7 +1766,7 @@
                                         {
                                             "id": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-ess_billing.billing-*"
+                                            "title": "metrics-ess_billing.cost_and_usage-*"
                                         }
                                     ],
                                     "layers": {
@@ -1793,20 +1793,20 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "ess.billing.deployment_type",
+                                                    "columnId": "ResourceType",
                                                     "customLabel": false,
-                                                    "fieldName": "ess.billing.deployment_type",
-                                                    "label": "ess.billing.deployment_type",
+                                                    "fieldName": "ResourceType",
+                                                    "label": "ResourceType",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "ess.billing.type",
+                                                    "columnId": "SkuMeter",
                                                     "customLabel": false,
-                                                    "fieldName": "ess.billing.type",
-                                                    "label": "ess.billing.type",
+                                                    "fieldName": "SkuMeter",
+                                                    "label": "SkuMeter",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -1815,7 +1815,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY ess.billing.deployment_type, ess.billing.type"
+                                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY ResourceType, SkuMeter"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1825,7 +1825,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY ess.billing.deployment_type, ess.billing.type"
+                                "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY ResourceType, SkuMeter"
                             },
                             "visualization": {
                                 "layers": [
@@ -1841,8 +1841,8 @@
                                         "nestedLegend": false,
                                         "numberDisplay": "value",
                                         "primaryGroups": [
-                                            "ess.billing.deployment_type",
-                                            "ess.billing.type"
+                                            "ResourceType",
+                                            "SkuMeter"
                                         ]
                                     }
                                 ],
@@ -1860,7 +1860,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| STATS total_ECUs = SUM(ess.billing.total_ecu::DOUBLE) BY ess.billing.deployment_type, ess.billing.type"
+                        "esql": "FROM metrics-ess_billing.cost_and_usage-*\n| STATS total_ECUs = SUM(PricingCurrencyEffectiveCost) BY ResourceType, SkuMeter"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1922,7 +1922,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 },
                                                 "fa9067f0-7641-4988-9297-58dd983cb390": {
                                                     "customLabel": true,
@@ -1954,7 +1954,7 @@
                                                 "10cdba83-4b9f-446e-a858-86576c05ff37": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of ess.billing.type + 1 other",
+                                                    "label": "Top values of SkuMeter + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1977,7 +1977,7 @@
                                                         "size": 9
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "ess.billing.type"
+                                                    "sourceField": "SkuMeter"
                                                 },
                                                 "964a9602-36b4-4143-a4a5-4ef2ae4eeb20": {
                                                     "customLabel": true,
@@ -2011,7 +2011,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -2040,7 +2040,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"ess_billing.billing\" "
+                                "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2128,7 +2128,7 @@
                     "filters": [],
                     "query": {
                         "language": "kuery",
-                        "query": "data_stream.dataset :\"ess_billing.billing\" "
+                        "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" "
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2189,7 +2189,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 },
                                                 "fa9067f0-7641-4988-9297-58dd983cb390": {
                                                     "customLabel": true,
@@ -2220,7 +2220,7 @@
                                                 "10cdba83-4b9f-446e-a858-86576c05ff37": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of ess.billing.type + 1 other",
+                                                    "label": "Top values of SkuMeter + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2238,12 +2238,12 @@
                                                             "id": "multi_terms"
                                                         },
                                                         "secondaryFields": [
-                                                            "ess.billing.cloud.service.type"
+                                                            "x_ServerlessServiceType"
                                                         ],
                                                         "size": 9
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "ess.billing.type"
+                                                    "sourceField": "SkuMeter"
                                                 },
                                                 "964a9602-36b4-4143-a4a5-4ef2ae4eeb20": {
                                                     "customLabel": true,
@@ -2277,7 +2277,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -2297,7 +2297,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"ess_billing.billing\" AND ess.billing.cloud.service.type: *"
+                                "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" AND x_ServerlessServiceType: *"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2384,7 +2384,7 @@
                     "filters": [],
                     "query": {
                         "language": "kuery",
-                        "query": "data_stream.dataset :\"ess_billing.billing\" AND ess.billing.cloud.service.type: *"
+                        "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" AND x_ServerlessServiceType: *"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2482,7 +2482,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.quantity.value"
+                                                    "sourceField": "ConsumedQuantity"
                                                 },
                                                 "09a84e6d-ecd4-46fa-90cd-bde6f73ae789": {
                                                     "customLabel": true,
@@ -2511,7 +2511,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                        "formula": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2529,7 +2529,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.quantity.value"
+                                                    "sourceField": "ConsumedQuantity"
                                                 },
                                                 "2d720a5c-05fc-4ed7-a07c-ce224e120fa9X1": {
                                                     "customLabel": true,
@@ -2562,7 +2562,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "multiply",
-                                                            "text": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                            "text": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                             "type": "function"
                                                         }
                                                     },
@@ -2602,7 +2602,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "multiply",
-                                                            "text": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                            "text": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                             "type": "function"
                                                         }
                                                     },
@@ -2629,24 +2629,24 @@
                                                 "10cdba83-4b9f-446e-a858-86576c05ff37": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 9 values of ess.billing.deployment_name",
+                                                    "label": "Top 9 values of ResourceName",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": false,
+                                                        "missingBucket": true,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Sum of ess.billing.quantity.value",
+                                                            "label": "Sum of ConsumedQuantity",
                                                             "operationType": "sum",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "ess.billing.quantity.value"
+                                                            "sourceField": "ConsumedQuantity"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -2659,7 +2659,7 @@
                                                         "size": 9
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "ess.billing.deployment_name"
+                                                    "sourceField": "ResourceName"
                                                 },
                                                 "964a9602-36b4-4143-a4a5-4ef2ae4eeb20": {
                                                     "customLabel": true,
@@ -2688,7 +2688,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                        "formula": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2706,7 +2706,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.quantity.value"
+                                                    "sourceField": "ConsumedQuantity"
                                                 },
                                                 "f3a939b5-e9dc-4164-a59f-56e7a9aced2aX1": {
                                                     "customLabel": true,
@@ -2739,7 +2739,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "multiply",
-                                                            "text": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                            "text": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                             "type": "function"
                                                         }
                                                     },
@@ -2767,7 +2767,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"ess_billing.billing\" AND (ess.billing.type :\"data_in\" OR (ess.billing.type :(\"Ingest\" OR \"Metrics Ingest\" OR \"ingest\") AND ess.billing.unit :\"GB\")) "
+                                "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" AND (SkuMeter :\"data_in\" OR (SkuMeter :(\"Ingest\" OR \"Metrics Ingest\" OR \"ingest\") AND ConsumedUnit :\"GB\")) "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2875,7 +2875,7 @@
                     "filters": [],
                     "query": {
                         "language": "kuery",
-                        "query": "data_stream.dataset :\"ess_billing.billing\" AND (ess.billing.type :\"data_in\" OR (ess.billing.type :(\"Ingest\" OR \"Metrics Ingest\" OR \"ingest\") AND ess.billing.unit :\"GB\")) "
+                        "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" AND (SkuMeter :\"data_in\" OR (SkuMeter :(\"Ingest\" OR \"Metrics Ingest\" OR \"ingest\") AND ConsumedUnit :\"GB\")) "
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -2933,7 +2933,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.quantity.value"
+                                                    "sourceField": "ConsumedQuantity"
                                                 },
                                                 "09a84e6d-ecd4-46fa-90cd-bde6f73ae789": {
                                                     "customLabel": true,
@@ -2962,7 +2962,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                        "formula": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2980,7 +2980,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.quantity.value"
+                                                    "sourceField": "ConsumedQuantity"
                                                 },
                                                 "2d720a5c-05fc-4ed7-a07c-ce224e120fa9X1": {
                                                     "customLabel": true,
@@ -3013,7 +3013,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "multiply",
-                                                            "text": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                            "text": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                             "type": "function"
                                                         }
                                                     },
@@ -3053,7 +3053,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "multiply",
-                                                            "text": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                            "text": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                             "type": "function"
                                                         }
                                                     },
@@ -3080,24 +3080,24 @@
                                                 "10cdba83-4b9f-446e-a858-86576c05ff37": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 9 values of ess.billing.deployment_name",
+                                                    "label": "Top 9 values of ResourceName",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": false,
+                                                        "missingBucket": true,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Sum of ess.billing.quantity.value",
+                                                            "label": "Sum of ConsumedQuantity",
                                                             "operationType": "sum",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "ess.billing.quantity.value"
+                                                            "sourceField": "ConsumedQuantity"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -3110,7 +3110,7 @@
                                                         "size": 9
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "ess.billing.deployment_name"
+                                                    "sourceField": "ResourceName"
                                                 },
                                                 "964a9602-36b4-4143-a4a5-4ef2ae4eeb20": {
                                                     "customLabel": true,
@@ -3139,7 +3139,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                        "formula": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -3157,7 +3157,7 @@
                                                         "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.quantity.value"
+                                                    "sourceField": "ConsumedQuantity"
                                                 },
                                                 "f3a939b5-e9dc-4164-a59f-56e7a9aced2aX1": {
                                                     "customLabel": true,
@@ -3190,7 +3190,7 @@
                                                                 "min": 0
                                                             },
                                                             "name": "multiply",
-                                                            "text": "sum(ess.billing.quantity.value) * 1024 * 1024 * 1024",
+                                                            "text": "sum(ConsumedQuantity) * 1024 * 1024 * 1024",
                                                             "type": "function"
                                                         }
                                                     },
@@ -3218,7 +3218,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"ess_billing.billing\" AND (ess.billing.type :\"data_out\" OR ess.billing.type :\"data transfer\" OR ess.billing.sku :\"serverless.data-out\") "
+                                "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" AND (SkuMeter :\"data_out\" OR SkuMeter :\"data transfer\" OR SkuPriceId :\"serverless.data-out\") "
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3326,7 +3326,7 @@
                     "filters": [],
                     "query": {
                         "language": "kuery",
-                        "query": "data_stream.dataset :\"ess_billing.billing\" AND (ess.billing.type :\"data_out\" OR ess.billing.type :\"data transfer\" OR ess.billing.sku :\"serverless.data-out\") "
+                        "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" AND (SkuMeter :\"data_out\" OR SkuMeter :\"data transfer\" OR SkuPriceId :\"serverless.data-out\") "
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -3417,17 +3417,17 @@
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
-                                                        "missingBucket": false,
+                                                        "missingBucket": true,
                                                         "orderAgg": {
                                                             "dataType": "number",
                                                             "isBucketed": false,
-                                                            "label": "Sum of ess.billing.total_ecu",
+                                                            "label": "Sum of PricingCurrencyEffectiveCost",
                                                             "operationType": "sum",
                                                             "params": {
                                                                 "emptyAsNull": true
                                                             },
                                                             "scale": "ratio",
-                                                            "sourceField": "ess.billing.total_ecu"
+                                                            "sourceField": "PricingCurrencyEffectiveCost"
                                                         },
                                                         "orderBy": {
                                                             "type": "custom"
@@ -3466,7 +3466,7 @@
                                                         },
                                                         "size": 3
                                                     },
-                                                    "sourceField": "ess.billing.deployment_id"
+                                                    "sourceField": "ResourceId"
                                                 },
                                                 "1e18ea4c-cb97-43a9-b88e-75e522167deb": {
                                                     "customLabel": true,
@@ -3485,7 +3485,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "ess.billing.total_ecu"
+                                                    "sourceField": "PricingCurrencyEffectiveCost"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -3514,7 +3514,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "event.dataset :\"ess_billing.billing\" "
+                                "query": "event.dataset :\"ess_billing.cost_and_usage\" "
                             },
                             "visualization": {
                                 "columns": [
@@ -3614,7 +3614,7 @@
                     "hidePanelTitles": true,
                     "query": {
                         "language": "kuery",
-                        "query": "event.dataset :\"ess_billing.billing\" "
+                        "query": "event.dataset :\"ess_billing.cost_and_usage\" "
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -3752,7 +3752,7 @@
                                 "sourceDescriptor": {
                                     "applyForceRefresh": true,
                                     "dateField": "@timestamp",
-                                    "esql": "from metrics-*\n| WHERE data_stream.dataset == \"ess_billing.billing\"\n| STATS cloud.geo.name=VALUES(cloud.geo.name), `Total spends`=SUM(ess.billing.total_ecu), `Deployment count`=COUNT_DISTINCT(ess.billing.deployment_id) BY cloud.geo.location",
+                                    "esql": "from metrics-*\n| WHERE data_stream.dataset == \"ess_billing.cost_and_usage\"\n| STATS cloud.geo.name=VALUES(cloud.geo.name), `Total spends`=SUM(PricingCurrencyEffectiveCost), `Deployment count`=COUNT_DISTINCT(ResourceId) BY cloud.geo.location",
                                     "geoField": "cloud.geo.location",
                                     "id": "d7ab64a2-9ef8-42e3-9e7f-18858f01b40f",
                                     "narrowByGlobalSearch": true,
@@ -3902,7 +3902,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset :\"ess_billing.billing\" "
+                                "query": "data_stream.dataset :\"ess_billing.cost_and_usage\" "
                             },
                             "refreshConfig": {
                                 "interval": 60000,

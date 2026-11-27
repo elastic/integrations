@@ -1,12 +1,12 @@
-title: "Elasticsearch Service Billing"
+title: "Elastic Cloud cost and usage (FOCUS 1.4)"
 type: metrics
-dataset: ess_billing.billing
+dataset: ess_billing.cost_and_usage
 elasticsearch:
   source_mode: synthetic
 streams:
   - input: cel
-    title: Elasticsearch Service Billing
-    description: Collect daily billing information from Elasticsearch Service billing API.
+    title: Elastic Cloud cost and usage
+    description: Collect daily billing line items from the Elastic Cloud billing API and store them as FOCUS 1.4 Cost and Usage rows.
     template_path: cel.yml.hbs
     enabled: true
     vars:
@@ -34,6 +34,41 @@ streams:
         multi: false
         required: true
         show_user: true
+      # --- FOCUS settings (new in 2.0.0). Stamped on every billing line item by
+      # --- agent/stream/cel.yml.hbs, read by elasticsearch/ingest_pipeline/focus.yml.
+      - name: purchase_channel
+        type: select
+        title: Purchase channel
+        description: How this organization buys Elastic Cloud. Used by the FOCUS cost and usage dataset. For a cloud marketplace purchase the marketplace invoices the usage, so `BilledCost` is 0 and `InvoiceIssuerName` is the cloud provider. This avoids counting the cost twice next to the cloud provider's own FOCUS data.
+        multi: false
+        required: true
+        show_user: true
+        default: direct
+        options:
+          - value: direct
+            text: Direct from Elastic
+          - value: gcp_marketplace
+            text: Google Cloud Marketplace
+          - value: aws_marketplace
+            text: AWS Marketplace
+          - value: azure_marketplace
+            text: Azure Marketplace
+      - name: contracted_ecu_rate
+        type: text
+        title: Contracted price of one ECU (USD)
+        description: Price of one Elastic Consumption Unit in your contract, in USD. Used for `ContractedCost`, `EffectiveCost` and `ContractedUnitPrice` in the FOCUS dataset. Leave 1.0 for the list price. An invalid value is treated as 1.0.
+        multi: false
+        required: false
+        show_user: false
+        default: "1.0"
+      - name: billing_account_name
+        type: text
+        title: Billing account name
+        description: Display name of the organization for `BillingAccountName` in the FOCUS dataset. The billing API returns only the organization ID, which is used when this is empty.
+        multi: false
+        required: false
+        show_user: false
+      # --- end of FOCUS settings
       - name: hide_sensitive
         type: bool
         title: Hide Sensitive True

@@ -1,0 +1,162 @@
+- name: BilledCost
+  type: double
+  description: Charge that is the basis for invoicing, in the billing currency. Equal to `ContractedCost` for a direct purchase, 0 for a cloud marketplace purchase because the marketplace invoices the charge.
+- name: BillingAccountId
+  type: keyword
+  description: ID of the Elastic Cloud organization.
+- name: BillingAccountName
+  type: keyword
+  description: Display name of the billing account, from the Billing account name setting. The organization ID when the setting is empty.
+- name: BillingCurrency
+  type: keyword
+  description: Currency of the cost columns. ECU amounts are reported as USD, at the nominal value of 1.00 USD for one ECU.
+- name: BillingPeriodEnd
+  type: date
+  description: Start of the next calendar month, exclusive, UTC.
+- name: BillingPeriodStart
+  type: date
+  description: Start of the calendar month of the charge, inclusive, UTC.
+- name: ChargeCategory
+  type: keyword
+  description: Highest-level classification of the charge. Always `Usage`.
+- name: ChargeClass
+  type: keyword
+  description: 'Null: the billing API does not report corrections to closed billing periods.'
+- name: ChargeDescription
+  type: keyword
+  description: Description of the billed SKU, as returned by the billing API.
+- name: ChargeFrequency
+  type: keyword
+  description: How often the charge occurs. Always `Usage-Based`.
+- name: ChargePeriodEnd
+  type: date
+  description: End of the day of the billing line item, exclusive, UTC.
+- name: ChargePeriodStart
+  type: date
+  description: Start of the day of the billing line item, inclusive, UTC.
+- name: ConsumedQuantity
+  type: double
+  description: Quantity of the line item, from the billing API.
+- name: ConsumedUnit
+  type: keyword
+  description: Unit of measure of `ConsumedQuantity`, as returned by the billing API.
+- name: ContractedCost
+  type: double
+  description: Cost in ECU multiplied by the contracted ECU price, in the billing currency.
+- name: ContractedUnitPrice
+  type: double
+  description: Unit price in ECU multiplied by the contracted ECU price, in the billing currency.
+- name: EffectiveCost
+  type: double
+  description: Cost after all reduced rates and discounts, in the billing currency. Equal to `ContractedCost`.
+- name: HostProviderName
+  type: keyword
+  description: Provider of the infrastructure that hosts the resource. Elastic for services that are not tied to one cloud provider.
+- name: InvoiceIssuerName
+  type: keyword
+  description: Entity responsible for invoicing the charge. Elastic for a direct purchase, the cloud provider for a marketplace purchase.
+- name: ListCost
+  type: double
+  description: Cost in ECU at the list price of one ECU (1.00 USD), in the billing currency.
+- name: ListUnitPrice
+  type: double
+  description: Unit price in ECU at the list price of one ECU (1.00 USD), in the billing currency.
+- name: PricingCategory
+  type: keyword
+  description: Pricing model of the charge. Always `Standard`.
+- name: PricingCurrency
+  type: keyword
+  description: Currency of the price list. Always `ECU`.
+- name: PricingCurrencyContractedUnitPrice
+  type: double
+  description: Unit price applied by the billing API, in ECU.
+- name: PricingCurrencyEffectiveCost
+  type: double
+  description: Cost of the charge in ECU.
+- name: PricingCurrencyListUnitPrice
+  type: double
+  description: Unit price applied by the billing API, in ECU.
+- name: PricingQuantity
+  type: double
+  description: Quantity of the line item, from the billing API.
+- name: PricingUnit
+  type: keyword
+  description: Unit of measure of `PricingQuantity`, as returned by the billing API.
+- name: RegionId
+  type: keyword
+  description: Region of the resource, or `global` for services that are not tied to a region. Null when the billing API reports no region.
+- name: RegionName
+  type: keyword
+  description: Name of the region. Equal to `RegionId`.
+- name: ResourceId
+  type: keyword
+  description: ID of the billed instance, as reported by the billing API. For Hosted deployments this is the ID of the Elasticsearch resource. Null for organization-level charges.
+- name: ResourceName
+  type: keyword
+  description: Name of the billed deployment or project.
+- name: ResourceType
+  type: keyword
+  description: Type of the billed instance. `deployment` for Hosted deployments, the project type for Serverless projects.
+- name: ServiceCategory
+  type: keyword
+  description: Highest-level FOCUS classification of the service.
+- name: ServiceName
+  type: keyword
+  description: Name of the Elastic Cloud service that the SKU belongs to.
+- name: ServiceProviderName
+  type: keyword
+  description: Provider of the service. Always `Elastic`.
+- name: ServiceSubcategory
+  type: keyword
+  description: Secondary FOCUS classification of the service.
+- name: SkuId
+  type: keyword
+  description: SKU as listed in the Elastic Cloud pricing table, without subscription level, region, memory and zone count.
+- name: SkuMeter
+  type: keyword
+  description: Type of usage that the SKU measures, as returned by the billing API.
+- name: SkuPriceDetails
+  type: group
+  description: Properties of the SKU price.
+  fields:
+  - name: InstanceType
+    type: keyword
+    description: Instance configuration of a capacity SKU.
+  - name: MemorySize
+    type: double
+    description: Memory per zone of a capacity SKU, in GiB.
+  - name: x_SubscriptionLevel
+    type: keyword
+    description: Subscription level encoded in the billing SKU.
+  - name: x_ZoneCount
+    type: long
+    description: Number of availability zones of a capacity SKU.
+- name: SkuPriceId
+  type: keyword
+  description: Billing SKU that identifies one unit price, as returned by the billing API.
+- name: Tags
+  type: keyword
+  ignore_above: 8191
+  description: Deployment tags as a serialized JSON object with sorted keys, for example {"team":"search"}. Requires the Add deployment tags setting.
+- name: cloud.account.id
+  type: keyword
+- name: input.type
+  type: keyword
+- name: x_ContractedEcuRate
+  type: double
+  description: Price of one ECU in the billing currency used for the contracted and effective costs of the row.
+- name: x_DeploymentTags
+  type: keyword
+  description: Deployment tags as "key:value" terms, as collected. Used for filtering and by the Chargeback integration.
+- name: x_FocusVersion
+  type: keyword
+  description: Version of the FOCUS specification that the row follows.
+- name: x_PurchaseChannel
+  type: keyword
+  description: How the organization buys Elastic Cloud, from the Purchase channel setting (direct, gcp_marketplace, aws_marketplace or azure_marketplace).
+- name: x_ServerlessServiceType
+  type: keyword
+  description: Service part of a Serverless SKU, for example the project type.
+- name: x_ZeroRated
+  type: boolean
+  description: True when the unit price is zero, which marks a free SKU.
