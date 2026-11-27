@@ -251,6 +251,7 @@ The `application` data stream provides container logs of user workloads, with Ku
 | openshift.structured | Application log line parsed as JSON by the parse filter of the ClusterLogForwarder. | flattened |
 | orchestrator.cluster.id | Unique ID of the cluster. | keyword |
 | orchestrator.type | Orchestrator cluster type (e.g. kubernetes, nomad or cloudfoundry). | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | stream | Container log stream (stdout or stderr). | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
@@ -321,6 +322,7 @@ The `infrastructure` data stream provides container logs of the OpenShift platfo
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
+| related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | stream | Container log stream (stdout or stderr). | keyword |
 | systemd.cgroup | The control group path in the systemd hierarchy. | keyword |

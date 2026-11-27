@@ -28,6 +28,12 @@ processors:
       field: kubernetes.pod_ip
       target_field: kubernetes.pod.ip
       ignore_missing: true
+  - append:
+      tag: append_related_ip_pod_ip
+      field: related.ip
+      value: '{{{kubernetes.pod.ip}}}'
+      allow_duplicates: false
+      if: ctx.kubernetes?.pod?.ip != null
   - rename:
       tag: rename_container_name
       field: kubernetes.container_name

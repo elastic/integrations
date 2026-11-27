@@ -304,7 +304,8 @@ dashboards:
                 type: datatable
                 query: |
                   FROM logs-openshift.audit-*
-                  | WHERE openshift.log_source == "auditd" AND event.category == "authentication"
+                  | WHERE openshift.log_source == "auditd"
+                  | WHERE event.action IN ("user_auth", "user_acct", "user_login", "user_logout", "login", "cred_acq", "cred_disp", "cred_refr")
                   | STATS records = COUNT(*), failed = COUNT(*) WHERE event.outcome == "failure" BY host.name, user.name, source.ip
                   | SORT failed DESC, records DESC
                   | LIMIT 20
