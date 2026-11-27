@@ -66,7 +66,9 @@ Claude Code has four environment variables that control how much detail is inclu
 | `OTEL_LOG_USER_PROMPTS` | Include the `prompt` text in `user_prompt` events and spans. | Off |
 | `OTEL_LOG_TOOL_DETAILS` | Include `tool_parameters` and `tool_input` in tool events and spans. | Off |
 | `OTEL_LOG_TOOL_CONTENT` | Include `tool_result` content in tool events and spans. | Off |
-| `OTEL_LOG_RAW_API_BODIES` | Include raw API request/response bodies. | Off |
+| `OTEL_LOG_RAW_API_BODIES` | Include raw API request and response bodies. | Off |
+
+Set `OTEL_LOG_RAW_API_BODIES=1` to collect input and output messages. Claude Code then emits `api_request_body` and `api_response_body` events, and the pipeline maps those bodies to `gen_ai.input.messages` and `gen_ai.output.messages`.
 
 Enabling these gates provides richer forensic data but indexes potentially sensitive content (commands, file contents, prompts). When a gate is disabled, the corresponding fields are absent from the document — the pipeline handles this gracefully.
 
@@ -465,6 +467,7 @@ An example event for `events` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
@@ -481,7 +484,10 @@ An example event for `events` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
-| gen_ai.operation.name | Source or type of the generative AI operation. | keyword |
+| gen_ai.conversation.id | Conversation identifier. Copied from the Claude Code session id. | keyword |
+| gen_ai.input.messages | Input messages from an api_request_body event. | flattened |
+| gen_ai.operation.name | Model operation. api_request events are chat. | keyword |
+| gen_ai.output.messages | Output messages from an api_response_body event. | flattened |
 | gen_ai.provider.name | Generative AI provider name. | constant_keyword |
 | gen_ai.request.model | Model used for the generative AI request. | keyword |
 | gen_ai.response.id | Identifier for the generative AI response. | keyword |

@@ -66,7 +66,9 @@ Claude Code has four environment variables that control how much detail is inclu
 | `OTEL_LOG_USER_PROMPTS` | Include the `prompt` text in `user_prompt` events and spans. | Off |
 | `OTEL_LOG_TOOL_DETAILS` | Include `tool_parameters` and `tool_input` in tool events and spans. | Off |
 | `OTEL_LOG_TOOL_CONTENT` | Include `tool_result` content in tool events and spans. | Off |
-| `OTEL_LOG_RAW_API_BODIES` | Include raw API request/response bodies. | Off |
+| `OTEL_LOG_RAW_API_BODIES` | Include raw API request and response bodies. | Off |
+
+Set `OTEL_LOG_RAW_API_BODIES=1` to collect input and output messages. Claude Code then emits `api_request_body` and `api_response_body` events, and the pipeline maps those bodies to `gen_ai.input.messages` and `gen_ai.output.messages`.
 
 Enabling these gates provides richer forensic data but indexes potentially sensitive content (commands, file contents, prompts). When a gate is disabled, the corresponding fields are absent from the document — the pipeline handles this gracefully.
 
