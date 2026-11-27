@@ -29,7 +29,7 @@ curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_data_stream/${DS}" >
 #    9: exact duplicate replay of item 1 (must conflict with 409)
 # 10-12: two distinct synthetics_monitor entries plus distinct host.name collector
 #   13: index-less collection error event
-#   14-15: identical index_usage observation from two collectors (second must conflict 409)
+#   14-15: identical index_usage observation across distinct policies and collectors (second must conflict 409)
 #   16: empty object dropped as noop
 cat <<'EOF' > bulk_aux.ndjson
 {"create":{}}
@@ -61,7 +61,7 @@ cat <<'EOF' > bulk_aux.ndjson
 {"create":{}}
 {"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"index_usage","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"},"index":{"name":"orders-2026.03","tier":"hot/content","primaries":{"docs":{"count":100},"store":{"total_data_set_size_in_bytes":1024}},"total":{"store":{"size_in_bytes":1024}}}}}
 {"create":{}}
-{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"index_usage","conf_policy_id":"pol-1","agent":{"id":"ag-2"},"host":{"id":"host-2"},"elasticsearch":{"cluster":{"name":"dep-1"},"index":{"name":"orders-2026.03","tier":"hot/content","primaries":{"docs":{"count":100},"store":{"total_data_set_size_in_bytes":1024}},"total":{"store":{"size_in_bytes":1024}}}}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"index_usage","conf_policy_id":"pol-2","agent":{"id":"ag-2"},"host":{"id":"host-2"},"elasticsearch":{"cluster":{"name":"dep-1"},"index":{"name":"orders-2026.03","tier":"hot/content","primaries":{"docs":{"count":100},"store":{"total_data_set_size_in_bytes":1024}},"total":{"store":{"size_in_bytes":1024}}}}}
 {"create":{}}
 {}
 EOF
