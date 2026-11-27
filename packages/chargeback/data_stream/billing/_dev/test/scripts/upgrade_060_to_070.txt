@@ -152,36 +152,45 @@ TID_META=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-cha
 [ -n "$TID_ENR" ] && [ "$TID_ENR" != "null" ]
 [ -n "$TID_META" ] && [ "$TID_META" != "null" ]
 
-# Trigger billing_enrichment transform now and wait for its lookup-mode destination index.
-curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_ENR}/_schedule_now" >/dev/null
+# Trigger 0.7.0 lookup transforms via _schedule_now (no manual index creation) and wait for
+# TransformIndexer to materialize every lookup-mode destination index and move_on_creation alias.
+TID_DEP=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_deployment_contribution-default-*" | jq -r '.transforms[0].id')
+[ -n "$TID_DEP" ] && [ "$TID_DEP" != "null" ]
+
+for tid in "$TID_CUR" "$TID_ENR" "$TID_META" "$TID_DEP"; do
+  curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${tid}/_schedule_now" >/dev/null
+done
+
 i=0
-c2="404"
+all_ok="0"
 while [ "$i" -lt 45 ]; do
-  c2=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_enrichment-1/_settings")
-  if [ "$c2" = "200" ]; then
+  s_cur=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.chargeback_currency")
+  s_enr=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.billing_enrichment")
+  s_meta=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.usage_deployment_metadata")
+  s_dep=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.cluster_deployment_contribution")
+  if [ "$s_cur" = "200" ] && [ "$s_enr" = "200" ] && [ "$s_meta" = "200" ] && [ "$s_dep" = "200" ]; then
+    all_ok="1"
     break
   fi
   i=$((i + 1))
   sleep 2
 done
-[ "$c2" = "200" ]
-M_ENR=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_enrichment-1/_settings" | jq -r '.["chargeback_lookup.dest_billing_enrichment-1"].settings.index.mode')
-[ "$M_ENR" = "lookup" ]
+[ "$all_ok" = "1" ]
 
-# Ensure chargeback_currency & usage_deployment_metadata destination indices exist (empty batches may not have indexed yet)
-# via Fleet's destination templates (which supply index.mode == "lookup" via composed component templates), and assert mode == "lookup".
-if [ "$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_settings")" != "200" ]; then
-  curl -sSf -u elastic:changeme --cacert "$CA" -X PUT "$ES/chargeback_lookup.dest_chargeback_currency-1" >/dev/null
-  curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_aliases" -d '{"actions":[{"add":{"index":"chargeback_lookup.dest_chargeback_currency-1","alias":"chargeback_lookup.chargeback_currency"}}]}' >/dev/null
-fi
-if [ "$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_usage_deployment_metadata-1/_settings")" != "200" ]; then
-  curl -sSf -u elastic:changeme --cacert "$CA" -X PUT "$ES/chargeback_lookup.dest_usage_deployment_metadata-1" >/dev/null
-  curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_aliases" -d '{"actions":[{"add":{"index":"chargeback_lookup.dest_usage_deployment_metadata-1","alias":"chargeback_lookup.usage_deployment_metadata"}}]}' >/dev/null
-fi
-M_CUR=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_settings" | jq -r '.["chargeback_lookup.dest_chargeback_currency-1"].settings.index.mode')
-M_META=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_usage_deployment_metadata-1/_settings" | jq -r '.["chargeback_lookup.dest_usage_deployment_metadata-1"].settings.index.mode')
-[ "$M_CUR" = "lookup" ]
-[ "$M_META" = "lookup" ]
+for pair in \
+  "chargeback_lookup.dest_chargeback_currency-1:chargeback_lookup.chargeback_currency" \
+  "chargeback_lookup.dest_billing_enrichment-1:chargeback_lookup.billing_enrichment" \
+  "chargeback_lookup.dest_usage_deployment_metadata-1:chargeback_lookup.usage_deployment_metadata" \
+  "chargeback_lookup.dest_cluster_deployment_contribution-1:chargeback_lookup.cluster_deployment_contribution"; do
+  idx="${pair%%:*}"
+  al="${pair##*:}"
+  al_keys=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_alias/${al}" | jq -c 'keys | sort')
+  [ "$al_keys" = "[\"${idx}\"]" ]
+  imode=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/${idx}/_settings" | jq -r --arg idx "$idx" '.[$idx].settings.index.mode')
+  idyn=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/${idx}/_mapping" | jq -r --arg idx "$idx" '.[$idx].mappings.dynamic')
+  [ "$imode" = "lookup" ]
+  [ "$idyn" = "false" ]
+done
 
 # 4. Run 0.7.0 Spend Alert ES|QL for dep-aged: 100.0 * 1.25 = 125.0 USD with "$" fallback symbol.
 jq -n --arg q 'FROM chargeback_lookup.billing_cluster_cost
@@ -229,6 +238,21 @@ jq -n --arg q 'FROM chargeback_lookup.billing_cluster_cost
 
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_query?format=json" -d @ng_query.json > ng_res.json
 jq -e '.values | length == 0' ng_res.json >/dev/null
+
+# 5b. Run 0.7.0 Missing Usage Alert ES|QL against transform-created cluster_deployment_contribution on billing-only setup.
+jq -n --arg q 'FROM chargeback_lookup.billing_cluster_cost
+| WHERE deployment_group IS NOT NULL AND deployment_group != ""
+| EVAL billing_deployment_id = deployment_id, bill_dep_name = deployment_name, bill_dep_group = deployment_group, bill_day = LEFT(composite_key, 10), ck = composite_key::keyword
+| DROP deployment_id, deployment_name, deployment_group, composite_key
+| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key
+| WHERE deployment_id IS NULL
+| STATS day_vals = VALUES(bill_day), dep_names = VALUES(bill_dep_name) BY billing_deployment_id, bill_dep_group
+| RENAME bill_dep_group AS deployment_group
+| WHERE billing_deployment_id == "dep-aged"
+| KEEP billing_deployment_id, deployment_group' '{"query": $q}' > mu_query.json
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_query?format=json" -d @mu_query.json > mu_res.json
+jq -e '.values | length == 1 and .[0][0] == "dep-aged" and .[0][1] == "team-existing"' mu_res.json >/dev/null
 
 # 6. Trigger 0.7.0 chargeback_conf_lookup checkpoint; sync_fleet_config=false must keep manual rates untouched.
 TID_CONF07=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.chargeback_conf_lookup-default-*" | jq -r '.transforms[0].id')

@@ -56,7 +56,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Data flow:**
 
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside On-Premises Billing or any existing monitoring streams).
-2. Chargeback continuous transforms (`5m` configuration sync and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into fourteen `lookup`-mode indices.
+2. Chargeback continuous transforms (`5m` configuration and additive `0.7.0` lookup sync, and `60m` billing, credit commitment, core usage, and utilization rollups) aggregate and enrich this telemetry into fourteen `lookup`-mode indices.
 3. Chargeback dashboards (and optional stock dashboards) query the lookup indices via ES|QL and Lens.
 
 ## Configuration
@@ -152,7 +152,7 @@ The integration creates fourteen transforms to aggregate cost and usage data (al
 3. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-1` (aliased as `chargeback_lookup.billing_realized_pool`).
 4. **`billing_credits`**: aggregates daily organization credit commitment snapshots into `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`) for the opt-in stock **[Metrics ESS Billing] Credits dashboard** compatibility alias.
 5. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` and `_id: config_onprem`) while preserving manual configuration rows when Fleet sync is inactive.
-6. **`chargeback_currency_lookup`**: syncs display `conf_currency_symbol` and `conf_currency_unit` settings from `chargeback.billing` configuration snapshots into `chargeback_lookup.dest_chargeback_currency-1` (aliased as `chargeback_lookup.chargeback_currency`) while preserving manual overrides when Fleet sync is inactive.
+6. **`chargeback_currency_lookup`**: syncs display `conf_currency_symbol` and `conf_currency_unit` settings from Fleet configuration snapshots into `chargeback_lookup.dest_chargeback_currency-1` (aliased as `chargeback_lookup.chargeback_currency`) while preserving manual overrides when Fleet sync is inactive.
 
 **Utilization transforms:**
 

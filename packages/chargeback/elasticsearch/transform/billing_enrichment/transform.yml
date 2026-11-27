@@ -3,7 +3,9 @@ source:
   index:
     - metrics-chargeback.billing-*
     - metrics-ess_billing.billing-*
+    - monitoring-indices*
     - -metrics-ess_billing.billing-chargeback*
+    - -monitoring-indices-chargeback*
     - -partial-*
     - -chargeback_lookup.*
   query:
@@ -144,7 +146,7 @@ dest:
     - alias: chargeback_lookup.billing_enrichment
       move_on_creation: true
   pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "billing_enrichment" }}'
-frequency: 60m
+frequency: 5m
 sync:
   time:
     field: cb_sync_ts
@@ -847,6 +849,6 @@ settings:
   unattended: true
 _meta:
   managed: true
-  order: 4
+  order: 3
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0

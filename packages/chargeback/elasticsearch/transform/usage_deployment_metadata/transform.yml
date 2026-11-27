@@ -4,13 +4,24 @@ source:
     - metrics-chargeback.usage-*
     - monitoring-indices*
     - "*:monitoring-indices*"
+    - chargeback_lookup.dest_billing_cluster_cost-1*
+    - metrics-ess_billing.billing-*
     - -monitoring-indices-chargeback*
     - "*:-monitoring-indices-chargeback*"
+    - -metrics-ess_billing.billing-chargeback*
     - -partial-*
-    - -chargeback_lookup.*
+    - -chargeback_lookup.dest_cluster_*
+    - -chargeback_lookup.dest_usage_*
+    - -chargeback_lookup.dest_chargeback_*
+    - -chargeback_lookup.dest_billing_enrichment*
+    - -chargeback_lookup.dest_billing_realized_pool*
+    - -chargeback_lookup.dest_billing_credits*
     - "*:-chargeback_lookup.*"
   query:
     bool:
+      filter:
+        - exists:
+            field: elasticsearch.cluster.name
       must_not:
         - terms:
             doc_type:
@@ -323,7 +334,7 @@ dest:
     - alias: chargeback_lookup.usage_deployment_metadata
       move_on_creation: true
   pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "usage_metadata" }}'
-frequency: 60m
+frequency: 5m
 sync:
   time:
     field: cb_sync_ts
@@ -443,6 +454,6 @@ settings:
   unattended: true
 _meta:
   managed: true
-  order: 5
+  order: 7
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0

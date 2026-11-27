@@ -8,9 +8,16 @@ processors:
         // Pass manual operator documents (without transform 'snapshots' aggregation output) straight through
         // because Fleet configures this pipeline as index.default_pipeline on chargeback_lookup.chargeback_conf.
         if (!ctx.containsKey('snapshots')) {
-          if (ctx.config_join_key == null || ctx.config_join_key.toString().trim() == '') {
+          String manualKey = ctx.config_join_key != null ? ctx.config_join_key.toString().trim() : '';
+          String manualRowId = ctx.conf_row_id != null ? ctx.conf_row_id.toString().trim() : '';
+          if ('chargeback_config_onprem'.equals(manualKey) || (manualKey == '' && 'config_onprem'.equals(manualRowId))) {
+            ctx.config_join_key = 'chargeback_config_onprem';
+          } else if (manualKey == '') {
             ctx.config_join_key = 'chargeback_config';
+          } else {
+            ctx.config_join_key = manualKey;
           }
+          ctx.remove('conf_row_id');
           if (ctx.conf_chargeable_unit_rate_unit != null) {
             String uTrim = ctx.conf_chargeable_unit_rate_unit.toString().trim();
             if (uTrim == '') { ctx.remove('conf_chargeable_unit_rate_unit'); }
@@ -19,6 +26,8 @@ processors:
           return;
         }
         ctx._from_transform = true;
+        String joinKey = ctx.config_join_key != null ? ctx.config_join_key.toString().trim() : '';
+        ctx.config_join_key = joinKey != '' ? joinKey : 'chargeback_config';
         Map snapRoot = null;
         if (ctx.snapshots instanceof Map) {
           snapRoot = (ctx.snapshots.latest instanceof Map) ? (Map)ctx.snapshots.latest : (Map)ctx.snapshots;
@@ -156,7 +165,9 @@ processors:
 
           def rawLUnit = lc.get('conf_chargeable_unit_rate_unit') != null ? lc.get('conf_chargeable_unit_rate_unit') : lc.get('conf_ecu_rate_unit');
           String lUnit = (rawLUnit != null && rawLUnit.toString().trim() != '') ? rawLUnit.toString().trim().toUpperCase(Locale.ROOT) : 'EUR';
-          boolean srcWasOnprem = 'chargeback_config_onprem'.equals(lc.get('config_join_key'));
+          String lcJoinKey = lc.get('config_join_key') != null ? lc.get('config_join_key').toString().trim() : '';
+          String lcRowId = lc.get('conf_row_id') != null ? lc.get('conf_row_id').toString().trim() : '';
+          boolean srcWasOnprem = 'chargeback_config_onprem'.equals(lcJoinKey) || 'config_onprem'.equals(lcRowId);
           ctx.conf_chargeable_unit_rate = (isLegacyOnpremKey && !srcWasOnprem) ? lOnpremRate : lRate;
           ctx.conf_chargeable_unit_rate_unit = lUnit;
           ctx.conf_indexing_weight = lIdxW;

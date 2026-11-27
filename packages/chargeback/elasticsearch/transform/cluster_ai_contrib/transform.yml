@@ -2,6 +2,8 @@ description: Aggregates daily AI/ML trained model and Inference API endpoint met
 source:
   index:
     - metrics-chargeback.usage-*
+    - chargeback_lookup.dest_billing_cluster_cost-1*
+    - -chargeback_lookup.dest_cluster_*
   query:
     term:
       doc_type: "ai_model"
@@ -11,7 +13,7 @@ dest:
     - alias: chargeback_lookup.cluster_ai_model_contribution
       move_on_creation: true
   pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "usage" }}'
-frequency: 60m
+frequency: 5m
 sync:
   time:
     field: event.ingested
@@ -465,6 +467,6 @@ settings:
   unattended: true
 _meta:
   managed: true
-  order: 10
+  order: 12
   run_as_kibana_system: false
   fleet_transform_version: 0.7.0
