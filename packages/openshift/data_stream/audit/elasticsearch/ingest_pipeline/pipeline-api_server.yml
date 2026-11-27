@@ -91,11 +91,14 @@ processors:
       field: stageTimestamp
       ignore_missing: true
   - remove:
-      tag: remove_object_metadata
-      description: Request and response object metadata duplicate objectRef and can be large.
+      tag: remove_object_managed_fields
+      description: >-
+        Keeps the object metadata, whose labels, annotations, finalizers, and
+        owner references are often what an audited change is about, and drops
+        only managedFields, the large server-side apply bookkeeping.
       field:
-        - kubernetes.audit.requestObject.metadata
-        - kubernetes.audit.responseObject.metadata
+        - kubernetes.audit.requestObject.metadata.managedFields
+        - kubernetes.audit.responseObject.metadata.managedFields
       ignore_missing: true
 
   # ECS mapping.
