@@ -1,4 +1,43 @@
 # newer versions go on top
+- version: "3.13.1"
+  changes:
+    - description: Fix PowerShell 4103 `ContextInfo` parsing so lines of a multi-line `Host Application` script are not taken as keys, and localized keys that contain non-ASCII letters, apostrophes or dots, such as `Aplicación host`, `Nom d’hôte` and `Id. de host`, are parsed.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22248
+- version: "3.13.0"
+  changes:
+    - description: Categorize forwarded Windows System channel events 6005 and 7045, and map service installation details from event 7045.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22139
+- version: "3.12.1"
+  changes:
+    - description: Parse the publisher in AppLocker fully qualified binary name (FQBN) values with a `kv` processor in all four AppLocker data streams, so any subset and order of `CN`, `O`, `L`, `S` and `C` populates `file.x509.subject.*`, and other attributes, including `OID.*` keys, are ignored. This fixes pipeline failures for publishers that are only a `CN=` common name.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22196
+    - description: Store only the common name in `file.x509.subject.common_name` for AppLocker EXE and DLL publishers with a `CN=..., O=...` subject, and remove the surrounding double quotes from quoted publisher values, turning doubled inner quotes into single ones.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22196
+    - description: Stop adding empty strings to AppLocker `file.x509.subject.*` fields, and store `file.x509.subject.locality` as an array in the EXE and DLL data stream.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22196
+    - description: Add an `error.message` instead of failing the pipeline when an AppLocker FQBN value cannot be parsed, so that `@custom` pipelines still run.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22196
+- version: "3.12.0"
+  changes:
+    - description: Add a `start_position` advanced setting to the winlog data streams to skip events that already exist in the channel when no bookmark has been saved. Requires Elastic Agent 9.6.0 or later; earlier agents ignore it.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21970
+- version: "3.11.1"
+  changes:
+    - description: Fix PowerShell 4103/800 pipeline failure (`Index 4 out of bounds for length 4`) on `ParameterBinding` lines that do not match the expected format, and parse localized `ParameterBinding` name/value labels.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22194
+- version: "3.11.0"
+  changes:
+    - description: Normalize Active Directory Certificate Services (AD CS) audit events with native field mappings, `winlog.adcs` request fields, ECS user mappings, and event categorization.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21136
 - version: "3.10.0"
   changes:
     - description: Deduplicate winlog ingest pipelines, field definitions, and input templates across data streams using shared files referenced via links.

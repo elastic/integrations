@@ -1,4 +1,29 @@
 # newer versions go on top
+- version: "0.8.0"
+  changes:
+    - description: Add the `labels.is_ioc_transform_source` field to the source data stream and transform destination index, and deprecate the non-standard `labels.is_transform_source` field, so the built-in Threat Intel detection rules exclude the raw source indices and only match the latest transform destination indices. On upgrade the label is added in place to each source data stream's current write index; older source backing indices are not relabeled and keep matching the built-in rules until their documents age out of the rules' 30-day window.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22249
+- version: "0.7.1"
+  changes:
+    - description: Fix the vulnerability data stream writing its cursor without a trailing `Z`, which made the API reject every request after the first with HTTP 400. Cursors already stored are also handled.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22442
+- version: "0.7.0"
+  changes:
+    - description: Update Elastic Managed integration documentation to the current wording and docs links.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20987
+- version: "0.6.1"
+  changes:
+    - description: Statically map `event.ingested` in transform destination indices so detection rules using it as the timestamp override do not report empty destination indices as missing the field.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22123
+- version: "0.6.0"
+  changes:
+    - description: Add `sighting` and `breach` data streams to collect Flashpoint Compromised Credentials Monitoring - Enterprise (CCM-E) credential exposure records and breach metadata.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22075
 - version: "0.5.0"
   changes:
     - description: Remove redundant ECS field definitions and the catch-all dynamic template from the transforms, relying on the `ecs@mappings` component template.

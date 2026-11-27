@@ -8,11 +8,11 @@
 
 Customers must have access to the **Enterprise API** to fetch data from GreyNoise. You can verify your API key access [here](https://viz.greynoise.io/account/api-key).
 
-### Agentless-enabled integration
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 
@@ -51,6 +51,8 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
+> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade the `"true"` label is added in place to the current write index of each source data stream, so every document already in that index (old and new) is labeled at once; older source backing indices are not relabeled and keep matching the built-in rules until their documents age out of the rules' 30-day window. The transform destination `_latest` indices only receive `labels.is_ioc_transform_source: "false"` on a fresh install or when the transforms are next rebuilt, so on an upgraded install select the latest transformed data by scoping queries to the moving destination alias with `_index: logs-ti_greynoise_latest.ip` rather than relying on `labels.is_ioc_transform_source: "false"`.
+
 Currently, one transform is running for the IP datastream:
 
 | Transform Name | Description |
@@ -58,8 +60,8 @@ Currently, one transform is running for the IP datastream:
 | IP Transform (ID: `logs-ti_greynoise.ip`) | Keeps IP entity type data up to date |
 
 For example:
-- The query `event.module: ti_greynoise and labels.is_transform_source: true` shows logs from the **source index**
-- The query `event.module: ti_greynoise and labels.is_transform_source: false` shows logs from the **transformed index**
+- The query `event.module: ti_greynoise and labels.is_ioc_transform_source: "true"` shows logs from the **source index**
+- The query `_index: logs-ti_greynoise_latest.ip` shows the latest **transformed index** data
 
 A **retention policy** removes data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines).
 
@@ -78,7 +80,7 @@ Follow **Steps to Create Detection Rule** below to create indicator match detect
 3. In **Define Rule** section:
     - **Index Pattern**: Add the index pattern relevant to your data. Keeping this specific ensures optimal performance.
     - **Custom Query**: Must include `NOT event.module : "ti_greynoise"` to exclude GreyNoise events.
-    - **Indicator index patterns**: Use `logs-ti_greynoise_latest.ip*`.
+    - **Indicator index patterns**: Use `logs-ti_greynoise_latest.ip`.
     - **Indicator index query**: Refine indcator index with something like `@timestamp >= "now-7d/d"`.
     - **Indicator Mapping**:
         - **Field**: Map to the field in your Elastic environment containing IPs.
@@ -327,7 +329,8 @@ An example event for `ip` looks as following:
 | greynoise.ip.internet_scanner_intelligence.vpn | Indicates if the IP is associated with a known VPN service. | boolean |
 | greynoise.ip.internet_scanner_intelligence.vpn_service | Name of the VPN service associated with the IP (if applicable). | keyword |
 | input.type | Type of filebeat input. | keyword |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or in the latest destination index. | constant_keyword |
+| labels.is_transform_source | Deprecated: use `labels.is_ioc_transform_source` instead. Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 

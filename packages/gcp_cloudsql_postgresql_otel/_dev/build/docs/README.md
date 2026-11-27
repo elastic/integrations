@@ -22,3 +22,9 @@ When configuring the input package, set the dataset name to `gcp.cloudsql_postgr
 |-----------|-------------|
 | **[GCP OTel] Cloud SQL PostgreSQL Overview** | Overview of all Cloud SQL for PostgreSQL instances. Availability, saturation (CPU, memory, disk, connections), throughput, and transaction ID wraparound risk across the fleet. |
 | **[GCP OTel] Cloud SQL PostgreSQL Instance Detail** | Detail view of a single Cloud SQL for PostgreSQL instance. Covers availability, capacity, traffic and errors, connections, I/O and cache, vacuum and wraparound, and Query Insights. |
+
+## Alerting Rule Templates
+{{alertRuleTemplates}}
+
+## SLO Templates
+{{sloTemplates}}

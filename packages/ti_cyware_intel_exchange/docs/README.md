@@ -49,13 +49,13 @@ For more details, refer to the [Authentication](https://ctixapiv3.cyware.com/aut
 
 ## How do I deploy this integration?
 
-This integration supports both Elastic Agentless-based and Agent-based installations.
+This integration supports both Elastic Managed and Agent-based installations.
 
-### Agentless-based installation
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ### Agent-based installation
 
@@ -113,7 +113,8 @@ For more information on architectures that can be used for scaling this integrat
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or in the latest destination index. | constant_keyword |
+| labels.is_transform_source | Deprecated: use `labels.is_ioc_transform_source` instead. Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.product |  | constant_keyword |
 | observer.vendor |  | constant_keyword |
@@ -296,6 +297,8 @@ This integration dataset uses the following API:
 
 Cyware Intel Exchange now support indicator expiration. The threat indicators are expired after the duration `IOC Expiration Duration` is configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_cyware_intel_exchange_latest.dest_indicator-2*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
 Destination index is aliased to `logs-ti_cyware_intel_exchange_latest.indicator`.
+
+> **Deprecated:** `labels.is_transform_source` is deprecated in favor of `labels.is_ioc_transform_source` (`"true"` on the raw source data streams, `"false"` on the transformed destination indices). New queries, dashboards, and detection rules should use `labels.is_ioc_transform_source`; this is the field Elastic's built-in Threat Intel Indicator Match rules rely on to exclude raw source documents. `labels.is_transform_source` continues to work and will be removed in a future major version. On upgrade the `"true"` label is added in place to the current write index of each source data stream, so every document already in that index (old and new) is labeled at once; older source backing indices are not relabeled and keep matching the built-in rules until their documents age out of the rules' 30-day window. The transform destination `_latest` indices only receive `labels.is_ioc_transform_source: "false"` on a fresh install or when the transforms are next rebuilt, so on an upgraded install select the latest transformed data with `NOT labels.is_ioc_transform_source: "true"` rather than `labels.is_ioc_transform_source: "false"`.
 
 #### Data retention
 

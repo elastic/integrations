@@ -1,0 +1,243 @@
+# Test that a restart in the middle of a window resumes at the saved page
+# instead of reading the whole window again.
+#
+# The Reports API returns the newest events first, so the timestamp cursor can
+# only move after the last page of a window. Without the page token in the
+# cursor, a restart (or a configuration change, which restarts the input) reads
+# the open window again and duplicates its events.
+#
+# Phase 1: the mock serves page 1 (event 1) and page 2 (event 2). Page 2 points
+# at a third page, which the mock answers with an empty page that carries the
+# same token again, so the window never completes. An empty page publishes no
+# event, so the test sees exactly two documents and the cursor published with
+# page 2 holds the window bounds and the token for page 3.
+#
+# The agent container is then restarted. In phase 2 the mock serves page 3
+# (event 3, the last page) only for that token. A request without a token, which
+# is what a restart without the saved token would make, gets an empty answer.
+#
+# Expected outcome when the token is resumed: event ids 1, 2 and 3, each once.
+# Expected failure without the fix: the window is read again after the restart
+# so ids 1 and 2 appear twice, or id 3 never arrives.
+#
+# The service account key is for testing only. It is generated for each run,
+# is only trusted by the mock server and protects nothing. No key is stored in
+# the repository.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:openssl] skip 'Skipping test requiring absent openssl command'
+[!exec:docker] skip 'Skipping test requiring absent docker command'
+
+exec openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out key.pem
+exec jq -n --rawfile key key.pem --slurpfile creds credentials.json -f test_config.jq
+cp stdout test_config.yaml
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -container_name AGENT_CONTAINER -network_name NETWORK_NAME
+
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} gw-mock
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Pages 1 and 2 are collected and the window then stalls on page 3.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 20s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_before_restart.json
+
+exec jq -r '[.hits.hits[]._source.event.id | select(. != null)] | sort | join(",")' got_docs_before_restart.json
+stdout '^1,2$'
+
+# Restart the agent in the middle of the window. The container keeps its
+# filesystem, so the input state directory survives. Allow a graceful stop so
+# that the input's state is saved. Check that the restart took place, so that
+# the test cannot pass by never restarting the agent.
+exec docker inspect -f '{{.State.StartedAt}}' ${AGENT_CONTAINER}
+cp stdout started_before.txt
+exec docker restart -t 60 ${AGENT_CONTAINER}
+exec docker inspect -f '{{.State.StartedAt}}' ${AGENT_CONTAINER}
+cp stdout started_after.txt
+! cmp started_before.txt started_after.txt
+
+# Let the last page be served from now on.
+docker_down gw-mock
+cp gw-mock/config-phase2.yml gw-mock/config.yml
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} gw-mock
+
+# The agent needs time to start again, and then polls every 10s. In a local run
+# it made its first request about 3s after the restart, so 60s leaves a wide
+# margin for a slower machine.
+sleep 60s
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 0s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_after_restart.json
+
+# Each event once, and no event twice.
+exec jq -r '[.hits.hits[]._source.event.id | select(. != null)] | sort | join(",")' got_docs_after_restart.json
+stdout '^1,2,3$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down gw-mock
+
+-- credentials.json --
+{
+  "type": "service_account",
+  "project_id": "script-tests",
+  "private_key_id": "a2ef9c637b4176ec994606cb08724a1b79bc0666",
+  "client_email": "foo@bar.com",
+  "client_id": "007155790781103885639",
+  "token_uri": "http://svc-gw-mock:8080/token"
+}
+-- test_config.jq --
+{
+  "input": "cel",
+  "vars": {
+    "jwt_json": ($creds[0] | .private_key = $key | tojson),
+    "delegated_account": "test@example.com",
+    "api_host": "http://svc-gw-mock:8080",
+    "enable_request_tracer": false
+  },
+  "data_stream": {
+    "vars": {
+      "interval": "10s",
+      "lag_time": "3m",
+      "initial_interval": "1h",
+      "preserve_original_event": false
+    }
+  }
+}
+-- gw-mock/docker-compose.yml --
+version: '2.3'
+services:
+  gw-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: gw-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- gw-mock/config.yml --
+rules:
+  - path: /token
+    methods: [POST]
+    query_params:
+      grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+      assertion: "{assertion:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"1/fFAGRNJru1FTz70BzhT3Zg","expires_in":3920,"token_type":"Bearer","scope":"https://www.googleapis.com/auth/admin.reports.audit.readonly"}
+  # Page 3 is requested with the token from page 2. In this phase it never
+  # completes: the answer has no items and carries the same token again.
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: [GET]
+    query_params:
+      pageToken: p3
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities","nextPageToken":"p3"}
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: [GET]
+    query_params:
+      pageToken: p2
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities","nextPageToken":"p3","items":[{"kind":"admin#reports#activity","id":{"time":"2026-08-11T03:04:02.000Z","uniqueQualifier":"2","applicationName":"gmail","customerId":"C00test"},"actor":{"callerType":"USER","email":"user2@example.com","profileId":"2"},"ipAddress":"192.0.2.12","events":[{"type":"message_info_type","name":"delivery","parameters":[{"name":"event_info","messageValue":{"parameter":[{"name":"timestamp_usec","intValue":"1786425164002000"},{"name":"mail_event_type","intValue":"2"},{"name":"success","boolValue":true}]}},{"name":"message_info","messageValue":{"parameter":[{"name":"rfc2822_message_id","value":"<2@example.com>"},{"name":"subject","value":"Page 2"}]}}]}]}]}
+  # A request without a token starts a window, and gets page 1.
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities","nextPageToken":"p2","items":[{"kind":"admin#reports#activity","id":{"time":"2026-08-11T03:04:01.000Z","uniqueQualifier":"1","applicationName":"gmail","customerId":"C00test"},"actor":{"callerType":"USER","email":"user1@example.com","profileId":"1"},"ipAddress":"192.0.2.10","events":[{"type":"message_info_type","name":"delivery","parameters":[{"name":"event_info","messageValue":{"parameter":[{"name":"timestamp_usec","intValue":"1786425164001000"},{"name":"mail_event_type","intValue":"2"},{"name":"success","boolValue":true}]}},{"name":"message_info","messageValue":{"parameter":[{"name":"rfc2822_message_id","value":"<1@example.com>"},{"name":"subject","value":"Page 1"}]}}]}]}]}
+-- gw-mock/config-phase2.yml --
+rules:
+  - path: /token
+    methods: [POST]
+    query_params:
+      grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+      assertion: "{assertion:.*}"
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"1/fFAGRNJru1FTz70BzhT3Zg","expires_in":3920,"token_type":"Bearer","scope":"https://www.googleapis.com/auth/admin.reports.audit.readonly"}
+  # Page 3, the last page of the window, is served only for the saved token.
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: [GET]
+    query_params:
+      pageToken: p3
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities","items":[{"kind":"admin#reports#activity","id":{"time":"2026-08-11T03:04:03.000Z","uniqueQualifier":"3","applicationName":"gmail","customerId":"C00test"},"actor":{"callerType":"USER","email":"user3@example.com","profileId":"3"},"ipAddress":"192.0.2.13","events":[{"type":"message_info_type","name":"delivery","parameters":[{"name":"event_info","messageValue":{"parameter":[{"name":"timestamp_usec","intValue":"1786425164003000"},{"name":"mail_event_type","intValue":"2"},{"name":"success","boolValue":true}]}},{"name":"message_info","messageValue":{"parameter":[{"name":"rfc2822_message_id","value":"<3@example.com>"},{"name":"subject","value":"Page 3"}]}}]}]}]}
+  # Anything else has nothing to return. This includes the new window that
+  # starts after page 3, and a window started because the token was lost.
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"kind":"admin#reports#activities"}

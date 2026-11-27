@@ -1,0 +1,57 @@
+title: "Chargeback Node Stats"
+type: metrics
+dataset: chargeback.node_stats
+elasticsearch:
+  source_mode: synthetic
+streams:
+  - input: cel
+    title: Elastic Cloud Data Node Utilization (15m)
+    description: Sample JVM heap and filesystem disk utilization across data-role nodes every 15 minutes for daily p95 realized-cost capacity scoring, and configure utilization weights and floor.
+    template_path: cel.yml.hbs
+    enabled: true
+    vars:
+      - name: utilization_memory_weight
+        type: integer
+        title: Utilization Memory (Heap p95) Weight
+        description: >-
+          Non-negative weight for JVM heap p95 in capacity utilization score (default: 70). The sum of utilization_memory_weight and utilization_storage_weight must be greater than zero.
+        multi: false
+        required: true
+        show_user: true
+        default: 70
+      - name: utilization_storage_weight
+        type: integer
+        title: Utilization Storage (Disk p95) Weight
+        description: >-
+          Non-negative weight for disk p95 in capacity utilization score (default: 30). The sum of utilization_memory_weight and utilization_storage_weight must be greater than zero.
+        multi: false
+        required: true
+        show_user: true
+        default: 30
+      - name: utilization_floor
+        type: text
+        title: Utilization Floor
+        description: >-
+          Minimum utilization score (0.0 to 1.0) applied to all deployments (default: 0.10).
+        multi: false
+        required: true
+        show_user: true
+        default: "0.10"
+      - name: tags
+        type: text
+        title: Tags
+        description: List of tags to include in remotely collected node stats events.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - chargeback
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Optional Beat processors applied before events are published.

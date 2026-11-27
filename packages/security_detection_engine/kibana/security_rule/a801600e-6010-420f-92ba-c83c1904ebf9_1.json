@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects ChatGPT Enterprise custom-agent events that create or update a trigger. Triggers can schedule or event-drive agent runs without interactive user presence, enabling persistence and automation abuse.",
+        "false_positives": [
+            "Operations teams create approved triggers for recurring agent workflows."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "user.id",
+                "gen_ai.agent.id",
+                "openai_chatgpt_enterprise.custom_agents_log.event_details.trigger_fields.required_actions"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "OpenAI ChatGPT Enterprise Custom Agent Trigger Changed",
+        "note": "## Triage and analysis\n\n### Investigating OpenAI ChatGPT Enterprise Custom Agent Trigger Changed\n\nAn agent trigger was created or updated. Triggers can schedule or event-drive agent runs without interactive user presence.\n\nEscalate when the schedule or event scope is overly broad, required actions are sensitive, or the actor is unauthorized. Close as a false positive for approved recurring operational workflows.\n\n#### Possible investigation steps\n\n- Identify the actor, agent, and trigger configuration on the alert.\n- Confirm schedule or event scope and the actions the trigger can invoke.\n- Review recent agent runs associated with the trigger or agent.\n- Correlate with agent publish or connector-link events from the same actor.\n\n### False positive analysis\n\n- Operations teams create approved triggers for recurring agent workflows.\n\n### Response and remediation\n\n- Delete unauthorized triggers and review recent agent runs for unexpected automation.\n",
+        "query": "from logs-openai_chatgpt_enterprise.custom_agents_log-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"openai_chatgpt_enterprise.custom_agents_log\" and\n    event.action in (\"trigger_created\", \"trigger_updated\")\n| keep\n    _id, _version, _index, @timestamp, event.action, user.id, user.email,\n    gen_ai.agent.id,\n    openai_chatgpt_enterprise.custom_agents_log.client_id,\n    openai_chatgpt_enterprise.custom_agents_log.event_details.trigger_fields.required_actions,\n    data_stream.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise",
+            "https://platform.openai.com/docs/compliance"
+        ],
+        "related_integrations": [
+            {
+                "package": "openai_chatgpt_enterprise",
+                "version": ">=0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a801600e-6010-420f-92ba-c83c1904ebf9",
+        "setup": "## Setup\n\nThis rule requires the OpenAI ChatGPT Enterprise integration to collect compliance logs into Elasticsearch.\n\nhttps://www.elastic.co/docs/reference/integrations/openai_chatgpt_enterprise\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: OpenAI",
+            "Data Source: OpenAI ChatGPT Enterprise",
+            "Service: OpenAI ChatGPT Enterprise",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Persistence",
+            "Mitre Atlas: AML.T0081"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "a801600e-6010-420f-92ba-c83c1904ebf9_1",
+    "type": "security-rule"
+}

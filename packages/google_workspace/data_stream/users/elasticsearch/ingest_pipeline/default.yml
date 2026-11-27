@@ -613,6 +613,59 @@ processors:
           tag: append_group_name_to_user_group_name
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
+  - script:
+      lang: painless
+      tag: script_group_roles_to_owns_administers
+      description: >-
+        Adds the IDs of the groups the user owns to
+        user.entity.relationships.owns.entity.id, and the IDs of the groups the
+        user manages after the scopes already in
+        user.entity.relationships.administers.entity.id (set by the roles
+        enrichment above), without duplicates. Plain membership adds no
+        relationship.
+      if: ctx.google_workspace?.users?.groups instanceof List
+      params:
+        owner_role: OWNER
+        manager_role: MANAGER
+      source: |-
+        Set owns = new LinkedHashSet();
+        Set manages = new LinkedHashSet();
+        for (def g : ctx.google_workspace.users.groups) {
+          if (!(g instanceof Map) || !(g.id instanceof String) || g.id.isEmpty() || !(g.role instanceof String)) {
+            continue;
+          }
+          String role = g.role.toUpperCase();
+          if (role == params.owner_role) {
+            owns.add(g.id);
+          } else if (role == params.manager_role) {
+            manages.add(g.id);
+          }
+        }
+        if (owns.isEmpty() && manages.isEmpty()) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        if (ctx.user.entity == null) {
+          ctx.user.entity = new HashMap();
+        }
+        if (!(ctx.user.entity.relationships instanceof Map)) {
+          ctx.user.entity.relationships = new HashMap();
+        }
+        def rel = ctx.user.entity.relationships;
+        if (!owns.isEmpty()) {
+          rel.owns = ['entity': ['id': new ArrayList(owns)]];
+        }
+        if (!manages.isEmpty()) {
+          Set administers = new LinkedHashSet();
+          def existing = rel.administers?.entity?.id;
+          if (existing instanceof List) {
+            administers.addAll(existing);
+          }
+          administers.addAll(manages);
+          rel.administers = ['entity': ['id': new ArrayList(administers)]];
+        }
 
   # Manager.
   - script:

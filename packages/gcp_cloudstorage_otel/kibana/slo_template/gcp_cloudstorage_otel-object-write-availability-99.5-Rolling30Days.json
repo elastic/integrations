@@ -1,0 +1,62 @@
+{
+  "attributes": {
+    "name": "[GCP Cloud Storage OTel] Object write availability 99.5% rolling 30 days",
+    "description": "Tracks Cloud Storage object-write availability as the share of valid WriteObject requests that complete with an OK status, over a rolling 30 days, per GCP project. Requests rejected for caller-attributable reasons (NOT_FOUND, PERMISSION_DENIED, UNAUTHENTICATED, INVALID_ARGUMENT, FAILED_PRECONDITION, OUT_OF_RANGE, ALREADY_EXISTS, CANCELLED) are excluded from both the numerator and the denominator, mirroring the Valid Requests definition in the Cloud Storage SLA, so the objective reflects storage-side write reliability rather than optimistic-concurrency contention or client misconfiguration. Every other non-OK status consumes error budget, including transient service faults and rate-limit rejections, so status codes not present today still fail safe. A breach means durable writes were refused, which risks data loss and upstream backpressure.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-gcp.cloudstorage.otel-default",
+        "filter": "resource.attributes.gcp.resource_type: \"gcs_bucket\" and attributes.method: \"WriteObject\" and not attributes.response_code: (\"NOT_FOUND\" or \"PERMISSION_DENIED\" or \"UNAUTHENTICATED\" or \"INVALID_ARGUMENT\" or \"FAILED_PRECONDITION\" or \"OUT_OF_RANGE\" or \"ALREADY_EXISTS\" or \"CANCELLED\")",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "metrics.storage.googleapis.com/api/request_count",
+              "filter": "attributes.response_code: \"OK\""
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "metrics.storage.googleapis.com/api/request_count"
+            }
+          ],
+          "equation": "B"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "gcp_cloudstorage_otel",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.project_id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+        },
+        {
+          "id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+        }
+      ]
+    }
+  },
+  "id": "gcp_cloudstorage_otel-object-write-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud Storage OTel] Client-fault response code surge on a bucket",
+        "description": "Fires when any non-authorization client-fault code (NOT_FOUND, FAILED_PRECONDITION, INVALID_ARGUMENT, OUT_OF_RANGE, ALREADY_EXISTS, CANCELLED) on a bucket steps up at least three-fold against both its own 22-hour baseline and the busiest of the previous 7 days at the same time of day. A daily or weekly batch that produces these codes alerts only the first time it runs. One alert per bucket and code, because the remediation for each code is completely different.",
+        "tags": [
+          "observability",
+          "gcp_cloudstorage_otel",
+          "otel"
+        ]
+      },
+      "schedule": {
+        "every": "30m",
+        "lookback": "171h"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudstorage.otel-default\n// Scope to Cloud Storage; this data stream carries every GCP service the receiver collects.\n| WHERE resource.attributes.gcp.resource_type == \"gcs_bucket\"\n    AND `metrics.storage.googleapis.com/api/request_count` IS NOT NULL\n// Client-fault codes other than the authorization pair, which has its own, traffic-normalised rule\n// (gcp_cloudstorage_otel-authorization-failure-surge). Anything not listed here is handled by\n// gcp_cloudstorage_otel-service-fault-errors, so the two rules together cover every possible code.\n| WHERE attributes.response_code IN (\n      \"NOT_FOUND\", \"INVALID_ARGUMENT\", \"FAILED_PRECONDITION\",\n      \"OUT_OF_RANGE\", \"ALREADY_EXISTS\", \"CANCELLED\")\n// The rule compares the last 2h (\"recent\") with two baselines: the 22h before them, which keeps a\n// normal diurnal peak from reading as a step change, and the same time of day on each of the\n// previous 7 days, which keeps a daily or weekly batch from alerting again once it has run before.\n// The same-time window runs from 3h before to 1h after this time of day, so a batch that starts a\n// little earlier or later, or moves an hour with daylight saving time, still matches.\n// same_time_day is k when the sample falls in that window on the k-th previous day, otherwise 0;\n// the rule's 171h window covers day 7.\n| EVAL minutes_ago   = DATE_DIFF(\"minutes\", @timestamp, NOW()),\n       same_time_day = CASE((minutes_ago + 60) % 1440 < 240, (minutes_ago + 60) / 1440, 0)\n// request_count is a ~60s delta counter stored as a gauge. SUM_OVER_TIME totals each series and SUM\n// adds the series together: the collector can split one bucket's metric across several series\n// (_metric_names_hash is a dimension), and each sample is still counted once. Never RATE() it.\n// Each day gets its own filtered aggregation: grouping TS results BY a computed day does not split\n// the per-series totals.\n| STATS recent_faults    = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE @timestamp >= NOW() - 2 hours,\n        baseline_faults  = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE @timestamp >= NOW() - 24 hours AND @timestamp < NOW() - 2 hours,\n        day_1            = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE same_time_day == 1,\n        day_2            = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE same_time_day == 2,\n        day_3            = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE same_time_day == 3,\n        day_4            = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE same_time_day == 4,\n        day_5            = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE same_time_day == 5,\n        day_6            = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE same_time_day == 6,\n        day_7            = SUM(SUM_OVER_TIME(`metrics.storage.googleapis.com/api/request_count`)) WHERE same_time_day == 7,\n        affected_methods = VALUES(attributes.method) WHERE @timestamp >= NOW() - 2 hours\n    BY resource.attributes.bucket_name, attributes.response_code\n| EVAL peak_same_time_faults = GREATEST(COALESCE(day_1, 0), COALESCE(day_2, 0), COALESCE(day_3, 0), COALESCE(day_4, 0),\n                                        COALESCE(day_5, 0), COALESCE(day_6, 0), COALESCE(day_7, 0))\n| DROP day_1, day_2, day_3, day_4, day_5, day_6, day_7\n| EVAL recent_faults = COALESCE(recent_faults, 0), baseline_faults = COALESCE(baseline_faults, 0)",
+        "breach": {
+          "segment": "// Absolute floor first, so a code that was previously absent cannot page on a handful of requests.\nWHERE recent_faults >= 50\n// Cast before dividing: request_count is a long and `a / b` would be integer division.\n// 2.0, 22.0 and 4.0 are the slice widths in hours \u2014 keep them in sync with the slices above and\n// timeWindowSize.\n| EVAL recent_faults_per_hour         = ROUND(recent_faults::DOUBLE / 2.0, 2),\n       baseline_faults_per_hour       = ROUND(baseline_faults::DOUBLE / 22.0, 2),\n       peak_same_time_faults_per_hour = ROUND(peak_same_time_faults::DOUBLE / 4.0, 2)\n// Step-change test on the unrounded hourly rates, against the higher of the two baselines, so the\n// recent rate must be a step change on both the preceding hours and the busiest of the previous 7\n// days at this time. A code with no faults in either baseline is compared against 1 fault/hour\n// instead, so the ratio stays finite; the volume floor above already makes such a code significant.\n| EVAL reference_faults_per_hour = GREATEST(baseline_faults::DOUBLE / 22.0, peak_same_time_faults::DOUBLE / 4.0)\n| EVAL step_change_factor = ROUND((recent_faults::DOUBLE / 2.0)\n      / CASE(reference_faults_per_hour > 0, reference_faults_per_hour, 1.0), 2)\n| WHERE step_change_factor >= 3.0\n| EVAL alert_key = CONCAT(resource.attributes.bucket_name, \" / \", attributes.response_code)\n| SORT step_change_factor DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.bucket_name",
+          "attributes.response_code"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Client-fault response code surge on a Cloud Storage bucket\n\nA caller-side status code has stepped up at least three-fold for this bucket, against both its own\n22-hour baseline and the busiest of the previous 7 days at the same time of day. These codes are *expected at some baseline rate* in many workloads \u2014 probing for object\nexistence is a legitimate pattern \u2014 so the signal is the change, not the level. Cloud Storage is\nbehaving correctly here; something about the caller, the data model or the configuration changed.\n\n### Triage by code\n\n`attributes.response_code` identifies which code moved, and `affected_methods` narrows it to a path.\n\n- **`NOT_FOUND`** on `ReadObject` or `GetObjectMetadata` \u2014 broken references, a read racing ahead of\n  the write that creates the object, or a lifecycle rule that deleted objects a consumer still\n  expects. Check recent lifecycle policy edits and the ordering guarantees between producer and\n  consumer.\n- **`FAILED_PRECONDITION`** on `WriteObject` or `ReadObject` \u2014 optimistic-concurrency contention.\n  Multiple writers are using `ifGenerationMatch` / `ifMetagenerationMatch` against the same object\n  and losing the race. Look for a scale-up of the writing service, a retry storm, or a new consumer.\n  The remedy is usually to partition the object key space, not to drop the precondition.\n- **`INVALID_ARGUMENT`** appearing where it previously did not \u2014 a client or SDK regression. Check\n  what deployed in the last two hours, including SDK and client-library version bumps.\n- **`OUT_OF_RANGE`** \u2014 ranged reads asking for byte ranges past the end of the object, typically\n  after an object was rewritten smaller.\n- **`ALREADY_EXISTS`** \u2014 create-if-absent semantics colliding, usually a duplicated job run.\n- **`CANCELLED`** \u2014 callers abandoning requests. Often a client timeout budget that is too tight, or\n  upstream load shedding; correlate with the client's own latency.\n\n### Triage steps\n\n1. Confirm the blast radius: is this one bucket, or did several buckets move together? Several at\n   once points at a shared client or deployment rather than a data problem.\n2. Check what deployed in the recent window. Most surges of this shape are a release.\n3. Confirm the bucket is not also saturated \u2014 if `gcp_cloudstorage_otel-request-throttling` is active,\n   deal with the ramp first.\n\n### Tuning\n\n- `step_change_factor >= 3.0` is the sensitivity. Raise it for noisy workloads, lower it to `2.0`\n  where these codes are normally very stable.\n- `recent_faults >= 50` is the absolute floor; raise it for large estates.\n- The same-time comparison keeps a recurring batch quiet: once a burst has happened at this time of\n  day in the last 7 days, it has to be three times larger to alert again.\n  `peak_same_time_faults_per_hour` shows the busiest earlier day at this time. The window runs from\n  3h before to 1h after this time of day, hence the `4.0` divisor, and `timeWindowSize` (171h) must\n  reach the start of that window 7 days ago.\n- This rule compares raw rates rather than shares, because the per-bucket total is not available\n  when grouping by response code. A genuine three-fold traffic increase can therefore trip it \u2014\n  check overall request volume before treating the alert as a regression."
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-ffad2d3a-43f6-482a-a35c-97f6df9e0479"
+          }
+        },
+        {
+          "id": "gcp_cloudstorage_otel-client-fault-code-surge-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudstorage_otel-61c5320c-19f7-4676-a8ae-5d2d889d99a7"
+          }
+        }
+      ]
+    }
+  }
+}

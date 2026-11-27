@@ -10,6 +10,10 @@ STACK_VERSION=${STACK_VERSION:-""}
 UPLOAD_SAFE_LOGS=${UPLOAD_SAFE_LOGS:-"0"}
 # used in common.sh
 FORCE_CHECK_ALL=${FORCE_CHECK_ALL:-"false"}
+# Buildkite parallel jobs: each job tests a round-robin slice of the packages in its own Serverless project
+SHARD_INDEX=${BUILDKITE_PARALLEL_JOB:-0}
+SHARD_TOTAL=${BUILDKITE_PARALLEL_JOB_COUNT:-1}
+SHARD_LABEL="shard $((SHARD_INDEX + 1))/${SHARD_TOTAL}"
 
 SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
 FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
@@ -23,7 +27,7 @@ fi
 
 SERVERLESS_PROJECT=${SERVERLESS_PROJECT:-"observability"}
 echo "Running packages on Serverless project type: ${SERVERLESS_PROJECT}"
-if running_on_buildkite; then
+if running_on_buildkite && [[ "${SHARD_INDEX}" == "0" ]]; then
     buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --context "ctx-info-${SERVERLESS_PROJECT}" --style "info"
 fi
 
@@ -53,12 +57,6 @@ with_docker_compose_plugin
 with_kubernetes
 
 use_elastic_package
-
-prepare_serverless_stack
-
-echo "Waiting time to avoid getaddrinfo ENOTFOUND errors..."
-sleep 120
-echo "Done."
 
 # setting range of changesets to check differences
 echo "--- Get from and to changesets"
@@ -111,6 +109,21 @@ else
     echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
 fi
 
+echo "--- Select packages for ${SHARD_LABEL}"
+PACKAGE_LIST=$(echo "${PACKAGE_LIST}" | select_shard_packages "${SHARD_INDEX}" "${SHARD_TOTAL}")
+echo "Packages in ${SHARD_LABEL}: $(echo "${PACKAGE_LIST}" | grep -c -v '^$' || true)"
+
+if [[ -z "${PACKAGE_LIST}" ]]; then
+    echo "No packages to test in ${SHARD_LABEL}"
+    exit 0
+fi
+
+prepare_serverless_stack
+
+echo "Waiting time to avoid getaddrinfo ENOTFOUND errors..."
+sleep 120
+echo "Done."
+
 for package_path in ${PACKAGE_LIST}; do
     echo "--- [$package_path] check if it is required to be tested"
     if ! should_test_package "${package_path}" "${from}" "${to}"; then
@@ -126,12 +139,12 @@ done
 if running_on_buildkite ; then
     if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then
         echo "--- Create Skip Buildkite annotation"
-        create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT}" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}"
+        create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT} (${SHARD_LABEL})" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}-${SHARD_INDEX}"
     fi
 
     if [ -f "${FAILED_PACKAGES_FILE_PATH}" ]; then
         echo "--- Create Failed Buildkite annotation"
-        create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" "${FAILED_PACKAGES_FILE_PATH}" "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
+        create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT} (${SHARD_LABEL})" "${FAILED_PACKAGES_FILE_PATH}" "error" "ctx-failed-packages-${SERVERLESS_PROJECT}-${SHARD_INDEX}"
     fi
 fi
 

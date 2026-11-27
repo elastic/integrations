@@ -1,0 +1,110 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: aws
+      name: test-identity-federation-aws
+      streams:
+        - data_stream:
+            dataset: aws.emr_metrics
+          default_region: us-east-1
+          include_linked_accounts: true
+          metrics:
+            - name:
+                - IsIdle
+                - ContainerPendingRatio
+                - LiveDataNodes
+                - MultiMasterInstanceGroupNodesRunningPercentage
+                - HDFSUtilization
+                - YARNMemoryAvailablePercentage
+                - TotalUnitsRunning
+                - TotalNodesRunning
+                - TotalVCPURunning
+                - CoreUnitsRunning
+                - CoreNodesRunning
+                - CoreVCPURunning
+                - TaskUnitsRunning
+                - TaskNodesRunning
+                - TaskVCPURunning
+                - AutoTerminationIsClusterIdle
+              namespace: AWS/ElasticMapReduce
+              resource_type: emr
+              statistic:
+                - Average
+            - name:
+                - ContainerAllocated
+                - ContainerReserved
+                - ContainerPending
+                - AppsCompleted
+                - AppsFailed
+                - AppsKilled
+                - AppsPending
+                - AppsRunning
+                - AppsSubmitted
+                - CoreNodesPending
+                - MRTotalNodes
+                - MRActiveNodes
+                - MRLostNodes
+                - MRUnhealthyNodes
+                - MRDecommissionedNodes
+                - MRRebootedNodes
+                - MultiMasterInstanceGroupNodesRunning
+                - MultiMasterInstanceGroupNodesRequested
+                - S3BytesWritten
+                - S3BytesRead
+                - HDFSBytesRead
+                - HDFSBytesWritten
+                - TotalLoad
+                - MemoryTotalMB
+                - MemoryReservedMB
+                - MemoryAvailableMB
+                - MemoryAllocatedMB
+                - PendingDeletionBlocks
+                - UnderReplicatedBlocks
+                - DfsPendingReplicationBlocks
+                - CapacityRemainingGB
+                - TotalNotebookKernels
+              namespace: AWS/ElasticMapReduce
+              resource_type: emr
+              statistic:
+                - Sum
+            - name:
+                - MissingBlocks
+                - CorruptBlocks
+                - TotalUnitsRequested
+                - TotalNodesRequested
+                - TotalVCPURequested
+                - CoreUnitsRequested
+                - CoreNodesRequested
+                - CoreVCPURequested
+                - TaskUnitsRequested
+                - TaskNodesRequested
+                - TaskVCPURequested
+              namespace: AWS/ElasticMapReduce
+              resource_type: emr
+              statistic:
+                - Maximum
+          metricsets:
+            - cloudwatch
+          period: 5m
+          role_arn: arn:aws:iam::123456789012:role/ElasticAgentlessReadOnly
+          tags_filter: null
+          use_cloud_connectors: true
+      type: aws/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-aws.emr_metrics-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

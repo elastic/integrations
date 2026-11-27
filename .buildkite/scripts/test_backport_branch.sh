@@ -15,6 +15,7 @@ TMPDIR_TRANS=""  # unit tests for collect_link_source_packages (transitive cases
 TMPDIR_REPO4=""
 TMPDIR_REPO5=""
 TMPDIR_REPO6=""
+TMPDIR_PIPELINE=""
 WARN_FILE=""
 
 cleanup() {
@@ -27,6 +28,7 @@ cleanup() {
     [[ -n "${TMPDIR_REPO4}" ]] && rm -rf "${TMPDIR_REPO4}"
     [[ -n "${TMPDIR_REPO5}" ]] && rm -rf "${TMPDIR_REPO5}"
     [[ -n "${TMPDIR_REPO6}" ]] && rm -rf "${TMPDIR_REPO6}"
+    [[ -n "${TMPDIR_PIPELINE}" ]] && rm -rf "${TMPDIR_PIPELINE}"
     [[ -n "${WARN_FILE}" ]] && rm -f "${WARN_FILE}"
 }
 trap cleanup EXIT
@@ -640,6 +642,120 @@ assert_equals "link-req: pkg_unrelated entry removed from CODEOWNERS" \
     "false" "$(grep -q 'pkg_unrelated' "${TMPDIR_REPO6}/.github/CODEOWNERS" && echo true || echo false)"
 
 rm -rf "${TMPDIR_REPO6}"
+
+# ---------------------------------------------------------------------------
+# Tests: restore_pipeline_env_line
+# ---------------------------------------------------------------------------
+echo "--- restore_pipeline_env_line tests"
+
+TMPDIR_PIPELINE="$(mktemp -d)"
+
+make_pipeline() {
+    # make_pipeline <file> <extra env entries...>
+    local file="${1}"
+    shift
+    {
+        printf '# yaml-language-server: $schema=https://example.invalid/schema.json\n'
+        printf 'env:\n'
+        printf '  SETUP_GVM_VERSION: "v0.6.0"\n'
+        printf '  K8S_VERSION: %s\n' "'v1.36.1'"
+        local entry
+        for entry in "$@"; do
+            printf '%s\n' "${entry}"
+        done
+        printf '\n'
+        printf 'steps:\n'
+        printf '  - label: "noop"\n'
+        printf '    command: "true"\n'
+    } > "${file}"
+}
+
+# 1. Key missing in the file copied from main → inserted in the env block
+pipeline="${TMPDIR_PIPELINE}/missing.yml"
+make_pipeline "${pipeline}"
+restore_pipeline_env_line "${pipeline}" '  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "true"'
+assert_equals "missing key → line inserted" \
+    '  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "true"' \
+    "$(grep -E '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline}")"
+assert_equals "missing key → inserted inside the top-level env block" \
+    "true" \
+    "$(yq -r '.env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
+assert_equals "missing key → other env entries are kept" \
+    "v0.6.0" \
+    "$(yq -r '.env.SETUP_GVM_VERSION' "${pipeline}")"
+assert_equals "missing key → blank lines are not stripped" \
+    "true" \
+    "$(grep -qE '^$' "${pipeline}" && echo true || echo false)"
+assert_equals "missing key → only one occurrence added" \
+    "1" \
+    "$(grep -cE '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline}")"
+
+# 2. Key still present in the file copied from main → value from the backport branch wins
+pipeline="${TMPDIR_PIPELINE}/present.yml"
+make_pipeline "${pipeline}" '  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "false"'
+restore_pipeline_env_line "${pipeline}" '  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "true"'
+assert_equals "existing key → line replaced with the backport branch value" \
+    "true" \
+    "$(yq -r '.env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
+assert_equals "existing key → not duplicated" \
+    "1" \
+    "$(grep -cE '^\s*ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION:' "${pipeline}")"
+
+# 3. Pipeline with a blank line before env: and step-level env: blocks
+pipeline="${TMPDIR_PIPELINE}/nested_env.yml"
+{
+    printf '# yaml-language-server: $schema=https://example.invalid/schema.json\n'
+    printf '\n'
+    printf 'env:\n'
+    printf '  SETUP_GVM_VERSION: "v0.6.0"\n'
+    printf '\n'
+    printf 'steps:\n'
+    printf '  - label: "noop"\n'
+    printf '    command: "true"\n'
+    printf '    env:\n'
+    printf '      SERVERLESS: "true"\n'
+} > "${pipeline}"
+restore_pipeline_env_line "${pipeline}" '  ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION: "true"'
+assert_equals "nested env → inserted in the top-level env block" \
+    "true" \
+    "$(yq -r '.env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
+assert_equals "nested env → step-level env block is left untouched" \
+    "null" \
+    "$(yq -r '.steps[0].env.ELASTIC_PACKAGE_KIBANA_SKIP_UPLOAD_PACKAGE_VALIDATION' "${pipeline}")"
+assert_equals "nested env → step-level env entries are kept" \
+    "true" \
+    "$(yq -r '.steps[0].env.SERVERLESS' "${pipeline}")"
+
+# 4. Empty line (base commit did not define the variable) → file untouched
+pipeline="${TMPDIR_PIPELINE}/empty.yml"
+make_pipeline "${pipeline}"
+cp "${pipeline}" "${TMPDIR_PIPELINE}/empty.yml.orig"
+restore_pipeline_env_line "${pipeline}" ""
+assert_equals "empty env line → file is left untouched" \
+    "true" \
+    "$(cmp -s "${pipeline}" "${TMPDIR_PIPELINE}/empty.yml.orig" && echo true || echo false)"
+
+# 5. Pipeline file without a top-level env block → error, file untouched
+pipeline="${TMPDIR_PIPELINE}/no_env.yml"
+printf 'steps:\n  - label: "noop"\n    command: "true"\n' > "${pipeline}"
+set +e
+restore_pipeline_env_line "${pipeline}" '  FOO: "true"' 2>/dev/null
+rc=$?
+set -e
+assert_equals "no env block → returns an error" "1" "${rc}"
+assert_equals "no env block → file is left untouched" \
+    "false" \
+    "$(grep -q 'FOO' "${pipeline}" && echo true || echo false)"
+
+# 6. Missing pipeline file → error
+set +e
+restore_pipeline_env_line "${TMPDIR_PIPELINE}/does_not_exist.yml" '  FOO: "true"' 2>/dev/null
+rc=$?
+set -e
+assert_equals "missing pipeline file → returns an error" "1" "${rc}"
+
+rm -rf "${TMPDIR_PIPELINE}"
+TMPDIR_PIPELINE=""
 
 # ---------------------------------------------------------------------------
 echo ""

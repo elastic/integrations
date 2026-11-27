@@ -1,0 +1,29 @@
+{
+    "id": "chargeback-new-group-detected",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Chargeback] New chargeback group detected",
+        "tags": [
+            "Chargeback"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1h"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 3,
+            "timeWindowUnit": "d",
+            "esqlQuery": {
+                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE deployment_group IS NOT NULL AND deployment_group != \"\"\n| STATS count = COUNT(*) BY deployment_group\n| SORT deployment_group\n| KEEP deployment_group"
+            },
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

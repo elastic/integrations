@@ -1,11 +1,13 @@
-# Verify SIEM v1 collection and routing from siem_event to audit and admin_actions.
+# Verify SIEM v1 collection and routing from siem_event to audit, admin_actions
+# and system_event.
 #
-# The mock SIEM API returns one batch with two NDJSON events (1 BrowserAudit,
-# 1 AdminAction), then an empty batch that omits count. The CEL program GETs
+# The mock SIEM API returns one batch with three NDJSON events (1 BrowserAudit,
+# 1 AdminAction, 1 SystemEvent), then an empty batch that omits count. The CEL program GETs
 # the batch, POSTs the pageId ack, and on the next in-cycle GET must stop
 # without publishing an error document.
 #
-# Expected: 1 document in island_browser.audit and 1 in island_browser.admin_actions.
+# Expected: 1 document in each of island_browser.audit, island_browser.admin_actions
+# and island_browser.system_event.
 # The siem_event collector stream should retain no routed documents.
 
 [!external_stack] skip 'Skipping external stack test.'
@@ -36,11 +38,24 @@ stdout 'AdminAction'
 exec jq -r '[.hits.hits[]._source.event.id] | unique[]' admin_docs.json
 stdout 'b2f2209f-756f-4065-8cfb-d6d1878bfa2e'
 
-# Combined count across both destination data streams.
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m logs-island_browser.audit-*,logs-island_browser.admin_actions-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m logs-island_browser.system_event-*
+cp stdout system_docs.json
+exec jq '[.hits.hits[]._source | select(.island_browser.system_event != null)] | length' system_docs.json
+stdout '^1$'
+exec jq -r '[.hits.hits[]._source.island_browser.system_event.source] | unique[]' system_docs.json
+stdout 'SystemEvent'
+exec jq -r '[.hits.hits[]._source.event.id] | unique[]' system_docs.json
+stdout '4900fe0c-2c46-4577-b270-fafa804e2e52'
+exec jq -r '[.hits.hits[]._source.event.severity] | unique[]' system_docs.json
+stdout '^3$'
+exec jq -r '[.hits.hits[]._source["@timestamp"]] | unique[]' system_docs.json
+stdout '^2025-09-13T20:22:32.129Z$'
+
+# Combined count across all destination data streams.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m logs-island_browser.audit-*,logs-island_browser.admin_actions-*,logs-island_browser.system_event-*
 cp stdout all_docs.json
 exec jq '.hits.total.value' all_docs.json
-stdout '^2$'
+stdout '^3$'
 
 # A follow-up response without count must not publish an error document.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 0 -confirm 15s -timeout 1m logs-island_browser.siem_event-*
@@ -89,7 +104,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          {"audits":"{\"tenant_id\":\"elastic-testing\",\"id\":\"0554e3ab-618a-4171-a5d7-33555ac4476b\",\"timestamp\":\"2025-09-09T13:29:38.000Z\",\"email\":\"john.doe@example.com\",\"user_id\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"user_name\":\"John Doe\",\"type\":\"Navigation\",\"verdict\":\"Allowed\",\"processed_date\":\"2025-09-09T13:29:39.123456Z\",\"client_event_id\":\"d14e7489-e627-4cf8-bf89-daeb6c4b6a55\",\"source\":\"BrowserAudit\",\"data_target\":\"BrowserAudit\",\"version\":2,\"top_level_url\":\"https://example.com\",\"source_ip\":\"10.50.6.126\",\"public_ip\":\"81.2.69.142\",\"machine_name\":\"ub22-50-6-126.manage.local\"}\n{\"tenant_id\":\"elastic-testing\",\"id\":\"b2f2209f-756f-4065-8cfb-d6d1878bfa2e\",\"timestamp\":\"2025-08-28T11:04:18.985019Z\",\"email\":\"API|Testing API Key\",\"user_id\":\"auth0|1e396c45-b365-4207-ae78-b35b10c06aaf\",\"entity_id\":\"auth0|30e45685-6701-4c92-bcdd-49e53c7853bd\",\"entity_name\":\"john.rich+16690@example.com\",\"entity_type\":\"User\",\"action\":\"Create\",\"audit_type\":\"AdminAction\",\"source\":\"AdminAction\"}","pageId":"mock-page-1","count":2,"lastAuditTimestamp":"2025-09-09T13:29:38.000Z"}
+          {"audits":"{\"tenant_id\":\"elastic-testing\",\"id\":\"0554e3ab-618a-4171-a5d7-33555ac4476b\",\"timestamp\":\"2025-09-09T13:29:38.000Z\",\"email\":\"john.doe@example.com\",\"user_id\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"user_name\":\"John Doe\",\"type\":\"Navigation\",\"verdict\":\"Allowed\",\"processed_date\":\"2025-09-09T13:29:39.123456Z\",\"client_event_id\":\"d14e7489-e627-4cf8-bf89-daeb6c4b6a55\",\"source\":\"BrowserAudit\",\"data_target\":\"BrowserAudit\",\"version\":2,\"top_level_url\":\"https://example.com\",\"source_ip\":\"10.50.6.126\",\"public_ip\":\"81.2.69.142\",\"machine_name\":\"ub22-50-6-126.manage.local\"}\n{\"tenant_id\":\"elastic-testing\",\"id\":\"b2f2209f-756f-4065-8cfb-d6d1878bfa2e\",\"timestamp\":\"2025-08-28T11:04:18.985019Z\",\"email\":\"API|Testing API Key\",\"user_id\":\"auth0|1e396c45-b365-4207-ae78-b35b10c06aaf\",\"entity_id\":\"auth0|30e45685-6701-4c92-bcdd-49e53c7853bd\",\"entity_name\":\"john.rich+16690@example.com\",\"entity_type\":\"User\",\"action\":\"Create\",\"audit_type\":\"AdminAction\",\"source\":\"AdminAction\"}\n{\"tenant_id\":\"elastic-testing\",\"id\":\"4900fe0c-2c46-4577-b270-fafa804e2e52\",\"timestamp\":\"2025-09-13T20:22:32.129Z\",\"type\":\"Connector Network Down\",\"category\":\"IPA\",\"sub_category\":\"CONNECTORS\",\"severity\":\"Medium\",\"primary_entity_id\":\"e76f5871-824f-499a-bcf4-ef3cd945ca7b\",\"primary_entity_name\":\"connector-example-01\",\"details\":{\"hostname\":\"connector-01.example.com\",\"ip_address\":\"10.50.6.126\",\"network_name\":\"example-network\"},\"source\":\"SystemEvent\"}","pageId":"mock-page-1","count":3,"lastAuditTimestamp":"2025-09-09T13:29:38.000Z"}
       - status_code: 200
         headers:
           Content-Type:

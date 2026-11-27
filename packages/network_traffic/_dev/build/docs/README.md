@@ -29,32 +29,53 @@ Currently, Network Packet Capture supports the following protocols:
 -   TLS
 -   SIP/SDP (beta)
 
+### ECS field mapping
+
+Packetbeat writes some fields at the root of the document that are not
+part of ECS. These are moved so that they do not collide with fields from
+other integrations. For AMQP, Cassandra, DHCPv4, flow, ICMP, Memcached,
+MongoDB, MySQL, NFS, PostgreSQL, Redis, SIP and Thrift, the protocol
+object moves to `network_traffic.<protocol>` (`memcache` becomes
+`network_traffic.memcached`, and the NFS `rpc` object moves into
+`network_traffic.nfs`), and `method`, `query`, `path` and `resource` move
+into it where the protocol writes them. DNS moves only its non-ECS fields
+to `network_traffic.dns`, including `method`, `query` and `resource`;
+`dns.additionals` and `dns.opt.*` stay where they are. For HTTP, `query`
+moves to `network_traffic.http.query`, `method` is dropped (use
+`http.request.method`) and the `http.*` fields stay. TLS keeps its
+fields. In every data stream `status` goes to `network_traffic.status`
+and `type` is dropped; use `network.protocol`. The raw `request` and
+`response` messages, which are present only when sending them is enabled,
+go to `network_traffic.<protocol>.request.original` and
+`network_traffic.<protocol>.response.original` for AMQP, DNS, HTTP,
+MongoDB, MySQL, PostgreSQL, Redis and Thrift, and the MySQL `params` field
+goes to `network_traffic.mysql.params`.
+
+Version 2.0.0 removed the `map_to_ecs` option and the original field
+mappings, so this always happens. Rules, searches, visualisations, ML jobs and
+custom ingest pipelines that use the old root fields must use the new
+locations. Documents indexed before the upgrade keep their old layout.
+
+The dashboards whose titles do not end in "(ECS compliant)" and the
+saved searches that match them query the original root fields. They
+show data written with `map_to_ecs` disabled, which was the default
+before version 1.31.1 and which version 2.0.0 no longer writes. Data
+written with `map_to_ecs` enabled appears only in the "(ECS compliant)"
+dashboards.
+
+Users who need to retain data collected with the original mappings may need
+to re-index their older documents. Instructions for doing this are available
+[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+The pipeline used to perform ECS remapping for each data stream can be found
+in `Stack Management`›`Ingest Pipelines` by searching for
+"logs-network_traffic compatibility".
+
+The retirement timeline for the original behavior is available
+[here](https://github.com/elastic/integrations/issues/8185).
+
 ### Common protocol options
 
 The following options are available for all protocols:
-
-#### `map_to_ecs`
-
-Remap any non-ECS Packetbeat fields in root to their correct ECS fields.
-This will rename fields that are moved so the fields will not be present
-at the root of the document and so any rules that depend on the fields
-will need to be updated.
-
-The legacy behaviour of this option is to not remap to ECS. This behaviour
-is still the default, but is deprecated and users are encouraged to set
-this option to true.
-
-ECS remapping may have an impact on workflows that depend on the identity
-of non-ECS fields, and users should assess their use of these fields before
-making the change. Users who need to retain data collected with the legacy
-mappings may need to re-index their older documents. Instructions for doing
-this are available [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
-The pipeline used to perform ECS remapping for each data stream can be found
-in `Stack Management`›`Ingest Pipelines` and and searching for
-"logs-network_traffic compatibility".
-
-The deprecation and retirement timeline for legacy behavior is available
-[here](https://github.com/elastic/integrations/issues/8185).
 
 #### `enabled`
 
@@ -270,7 +291,7 @@ Also see [Common protocol options](#common-protocol-options).
 
 #### `include_authorities`
 
-If this option is enabled, dns.authority fields (authority resource
+If this option is enabled, network_traffic.dns.authorities fields (authority resource
 records) are added to DNS events. The default is false.
 
 #### `include_additionals`
@@ -646,7 +667,7 @@ Elasticsearch so that they can be analyzed and searched.
 
 Network Packet Capture indexes the method, parameters, return value, and exceptions
 of each Thrift-RPC call. You can search by and create statistics based
-on any of these fields. Network Packet Capture automatically fills in the `status`
+on any of these fields. Network Packet Capture automatically fills in the `network_traffic.status`
 column with either `OK` or `Error`, so it’s easy to find the problematic
 RPC calls. A transaction is put into the `Error` state if it returned an
 exception.
