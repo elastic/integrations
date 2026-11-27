@@ -5,7 +5,7 @@ description: >-
 processors:
   - script:
       lang: painless
-      tag: set_realized_pool_fields
+      tag: set_realized_pool_ecus
       source: |
         if (ctx['@timestamp'] != null && ctx.project_id != null) {
           def ts = ctx['@timestamp'];
@@ -113,6 +113,10 @@ processors:
           all_ecu = ((Number)ctx.all_sku_ecu).doubleValue();
         }
         ctx.all_sku_ecu = all_ecu;
+  - script:
+      lang: painless
+      tag: set_realized_pool_meta
+      source: |
         String sep = Character.toString((char)31);
         boolean hasRawPool = false;
         if (ctx.pool_meta instanceof Map) {
@@ -208,8 +212,23 @@ processors:
           }
           ctx.remove('latest_currency');
         }
+        if (hasRawPool) { ctx._cb_has_raw_pool = true; }
+  - script:
+      lang: painless
+      tag: set_realized_pool_v1_carryover
+      source: |
         if (ctx.v1_carryover instanceof Map) {
-          if (!hasRawPool) {
+          if (ctx._cb_has_raw_pool != true) {
+            String sep = Character.toString((char)31);
+            double idx = ctx.indexing_ecu instanceof Number ? ((Number)ctx.indexing_ecu).doubleValue() : 0.0;
+            double qry = ctx.query_ecu instanceof Number ? ((Number)ctx.query_ecu).doubleValue() : 0.0;
+            double stg = ctx.storage_ecu instanceof Number ? ((Number)ctx.storage_ecu).doubleValue() : 0.0;
+            double ai = ctx.ai_ecu instanceof Number ? ((Number)ctx.ai_ecu).doubleValue() : 0.0;
+            double syn = ctx.synthetics_ecu instanceof Number ? ((Number)ctx.synthetics_ecu).doubleValue() : 0.0;
+            double syn_pings = ctx.synthetics_pings_ecu instanceof Number ? ((Number)ctx.synthetics_pings_ecu).doubleValue() : 0.0;
+            double syn_exec = ctx.synthetics_executions_ecu instanceof Number ? ((Number)ctx.synthetics_executions_ecu).doubleValue() : 0.0;
+            double all_ecu = ctx.all_sku_ecu instanceof Number ? ((Number)ctx.all_sku_ecu).doubleValue() : 0.0;
+            double cap = 0.0;
             Map vc = (Map)ctx.v1_carryover;
             List vEntries = new ArrayList();
             if (vc.get('buckets') instanceof List) {
@@ -292,6 +311,11 @@ processors:
           }
           ctx.remove('v1_carryover');
         }
+        ctx.remove('_cb_has_raw_pool');
+  - script:
+      lang: painless
+      tag: set_realized_pool_fields
+      source: |
         if (ctx.project_name == null || ctx.project_name == '' || ctx.project_name == 'null') {
           ctx.project_name = ctx.project_id;
         }

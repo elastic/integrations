@@ -6,7 +6,7 @@ description: >-
 processors:
   - script:
       lang: painless
-      tag: set_composite_key
+      tag: set_composite_key_init_and_nat
       source: |
         if (ctx.project_name instanceof Map) {
           def picked = null;
@@ -46,17 +46,11 @@ processors:
             ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
           }
         }
-        String orgId = '';
-        String cRegion = '';
-        String bType = '';
-        String bKind = '';
-        String bUnit = '';
-        boolean hasNatSnap = false;
-        if (ctx.nat_snapshots instanceof Map || ctx.leg_intervals instanceof Map || ctx.v1_carryover instanceof Map) {
+        ctx._cb_has_nat_snap = false;
+        if (ctx.nat_snapshots instanceof Map && !((Map)ctx.nat_snapshots).isEmpty()) {
           String sep = Character.toString((char)31);
           Map bestNat = null;
           String bestNatKey = '';
-          if (ctx.nat_snapshots instanceof Map && !((Map)ctx.nat_snapshots).isEmpty()) {
             Map natMap = (Map)ctx.nat_snapshots;
             List natKeys = new ArrayList();
             if (natMap.get('buckets') instanceof List) {
@@ -117,16 +111,21 @@ processors:
                 }
               }
             }
-          }
           if (bestNat != null) {
-            hasNatSnap = true;
+            ctx._cb_has_nat_snap = true;
             bestNat.remove('ing_ts');
             if (((Number)bestNat.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
               bestNat.remove('conf_chargeable_unit_rate');
             }
             ctx.latest_snapshot = bestNat;
           }
-          if (ctx.latest_snapshot == null && ctx.leg_intervals instanceof Map && !((Map)ctx.leg_intervals).isEmpty()) {
+        }
+  - script:
+      lang: painless
+      tag: set_composite_key_leg_intervals
+      source: |
+        if (ctx.latest_snapshot == null && ctx.leg_intervals instanceof Map && !((Map)ctx.leg_intervals).isEmpty()) {
+          String sep = Character.toString((char)31);
             Map legMap = (Map)ctx.leg_intervals;
             List ivList = new ArrayList();
             if (legMap.get('buckets') instanceof List) {
@@ -252,8 +251,13 @@ processors:
               if (cSym != '') { legOut.put('conf_currency_symbol', cSym); }
               ctx.latest_snapshot = legOut;
             }
-          }
-          if (ctx.latest_snapshot == null && ctx.v1_carryover instanceof Map && !((Map)ctx.v1_carryover).isEmpty()) {
+        }
+  - script:
+      lang: painless
+      tag: set_composite_key_v1_and_cleanup
+      source: |
+        if (ctx.latest_snapshot == null && ctx.v1_carryover instanceof Map && !((Map)ctx.v1_carryover).isEmpty()) {
+          String sep = Character.toString((char)31);
             Map vc = (Map)ctx.v1_carryover;
             List vcKeys = new ArrayList();
             if (vc.get('buckets') instanceof List) {
@@ -317,11 +321,20 @@ processors:
               }
               ctx.latest_snapshot = bestV1;
             }
-          }
-          ctx.remove('nat_snapshots');
-          ctx.remove('leg_intervals');
-          ctx.remove('v1_carryover');
         }
+        ctx.remove('nat_snapshots');
+        ctx.remove('leg_intervals');
+        ctx.remove('v1_carryover');
+  - script:
+      lang: painless
+      tag: set_composite_key_extract_and_norm
+      source: |
+        String orgId = '';
+        String cRegion = '';
+        String bType = '';
+        String bKind = '';
+        String bUnit = '';
+        boolean hasNatSnap = (ctx._cb_has_nat_snap == true);
         if (ctx.latest_snapshot instanceof Map) {
           def snap = ctx.latest_snapshot;
           if (snap.top instanceof List && snap.top.size() > 0 && snap.top[0] instanceof Map && snap.top[0].metrics instanceof Map) {
@@ -429,8 +442,21 @@ processors:
           ctx.composite_key = date + '_' + ctx.project_id;
         }
 
-        // Populate ESS Billing compatibility fields for opt-in compatibility aliases
-        // (e.g. metrics-ess_billing.billing-chargeback).
+        ctx._cb_org_id = orgId;
+        ctx._cb_region = cRegion;
+        ctx._cb_b_type = bType;
+        ctx._cb_b_kind = bKind;
+        ctx._cb_b_unit = bUnit;
+        ctx.remove('_cb_has_nat_snap');
+  - script:
+      lang: painless
+      tag: set_composite_key_ess_billing
+      source: |
+        String orgId = ctx._cb_org_id != null ? ctx._cb_org_id.toString() : '';
+        String cRegion = ctx._cb_region != null ? ctx._cb_region.toString() : '';
+        String bType = ctx._cb_b_type != null ? ctx._cb_b_type.toString() : '';
+        String bKind = ctx._cb_b_kind != null ? ctx._cb_b_kind.toString() : '';
+        String bUnit = ctx._cb_b_unit != null ? ctx._cb_b_unit.toString() : '';
         ctx.doc_type = 'billing_line_item';
         ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.billing', 'namespace': 'default'];
         if (ctx.event == null) { ctx.event = [:]; }
@@ -499,6 +525,16 @@ processors:
         if (cRegion != '') {
           ctx.cloud.region = cRegion;
         }
+        ctx.remove('_cb_org_id');
+        ctx.remove('_cb_region');
+        ctx.remove('_cb_b_type');
+        ctx.remove('_cb_b_kind');
+        ctx.remove('_cb_b_unit');
+  - script:
+      lang: painless
+      tag: set_composite_key
+      source: |
+        String s = ctx.sku != null ? ctx.sku.toString() : '';
         Map regionGeo = [
           'gcp-us-central1': ['location': ['lon': -95.8608, 'lat': 41.2619], 'name': 'gcp-us-central1'],
           'gcp-us-east4': ['location': ['lon': -77.4874, 'lat': 39.0438], 'name': 'gcp-us-east4'],

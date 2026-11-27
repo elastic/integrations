@@ -2,9 +2,9 @@
 description: Post-process Chargeback Serverless configuration from Fleet configuration snapshot events while preserving manual or historical rows when Fleet sync is inactive.
 processors:
   - script:
-      description: Gate on active Fleet sync marker and validate rate, currency, symbol, and effective start date
+      description: Handle manual configuration rows and parse Fleet configuration snapshot owners and emitters
       lang: painless
-      tag: process_chargeback_conf
+      tag: process_chargeback_conf_parse
       source: |
         // Pass manual operator documents (without transform 'snapshots' output) straight through
         // so operators can update rates directly via POST serverless_chargeback_conf_lookup/_update/config.
@@ -22,14 +22,14 @@ processors:
             if (sTrim == '') { ctx.remove('conf_currency_symbol'); }
             else { ctx.conf_currency_symbol = sTrim; }
           }
+          ctx._cb_manual = true;
           return;
         }
         ctx._from_transform = true;
-        Map snapRoot = null;
         if (ctx.snapshots instanceof Map) {
           Map snaps = (Map)ctx.snapshots;
           if (snaps.latest instanceof Map) {
-            snapRoot = (Map)snaps.latest;
+            ctx._cb_snap_root = (Map)snaps.latest;
           } else if (snaps.containsKey('owners') || snaps.containsKey('emitters') || snaps.containsKey('doc_cnt')) {
             String sep = Character.toString((char)31);
             Map mergedEmitters = [:];
@@ -106,99 +106,120 @@ processors:
                 }
               }
             }
-            if (mergedOwners.isEmpty()) {
-              snapRoot = ['has_snapshots': false, 'policy_sync_enabled': false, 'owner_conflict': false, 'snap': [:]];
-            } else {
-              Set currentEmitterKeys = new HashSet();
-              Map supersededAt = [:];
-              for (def ee : mergedEmitters.entrySet()) {
-                Map em = (Map)ee.getValue();
-                long maxEmTs = -1L;
-                for (def v : em.values()) {
-                  long vts = v instanceof Number ? ((Number)v).longValue() : -1L;
-                  if (vts > maxEmTs) { maxEmTs = vts; }
-                }
-                for (def oke : em.entrySet()) {
-                  String kName = oke.getKey().toString();
-                  long kts = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
-                  if (kts >= 0L && kts == maxEmTs) {
-                    currentEmitterKeys.add(kName);
-                  } else if (kts >= 0L && kts < maxEmTs) {
-                    long prevSup = supersededAt.get(kName) instanceof Number ? ((Number)supersededAt.get(kName)).longValue() : -1L;
-                    if (kts > prevSup) {
-                      supersededAt.put(kName, kts);
-                    }
-                  }
-                }
-              }
-              Map activeOwners = [:];
-              for (def e : mergedOwners.entrySet()) {
-                String ok = e.getKey().toString();
-                Map ov = (Map)e.getValue();
-                long ovTs = ((Number)ov.get('newestTs')).longValue();
-                long supTs = supersededAt.get(ok) instanceof Number ? ((Number)supersededAt.get(ok)).longValue() : -1L;
-                if (!currentEmitterKeys.contains(ok) && supTs >= 0L && ovTs <= supTs) {
-                  continue;
-                }
-                activeOwners.put(ok, ov);
-              }
-              if (activeOwners.isEmpty()) {
-                activeOwners = mergedOwners;
-              }
-              long maxActiveTs = -1L;
-              for (def ovObj : activeOwners.values()) {
-                long tsVal = ((Number)((Map)ovObj).get('newestTs')).longValue();
-                if (tsVal > maxActiveTs) { maxActiveTs = tsVal; }
-              }
-              long staleCutoffMs = 172800000L;
-              List enabledExplicit = new ArrayList();
-              List enabledImplicit = new ArrayList();
-              for (def e : activeOwners.entrySet()) {
-                String ok = e.getKey().toString();
-                Map ov = (Map)e.getValue();
-                if (!Boolean.TRUE.equals(ov.get('newestSync'))) { continue; }
-                long ovTs = ((Number)ov.get('newestTs')).longValue();
-                if (maxActiveTs > 0L && ovTs >= 0L && (maxActiveTs - ovTs) > staleCutoffMs) { continue; }
-                if (Boolean.TRUE.equals(ov.get('explicit'))) {
-                  enabledExplicit.add(ok);
-                } else {
-                  enabledImplicit.add(ok);
-                }
-              }
-              String selectedOwner = null;
-              boolean ownerConflict = false;
-              if (enabledExplicit.size() == 1) {
-                selectedOwner = enabledExplicit.get(0).toString();
-              } else if (enabledExplicit.size() > 1) {
-                ownerConflict = true;
-              } else if (enabledImplicit.size() == 1) {
-                selectedOwner = enabledImplicit.get(0).toString();
-              } else if (enabledImplicit.size() > 1) {
-                ownerConflict = true;
-              }
-              boolean policySyncEnabled = false;
-              Map bestSnap = [:];
-              if (!ownerConflict && selectedOwner != null) {
-                Map sel = (Map)activeOwners.get(selectedOwner);
-                policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
-                if (policySyncEnabled && sel.get('snap') instanceof Map) {
-                  bestSnap = new HashMap((Map)sel.get('snap'));
-                }
-              }
-              snapRoot = [
-                'has_snapshots': true,
-                'policy_sync_enabled': policySyncEnabled,
-                'owner_conflict': ownerConflict,
-                'owner_key': selectedOwner != null ? selectedOwner : '',
-                'snap': bestSnap
-              ];
-            }
+            ctx._cb_emitters = mergedEmitters;
+            ctx._cb_owners = mergedOwners;
           } else {
-            snapRoot = snaps;
+            ctx._cb_snap_root = snaps;
           }
         }
+  - script:
+      description: Select active configuration snapshot owner with stale-emitter and conflict checks
+      if: "ctx._cb_manual != true && ctx._cb_snap_root == null && (ctx._cb_owners instanceof Map || ctx._cb_emitters instanceof Map)"
+      lang: painless
+      tag: process_chargeback_conf_select
+      source: |
+        Map mergedEmitters = ctx._cb_emitters instanceof Map ? (Map)ctx._cb_emitters : [:];
+        Map mergedOwners = ctx._cb_owners instanceof Map ? (Map)ctx._cb_owners : [:];
+        Map snapRoot = null;
+        if (mergedOwners.isEmpty()) {
+          snapRoot = ['has_snapshots': false, 'policy_sync_enabled': false, 'owner_conflict': false, 'snap': [:]];
+        } else {
+          Set currentEmitterKeys = new HashSet();
+          Map supersededAt = [:];
+          for (def ee : mergedEmitters.entrySet()) {
+            Map em = (Map)ee.getValue();
+            long maxEmTs = -1L;
+            for (def v : em.values()) {
+              long vts = v instanceof Number ? ((Number)v).longValue() : -1L;
+              if (vts > maxEmTs) { maxEmTs = vts; }
+            }
+            for (def oke : em.entrySet()) {
+              String kName = oke.getKey().toString();
+              long kts = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
+              if (kts >= 0L && kts == maxEmTs) {
+                currentEmitterKeys.add(kName);
+              } else if (kts >= 0L && kts < maxEmTs) {
+                long prevSup = supersededAt.get(kName) instanceof Number ? ((Number)supersededAt.get(kName)).longValue() : -1L;
+                if (kts > prevSup) {
+                  supersededAt.put(kName, kts);
+                }
+              }
+            }
+          }
+          Map activeOwners = [:];
+          for (def e : mergedOwners.entrySet()) {
+            String ok = e.getKey().toString();
+            Map ov = (Map)e.getValue();
+            long ovTs = ((Number)ov.get('newestTs')).longValue();
+            long supTs = supersededAt.get(ok) instanceof Number ? ((Number)supersededAt.get(ok)).longValue() : -1L;
+            if (!currentEmitterKeys.contains(ok) && supTs >= 0L && ovTs <= supTs) {
+              continue;
+            }
+            activeOwners.put(ok, ov);
+          }
+          if (activeOwners.isEmpty()) {
+            activeOwners = mergedOwners;
+          }
+          long maxActiveTs = -1L;
+          for (def ovObj : activeOwners.values()) {
+            long tsVal = ((Number)((Map)ovObj).get('newestTs')).longValue();
+            if (tsVal > maxActiveTs) { maxActiveTs = tsVal; }
+          }
+          long staleCutoffMs = 172800000L;
+          List enabledExplicit = new ArrayList();
+          List enabledImplicit = new ArrayList();
+          for (def e : activeOwners.entrySet()) {
+            String ok = e.getKey().toString();
+            Map ov = (Map)e.getValue();
+            if (!Boolean.TRUE.equals(ov.get('newestSync'))) { continue; }
+            long ovTs = ((Number)ov.get('newestTs')).longValue();
+            if (maxActiveTs > 0L && ovTs >= 0L && (maxActiveTs - ovTs) > staleCutoffMs) { continue; }
+            if (Boolean.TRUE.equals(ov.get('explicit'))) {
+              enabledExplicit.add(ok);
+            } else {
+              enabledImplicit.add(ok);
+            }
+          }
+          String selectedOwner = null;
+          boolean ownerConflict = false;
+          if (enabledExplicit.size() == 1) {
+            selectedOwner = enabledExplicit.get(0).toString();
+          } else if (enabledExplicit.size() > 1) {
+            ownerConflict = true;
+          } else if (enabledImplicit.size() == 1) {
+            selectedOwner = enabledImplicit.get(0).toString();
+          } else if (enabledImplicit.size() > 1) {
+            ownerConflict = true;
+          }
+          boolean policySyncEnabled = false;
+          Map bestSnap = [:];
+          if (!ownerConflict && selectedOwner != null) {
+            Map sel = (Map)activeOwners.get(selectedOwner);
+            policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
+            if (policySyncEnabled && sel.get('snap') instanceof Map) {
+              bestSnap = new HashMap((Map)sel.get('snap'));
+            }
+          }
+          snapRoot = [
+            'has_snapshots': true,
+            'policy_sync_enabled': policySyncEnabled,
+            'owner_conflict': ownerConflict,
+            'owner_key': selectedOwner != null ? selectedOwner : '',
+            'snap': bestSnap
+          ];
+        }
+        ctx._cb_snap_root = snapRoot;
+  - script:
+      description: Gate on active Fleet sync marker and validate rate, currency, symbol, and effective start date
+      if: "ctx._cb_manual != true"
+      lang: painless
+      tag: process_chargeback_conf
+      source: |
         ctx.remove('snapshots');
-
+        ctx.remove('_cb_emitters');
+        ctx.remove('_cb_owners');
+        Map snapRoot = ctx._cb_snap_root instanceof Map ? (Map)ctx._cb_snap_root : null;
+        ctx.remove('_cb_snap_root');
         if (snapRoot == null) {
           ctx._skip_conf_write = true;
           return;
@@ -259,6 +280,14 @@ processors:
         ctx.conf_currency_symbol = (m.conf_currency_symbol != null && m.conf_currency_symbol.toString().trim() != '') ? m.conf_currency_symbol.toString().trim() : symFallback;
         ctx.conf_start_date = startMillis;
         ctx.conf_end_date = endMillis;
+  - remove:
+      field:
+        - _cb_manual
+        - _cb_emitters
+        - _cb_owners
+        - _cb_snap_root
+      ignore_missing: true
+      tag: cleanup_conf_scratch
   - drop:
       if: "ctx._skip_conf_write == true"
       tag: preserve_existing_manual_config
