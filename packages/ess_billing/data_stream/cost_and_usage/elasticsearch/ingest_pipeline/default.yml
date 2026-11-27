@@ -1,4 +1,6 @@
 ---
+# ess_billing 2.0.0: the 1.x billing pipeline, unchanged, plus one processor at the end that calls
+# focus.yml. Everything above "FOCUS" is the existing data_stream/billing pipeline (main at dd790b8).
 description: "Ingest pipeline for ESS billing data"
 processors:
   # NOTE(2025-08-15): This 'drop' processor is no longer necessary because
@@ -83,7 +85,7 @@ processors:
       if: "ctx.ess.billing.type != 'capacity' && ctx.ess.billing.deployment_type == 'deployment'"
       ignore_failure: true
       tag: dissect_sku
-      
+
    # These 2 processors are specific to serverless sku's
   - grok:
       field: "ess.billing.sku"
@@ -189,6 +191,11 @@ processors:
         location:
           lon: 135.0
           lat: 90.0
+  # ===== FOCUS (new in 2.0.0) =====
+  - pipeline:
+      name: '{{ IngestPipeline "focus" }}'
+      tag: focus
+      if: ctx.ess?.billing != null
 
 on_failure:
   - set:

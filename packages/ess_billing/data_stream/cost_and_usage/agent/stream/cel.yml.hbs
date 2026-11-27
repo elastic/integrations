@@ -251,6 +251,16 @@ publisher_pipeline.disable_host: true
 
 processors:
 - drop_event.when.equals.fake: true
+# FOCUS settings (new in 2.0.0): stamp the customer's settings on every line item, so the
+# FOCUS ingest pipeline can read them. Fleet cannot pass integration settings to an ingest pipeline.
+- add_fields:
+    target: ess.billing
+    fields:
+      purchase_channel: {{#if purchase_channel}}{{purchase_channel}}{{else}}direct{{/if}}
+      contracted_ecu_rate: {{#if contracted_ecu_rate}}{{escape_string contracted_ecu_rate}}{{else}}'1.0'{{/if}}
+{{#if billing_account_name}}
+      billing_account_name: {{escape_string billing_account_name}}
+{{/if}}
 {{#if processors}}
 {{processors}}
 {{/if}}
