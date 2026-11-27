@@ -1,0 +1,55 @@
+title: "DentiGrid Threat Events"
+type: logs
+dataset: dentigrid.threat
+streams:
+  - input: cel
+    template_path: cel.yml.hbs
+    title: "DentiGrid API Gateway Poller"
+    description: "Collect threat intelligence and deception events from DentiGrid API Gateway via CEL."
+    vars:
+      - name: url
+        type: text
+        title: "API URL"
+        description: "URL for the DentiGrid API Gateway threat feed endpoint."
+        required: true
+        show_user: true
+        default: "https://api.example.com/api/attacks/recent"
+      - name: interval
+        type: text
+        title: "Polling Interval"
+        description: "How often to poll the API Gateway."
+        required: true
+        default: "1m"
+      - name: api_token
+        type: password
+        title: "API Token"
+        description: "API token for authenticating with DentiGrid API."
+        required: true
+        secret: true
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        multi: false
+        required: true
+        show_user: true
+        default: false
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: "DentiGrid Log Files"
+    description: "Collect DentiGrid JSON events from local files with Elastic Agent."
+    vars:
+      - name: paths
+        type: text
+        title: "Paths"
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/dentigrid/*.json
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        multi: false
+        required: true
+        show_user: true
+        default: false

@@ -1,0 +1,46 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+redact:
+  fields:
+    - api_token
+program: |-
+  (
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/")
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["Bearer " + state.api_token],
+          }
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          {
+            "events": dyn(
+              (has(body.data) && body.data.size() > 0) ?
+                body.data.map(e,
+                  {
+                    "message": e.encode_json(),
+                  }
+                )
+              :
+                []
+            )
+          }
+        )
+      :
+        {
+          "events": dyn([])
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
