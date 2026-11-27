@@ -114,6 +114,7 @@ processors:
         }
         ctx.all_sku_ecu = all_ecu;
         String sep = Character.toString((char)31);
+        boolean hasRawPool = false;
         if (ctx.pool_meta instanceof Map) {
           Map pm = (Map)ctx.pool_meta;
           List entries = new ArrayList();
@@ -159,6 +160,7 @@ processors:
             }
           }
           if (bestParts != null) {
+            hasRawPool = true;
             String pName = bestParts.get(1).toString();
             String pType = bestParts.get(2).toString();
             String dGrp = bestParts.get(3).toString();
@@ -178,6 +180,7 @@ processors:
           ctx.remove('pool_meta');
         }
         if (ctx.latest_currency instanceof Map) {
+          hasRawPool = true;
           def curr = ctx.latest_currency;
           if (curr.top instanceof List && curr.top.size() > 0 && curr.top[0] instanceof Map && curr.top[0].metrics instanceof Map) {
             curr = curr.top[0].metrics;
@@ -205,6 +208,92 @@ processors:
             ctx.conf_currency_symbol = curr.conf_currency_symbol.toString();
           }
           ctx.remove('latest_currency');
+        }
+        if (ctx.v1_carryover instanceof Map) {
+          if (!hasRawPool) {
+            Map vc = (Map)ctx.v1_carryover;
+            List vEntries = new ArrayList();
+            if (vc.get('buckets') instanceof List) {
+              for (def bObj : (List)vc.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  vEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                }
+              }
+            } else {
+              for (def eObj : vc.entrySet()) {
+                Map.Entry e = (Map.Entry)eObj;
+                vEntries.add([e.getKey().toString(), e.getValue()]);
+              }
+            }
+            long bestIng = -1L;
+            String bestKey = '';
+            List bestParts = null;
+            for (def pairObj : vEntries) {
+              List pair = (List)pairObj;
+              String recKey = pair.get(0).toString();
+              def valObj = pair.get(1);
+              List parts = new ArrayList();
+              int ps = 0;
+              while (true) {
+                int pi = recKey.indexOf(sep, ps);
+                if (pi < 0) { parts.add(recKey.substring(ps)); break; }
+                parts.add(recKey.substring(ps, pi));
+                ps = pi + 1;
+              }
+              if (parts.size() < 15) { continue; }
+              long iMs = 0L;
+              try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+              if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
+                iMs = Math.round(((Number)((Map)valObj).get('max_ing')).doubleValue());
+              } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
+                iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
+              }
+              if (bestParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestKey) > 0)) {
+                bestIng = iMs;
+                bestKey = recKey;
+                bestParts = parts;
+              }
+            }
+            if (bestParts != null) {
+              try { idx = Double.parseDouble(bestParts.get(1).toString()); } catch (Exception e) {}
+              try { qry = Double.parseDouble(bestParts.get(2).toString()); } catch (Exception e) {}
+              try { stg = Double.parseDouble(bestParts.get(3).toString()); } catch (Exception e) {}
+              try { ai = Double.parseDouble(bestParts.get(4).toString()); } catch (Exception e) {}
+              try { syn = Double.parseDouble(bestParts.get(5).toString()); } catch (Exception e) {}
+              try { syn_pings = Double.parseDouble(bestParts.get(6).toString()); } catch (Exception e) {}
+              try { syn_exec = Double.parseDouble(bestParts.get(7).toString()); } catch (Exception e) {}
+              try { all_ecu = Double.parseDouble(bestParts.get(8).toString()); } catch (Exception e) {}
+              ctx.indexing_ecu = idx;
+              ctx.query_ecu = qry;
+              ctx.storage_ecu = stg;
+              ctx.ai_ecu = ai;
+              ctx.synthetics_ecu = syn;
+              ctx.synthetics_pings_ecu = syn_pings;
+              ctx.synthetics_executions_ecu = syn_exec;
+              cap = idx + qry + stg;
+              ctx.data_tier_capacity_ecu = cap;
+              ctx.realized_chargeable_units = cap;
+              ctx.total_chargeable_units = cap + ai + syn;
+              ctx.total_ecu = cap + ai + syn;
+              ctx.all_sku_ecu = all_ecu;
+              String pName = bestParts.get(9).toString();
+              String pType = bestParts.get(10).toString();
+              String dGrp = bestParts.get(11).toString();
+              String pRate = bestParts.get(12).toString();
+              String pUnit = bestParts.get(13).toString();
+              String pSym = bestParts.get(14).toString();
+              if (pName != '' && pName != 'null') { ctx.project_name = pName; }
+              if (pType != '' && pType != 'null') { ctx.project_type = pType; }
+              ctx.deployment_group = (dGrp == 'null') ? '' : dGrp;
+              try {
+                double cr = Double.parseDouble(pRate);
+                if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+              } catch (Exception e) {}
+              if (pUnit != '' && pUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = pUnit; }
+              if (pSym != '' && pSym != 'null') { ctx.conf_currency_symbol = pSym; }
+            }
+          }
+          ctx.remove('v1_carryover');
         }
         if (ctx.project_name == null || ctx.project_name == '' || ctx.project_name == 'null') {
           ctx.project_name = ctx.project_id;

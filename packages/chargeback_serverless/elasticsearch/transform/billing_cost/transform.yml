@@ -1,32 +1,50 @@
 description: Aggregates daily total chargeable units (ECU) per Serverless project and SKU across native Chargeback Serverless and legacy ESS Billing sources without double-counting.
 source:
   index:
-    - metrics-chargeback_serverless.billing-*
-    - metrics-ess_billing.billing-*
-    - -metrics-ess_billing.billing-chargeback*
-    - -serverless_*_lookup*
-    - -serverless_billing_credits_lines*
+  - metrics-chargeback_serverless.billing-*
+  - metrics-ess_billing.billing-*
+  - serverless_billing_cost_lookup-1*
+  - -metrics-ess_billing.billing-chargeback*
+  - -serverless_billing_cost_lookup-2*
+  - -serverless_billing_realized_pool_lookup*
+  - -serverless_project_status_lookup*
+  - -serverless_datastream_contribution_lookup*
+  - -serverless_project_contribution_lookup*
+  - -serverless_ai_model_contribution_lookup*
+  - -serverless_synthetics_monitor_contribution_lookup*
+  - -serverless_chargeback_conf_lookup*
+  - -serverless_billing_credits*
   query:
     bool:
-      filter:
-        - term:
-            cb_is_serverless: true
       should:
-        - exists:
-            field: sku
-        - exists:
-            field: ess.billing.sku
-      minimum_should_match: 1
-      must_not:
-        - terms:
-            doc_type:
+      - bool:
+          filter:
+          - term:
+              _index: serverless_billing_cost_lookup-1
+          - exists:
+              field: sku
+      - bool:
+          filter:
+          - term:
+              cb_is_serverless: true
+          should:
+          - exists:
+              field: sku
+          - exists:
+              field: ess.billing.sku
+          minimum_should_match: 1
+          must_not:
+          - terms:
+              doc_type:
               - config_snapshot
               - credit_line_item
+      minimum_should_match: 1
   runtime_mappings:
     cb_is_serverless:
       type: boolean
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { emit(true); return; }
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
                 && doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing') {
@@ -109,6 +127,10 @@ source:
       type: date
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -388,7 +410,6 @@ source:
             } catch (Exception e) {}
           }
           emit('');
-
     cb_sync_ms:
       type: long
       script:
@@ -427,6 +448,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { return; }
           String depGroup = '';
           for (String tf : ['deployment_tags', 'deployment_tags.keyword', 'ess.billing.deployment_tags', 'ess.billing.deployment_tags.keyword']) {
             if (depGroup != '') { break; }
@@ -596,6 +618,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -869,6 +892,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -971,6 +995,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -1240,12 +1265,129 @@ source:
             + cUnit.replace(sep, '') + sep
             + cSym.replace(sep, '')
           );
+    cb_v1_rec:
+      type: keyword
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_billing_cost_lookup-1') {
+            return;
+          }
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+              syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          double ecu = 0.0;
+          for (String f : ['total_ecu', 'total_chargeable_units', 'ess.billing.total_ecu']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                ecu = ((Number)doc[f].value).doubleValue();
+                break;
+              }
+            } catch (Exception e) {}
+          }
+          if (ecu == 0.0 && params._source != null) {
+            try {
+              if (params._source.get('total_ecu') instanceof Number) { ecu = ((Number)params._source.get('total_ecu')).doubleValue(); }
+              else if (params._source.get('total_chargeable_units') instanceof Number) { ecu = ((Number)params._source.get('total_chargeable_units')).doubleValue(); }
+              else if (params._source.ess?.billing?.total_ecu instanceof Number) { ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue(); }
+            } catch (Exception e) {}
+          }
+          double qty = 0.0;
+          for (String f : ['quantity_value', 'ess.billing.quantity.value']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                qty = ((Number)doc[f].value).doubleValue();
+                break;
+              }
+            } catch (Exception e) {}
+          }
+          if (qty == 0.0 && params._source != null) {
+            try {
+              if (params._source.get('quantity_value') instanceof Number) { qty = ((Number)params._source.get('quantity_value')).doubleValue(); }
+              else if (params._source.ess?.billing?.quantity?.value instanceof Number) { qty = ((Number)params._source.ess.billing.quantity.value).doubleValue(); }
+            } catch (Exception e) {}
+          }
+          String pName = '';
+          for (String f : ['project_name', 'project_name.keyword', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { pName = doc[f].value.toString().trim(); if (pName != '') break; } } catch (Exception e) {}
+          }
+          if (pName == '' && params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); }
+          String pType = '';
+          for (String f : ['project_type', 'project_type.keyword', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {}
+          }
+          if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
+          String depGroup = '';
+          for (String f : ['deployment_group', 'deployment_group.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { depGroup = doc[f].value.toString().trim(); if (depGroup != '') break; } } catch (Exception e) {}
+          }
+          if (depGroup == '' && params._source?.deployment_group != null) { depGroup = params._source.deployment_group.toString().trim(); }
+          String orgId = '';
+          for (String f : ['ess.billing.organization_id', 'cloud.account.id']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { orgId = doc[f].value.toString().trim(); if (orgId != '') break; } } catch (Exception e) {}
+          }
+          if (orgId == '' && params._source?.ess?.billing?.organization_id != null) { orgId = params._source.ess.billing.organization_id.toString().trim(); }
+          String cRegion = '';
+          try { if (doc.containsKey('cloud.region') && !doc['cloud.region'].empty) { cRegion = doc['cloud.region'].value.toString().trim(); } } catch (Exception e) {}
+          if (cRegion == '' && params._source?.cloud?.region != null) { cRegion = params._source.cloud.region.toString().trim(); }
+          String bType = '';
+          for (String f : ['billing_type', 'ess.billing.type']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { bType = doc[f].value.toString().trim(); if (bType != '') break; } } catch (Exception e) {}
+          }
+          if (bType == '' && params._source?.ess?.billing?.type != null) { bType = params._source.ess.billing.type.toString().trim(); }
+          String bKind = '';
+          for (String f : ['billing_kind', 'ess.billing.kind']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { bKind = doc[f].value.toString().trim(); if (bKind != '') break; } } catch (Exception e) {}
+          }
+          if (bKind == '' && params._source?.ess?.billing?.kind != null) { bKind = params._source.ess.billing.kind.toString().trim(); }
+          String bUnit = '';
+          for (String f : ['billing_unit', 'ess.billing.unit']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { bUnit = doc[f].value.toString().trim(); if (bUnit != '') break; } } catch (Exception e) {}
+          }
+          if (bUnit == '' && params._source?.ess?.billing?.unit != null) { bUnit = params._source.ess.billing.unit.toString().trim(); }
+          double cRate = -1.0;
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+            }
+          } catch (Exception e) {}
+          String cUnit = '';
+          try { if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) { cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString().trim(); } } catch (Exception e) {}
+          if (cUnit == '' && params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); }
+          String cSym = '';
+          try { if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) { cSym = doc['conf_currency_symbol'].value.toString().trim(); } } catch (Exception e) {}
+          if (cSym == '' && params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); }
+          String sep = Character.toString((char)31);
+          emit(
+            Long.toString(syncMs) + sep
+            + Double.toString(ecu) + sep
+            + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep
+            + pType.replace(sep, '') + sep
+            + depGroup.replace(sep, '') + sep
+            + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep
+            + bType.replace(sep, '') + sep
+            + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep
+            + Double.toString(cRate) + sep
+            + cUnit.replace(sep, '') + sep
+            + cSym.replace(sep, '')
+          );
 dest:
   index: serverless_billing_cost_lookup-2
   aliases:
-    - alias: serverless_billing_cost_lookup
-      move_on_creation: true
-  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_billing" }}'
+  - alias: serverless_billing_cost_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_billing" }}
 frequency: 5m
 sync:
   time:
@@ -1253,13 +1395,13 @@ sync:
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
@@ -1268,8 +1410,6 @@ pivot:
       terms:
         field: cb_sku
   aggregations:
-    # Prefer native chargeback_serverless.billing snapshots over legacy ess_billing.billing
-    # for the same (day, project_id, sku) bucket using Serverless-supported aggregations.
     nat_snapshots:
       terms:
         field: cb_nat_rec
@@ -1299,6 +1439,16 @@ pivot:
       terms:
         field: cb_group_obs_rec
         size: 50
+        order:
+          ing_ms: desc
+      aggs:
+        ing_ms:
+          max:
+            field: cb_sync_ms
+    v1_carryover:
+      terms:
+        field: cb_v1_rec
+        size: 5
         order:
           ing_ms: desc
       aggs:

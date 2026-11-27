@@ -8,6 +8,9 @@ processors:
       tag: set_usage_lookup_keys
       source: |
         String sep = Character.toString((char)31);
+        boolean hasRawStatus = false;
+        boolean hasRawUsage = false;
+        boolean hasRawProj = false;
         if (ctx.status_meta instanceof Map) {
           Map sm = (Map)ctx.status_meta;
           List smEntries = new ArrayList();
@@ -53,6 +56,7 @@ processors:
             }
           }
           if (bestSParts != null) {
+            hasRawStatus = true;
             String ls = bestSParts.get(1).toString();
             String ak = bestSParts.get(2).toString();
             String ss = bestSParts.get(3).toString();
@@ -107,6 +111,7 @@ processors:
             }
           }
           if (bestUParts != null) {
+            hasRawUsage = true;
             String uMode = bestUParts.get(0).toString();
             String uName = bestUParts.get(2).toString();
             String uType = bestUParts.get(3).toString();
@@ -194,6 +199,7 @@ processors:
             }
           }
           if (bestProjParts != null) {
+            hasRawProj = true;
             String pName = bestProjParts.get(1).toString();
             String pType = bestProjParts.get(2).toString();
             String pGrp = bestProjParts.get(3).toString();
@@ -212,14 +218,316 @@ processors:
           }
           ctx.remove('proj_meta');
         }
+        if (ctx.v1_ps_carryover instanceof Map) {
+          if (!hasRawStatus && !hasRawUsage) {
+            Map vm = (Map)ctx.v1_ps_carryover;
+            List vEntries = new ArrayList();
+            if (vm.get('buckets') instanceof List) {
+              for (def bObj : (List)vm.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  vEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                }
+              }
+            } else {
+              for (def eObj : vm.entrySet()) {
+                Map.Entry e = (Map.Entry)eObj;
+                vEntries.add([e.getKey().toString(), e.getValue()]);
+              }
+            }
+            long bestIng = -1L;
+            String bestKey = '';
+            List bestParts = null;
+            for (def pairObj : vEntries) {
+              List pair = (List)pairObj;
+              String recKey = pair.get(0).toString();
+              def valObj = pair.get(1);
+              List parts = new ArrayList();
+              int ps = 0;
+              while (true) {
+                int pi = recKey.indexOf(sep, ps);
+                if (pi < 0) { parts.add(recKey.substring(ps)); break; }
+                parts.add(recKey.substring(ps, pi));
+                ps = pi + 1;
+              }
+              if (parts.size() < 17) { continue; }
+              long iMs = 0L;
+              try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+              if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
+                iMs = Math.round(((Number)((Map)valObj).get('max_ing')).doubleValue());
+              } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
+                iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
+              }
+              if (bestParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestKey) > 0)) {
+                bestIng = iMs;
+                bestKey = recKey;
+                bestParts = parts;
+              }
+            }
+            if (bestParts != null) {
+              try { ctx.index_count = Long.parseLong(bestParts.get(1).toString()); } catch (Exception e) {}
+              try { ctx.datastream_count = Long.parseLong(bestParts.get(2).toString()); } catch (Exception e) {}
+              try { ctx.ai_model_count = Long.parseLong(bestParts.get(3).toString()); } catch (Exception e) {}
+              try { ctx.synthetics_monitor_count = Long.parseLong(bestParts.get(4).toString()); } catch (Exception e) {}
+              try {
+                long uMs = Long.parseLong(bestParts.get(5).toString());
+                if (uMs > 0L) { ctx.updated_at = uMs; }
+              } catch (Exception e) {}
+              String ls = bestParts.get(6).toString();
+              String ak = bestParts.get(7).toString();
+              String ss = bestParts.get(8).toString();
+              String pName = bestParts.get(9).toString();
+              String pType = bestParts.get(10).toString();
+              String depGrp = bestParts.get(11).toString();
+              String optFor = bestParts.get(12).toString();
+              String esUrl = bestParts.get(13).toString();
+              String cRate = bestParts.get(14).toString();
+              String cUnit = bestParts.get(15).toString();
+              String cSym = bestParts.get(16).toString();
+              ctx.last_status = (ls == '' || ls == 'null') ? 'ok' : ls;
+              ctx.api_key_type = (ak == '' || ak == 'null') ? 'missing_key' : ak;
+              ctx.synthetics_status = (ss == '' || ss == 'null') ? 'ok' : ss;
+              if (pName != '' && pName != 'null') { ctx.project_name = pName; }
+              if (pType != '' && pType != 'null') { ctx.project_type = pType; }
+              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
+              if (optFor != '' && optFor != 'null') { ctx.optimized_for = optFor; }
+              ctx.es_url = (esUrl == 'null') ? '' : esUrl;
+              try {
+                double cr = Double.parseDouble(cRate);
+                if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+              } catch (Exception e) {}
+              if (cUnit != '' && cUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = cUnit; }
+              if (cSym != '' && cSym != 'null') { ctx.conf_currency_symbol = cSym; }
+            }
+          }
+          ctx.remove('v1_ps_carryover');
+        }
+        if (ctx.v1_ai_carryover instanceof Map) {
+          if (!hasRawUsage) {
+            Map vm = (Map)ctx.v1_ai_carryover;
+            List vEntries = new ArrayList();
+            if (vm.get('buckets') instanceof List) {
+              for (def bObj : (List)vm.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  vEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                }
+              }
+            } else {
+              for (def eObj : vm.entrySet()) {
+                Map.Entry e = (Map.Entry)eObj;
+                vEntries.add([e.getKey().toString(), e.getValue()]);
+              }
+            }
+            long bestIng = -1L;
+            String bestKey = '';
+            List bestParts = null;
+            for (def pairObj : vEntries) {
+              List pair = (List)pairObj;
+              String recKey = pair.get(0).toString();
+              def valObj = pair.get(1);
+              List parts = new ArrayList();
+              int ps = 0;
+              while (true) {
+                int pi = recKey.indexOf(sep, ps);
+                if (pi < 0) { parts.add(recKey.substring(ps)); break; }
+                parts.add(recKey.substring(ps, pi));
+                ps = pi + 1;
+              }
+              if (parts.size() < 10) { continue; }
+              long iMs = 0L;
+              try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+              if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
+                iMs = Math.round(((Number)((Map)valObj).get('max_ing')).doubleValue());
+              } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
+                iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
+              }
+              if (bestParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestKey) > 0)) {
+                bestIng = iMs;
+                bestKey = recKey;
+                bestParts = parts;
+              }
+            }
+            if (bestParts != null) {
+              try { ctx.inference_count = Long.parseLong(bestParts.get(1).toString()); } catch (Exception e) {}
+              try { ctx.average_inference_time_ms = Double.parseDouble(bestParts.get(2).toString()); } catch (Exception e) {}
+              try { ctx.total_inference_time_ms = Long.parseLong(bestParts.get(3).toString()); } catch (Exception e) {}
+              String pName = bestParts.get(4).toString();
+              String pType = bestParts.get(5).toString();
+              String depGrp = bestParts.get(6).toString();
+              String cRate = bestParts.get(7).toString();
+              String cUnit = bestParts.get(8).toString();
+              String cSym = bestParts.get(9).toString();
+              if (pName != '' && pName != 'null') { ctx.project_name = pName; }
+              if (pType != '' && pType != 'null') { ctx.project_type = pType; }
+              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
+              try {
+                double cr = Double.parseDouble(cRate);
+                if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+              } catch (Exception e) {}
+              if (cUnit != '' && cUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = cUnit; }
+              if (cSym != '' && cSym != 'null') { ctx.conf_currency_symbol = cSym; }
+            }
+          }
+          ctx.remove('v1_ai_carryover');
+        }
+        if (ctx.v1_sy_carryover instanceof Map) {
+          if (!hasRawUsage) {
+            Map vm = (Map)ctx.v1_sy_carryover;
+            List vEntries = new ArrayList();
+            if (vm.get('buckets') instanceof List) {
+              for (def bObj : (List)vm.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  vEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                }
+              }
+            } else {
+              for (def eObj : vm.entrySet()) {
+                Map.Entry e = (Map.Entry)eObj;
+                vEntries.add([e.getKey().toString(), e.getValue()]);
+              }
+            }
+            long bestIng = -1L;
+            String bestKey = '';
+            List bestParts = null;
+            for (def pairObj : vEntries) {
+              List pair = (List)pairObj;
+              String recKey = pair.get(0).toString();
+              def valObj = pair.get(1);
+              List parts = new ArrayList();
+              int ps = 0;
+              while (true) {
+                int pi = recKey.indexOf(sep, ps);
+                if (pi < 0) { parts.add(recKey.substring(ps)); break; }
+                parts.add(recKey.substring(ps, pi));
+                ps = pi + 1;
+              }
+              if (parts.size() < 15) { continue; }
+              long iMs = 0L;
+              try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+              if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
+                iMs = Math.round(((Number)((Map)valObj).get('max_ing')).doubleValue());
+              } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
+                iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
+              }
+              if (bestParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestKey) > 0)) {
+                bestIng = iMs;
+                bestKey = recKey;
+                bestParts = parts;
+              }
+            }
+            if (bestParts != null) {
+              try { ctx.check_count = Long.parseLong(bestParts.get(1).toString()); } catch (Exception e) {}
+              try { ctx.up_count = Long.parseLong(bestParts.get(2).toString()); } catch (Exception e) {}
+              try { ctx.down_count = Long.parseLong(bestParts.get(3).toString()); } catch (Exception e) {}
+              try { ctx.locations_count = Long.parseLong(bestParts.get(4).toString()); } catch (Exception e) {}
+              try { ctx.average_duration_ms = Double.parseDouble(bestParts.get(5).toString()); } catch (Exception e) {}
+              try { ctx.total_duration_ms = Double.parseDouble(bestParts.get(6).toString()); } catch (Exception e) {}
+              String pName = bestParts.get(7).toString();
+              String pType = bestParts.get(8).toString();
+              String depGrp = bestParts.get(9).toString();
+              String monName = bestParts.get(10).toString();
+              String monNs = bestParts.get(11).toString();
+              String cRate = bestParts.get(12).toString();
+              String cUnit = bestParts.get(13).toString();
+              String cSym = bestParts.get(14).toString();
+              if (pName != '' && pName != 'null') { ctx.project_name = pName; }
+              if (pType != '' && pType != 'null') { ctx.project_type = pType; }
+              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
+              if (monName != '' && monName != 'null') { ctx.monitor_name = monName; }
+              if (monNs != '' && monNs != 'null') { ctx.monitor_namespace = monNs; }
+              try {
+                double cr = Double.parseDouble(cRate);
+                if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+              } catch (Exception e) {}
+              if (cUnit != '' && cUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = cUnit; }
+              if (cSym != '' && cSym != 'null') { ctx.conf_currency_symbol = cSym; }
+            }
+          }
+          ctx.remove('v1_sy_carryover');
+        }
+        if (ctx.v1_proj_carryover instanceof Map) {
+          if (!hasRawProj) {
+            Map vm = (Map)ctx.v1_proj_carryover;
+            List vEntries = new ArrayList();
+            if (vm.get('buckets') instanceof List) {
+              for (def bObj : (List)vm.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  vEntries.add([((Map)bObj).get('key').toString(), bObj]);
+                }
+              }
+            } else {
+              for (def eObj : vm.entrySet()) {
+                Map.Entry e = (Map.Entry)eObj;
+                vEntries.add([e.getKey().toString(), e.getValue()]);
+              }
+            }
+            long bestIng = -1L;
+            String bestKey = '';
+            List bestParts = null;
+            for (def pairObj : vEntries) {
+              List pair = (List)pairObj;
+              String recKey = pair.get(0).toString();
+              def valObj = pair.get(1);
+              List parts = new ArrayList();
+              int ps = 0;
+              while (true) {
+                int pi = recKey.indexOf(sep, ps);
+                if (pi < 0) { parts.add(recKey.substring(ps)); break; }
+                parts.add(recKey.substring(ps, pi));
+                ps = pi + 1;
+              }
+              if (parts.size() < 10) { continue; }
+              long iMs = 0L;
+              try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+              if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
+                iMs = Math.round(((Number)((Map)valObj).get('max_ing')).doubleValue());
+              } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
+                iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
+              }
+              if (bestParts == null || iMs > bestIng || (iMs == bestIng && recKey.compareTo(bestKey) > 0)) {
+                bestIng = iMs;
+                bestKey = recKey;
+                bestParts = parts;
+              }
+            }
+            if (bestParts != null) {
+              try { ctx.deployment_sum_indexing_time = Long.parseLong(bestParts.get(1).toString()); } catch (Exception e) {}
+              try { ctx.deployment_sum_query_time = Long.parseLong(bestParts.get(2).toString()); } catch (Exception e) {}
+              try { ctx.deployment_sum_data_set_store_size = Long.parseLong(bestParts.get(3).toString()); } catch (Exception e) {}
+              String pName = bestParts.get(4).toString();
+              String pType = bestParts.get(5).toString();
+              String depGrp = bestParts.get(6).toString();
+              String cRate = bestParts.get(7).toString();
+              String cUnit = bestParts.get(8).toString();
+              String cSym = bestParts.get(9).toString();
+              if (pName != '' && pName != 'null') { ctx.project_name = pName; }
+              if (pType != '' && pType != 'null') { ctx.project_type = pType; }
+              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
+              try {
+                double cr = Double.parseDouble(cRate);
+                if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+              } catch (Exception e) {}
+              if (cUnit != '' && cUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = cUnit; }
+              if (cSym != '' && cSym != 'null') { ctx.conf_currency_symbol = cSym; }
+            }
+          }
+          ctx.remove('v1_proj_carryover');
+        }
         if (ctx.rollup instanceof Map) {
           Map r = (Map)ctx.rollup;
-          if (r.nat instanceof Map || r.leg instanceof Map) {
+          if (r.nat instanceof Map || r.leg instanceof Map || r.v1 instanceof Map) {
             boolean isProjLevel = !ctx.containsKey('datastream');
             Map natMap = (r.nat instanceof Map) ? (Map)r.nat : null;
             Map legMap = (r.leg instanceof Map) ? (Map)r.leg : null;
+            Map v1Map = (r.v1 instanceof Map) ? (Map)r.v1 : null;
             long natCnt = (natMap != null && natMap.get('cnt') instanceof Number)
               ? Math.round(((Number)natMap.get('cnt')).doubleValue())
+              : 0L;
+            long legCnt = (legMap != null && legMap.get('cnt') instanceof Number)
+              ? Math.round(((Number)legMap.get('cnt')).doubleValue())
+              : 0L;
+            boolean hasLeg = (legCnt > 0L) || (legMap != null && legMap.get('by_idx') instanceof Map && !((Map)legMap.get('by_idx')).isEmpty());
+            long v1Cnt = (v1Map != null && v1Map.get('cnt') instanceof Number)
+              ? Math.round(((Number)v1Map.get('cnt')).doubleValue())
               : 0L;
             if (isProjLevel && ((natMap != null && natMap.get('by_ds') instanceof Map) || (legMap != null && legMap.get('by_ds') instanceof Map))) {
               long sumIdx = 0L;
@@ -382,7 +690,7 @@ processors:
                   }
                 }
               }
-            } else if (legMap != null) {
+            } else if (hasLeg) {
               long legIdx = 0L;
               long legQry = 0L;
               double legStoSlotSum = 0.0;
@@ -428,6 +736,70 @@ processors:
                 ctx.datastream_sum_query_time = legQry;
                 ctx.datastream_sum_data_set_store_size = legSto;
                 ctx.has_native_usage = false;
+              }
+            } else if (v1Map != null && v1Cnt > 0L) {
+              long dsIdx = (v1Map.get('idx') instanceof Number) ? Math.round(((Number)v1Map.get('idx')).doubleValue()) : 0L;
+              long dsQry = (v1Map.get('qry') instanceof Number) ? Math.round(((Number)v1Map.get('qry')).doubleValue()) : 0L;
+              long dsSto = (v1Map.get('sto') instanceof Number) ? Math.round(((Number)v1Map.get('sto')).doubleValue()) : 0L;
+              if (isProjLevel) {
+                ctx.deployment_sum_indexing_time = dsIdx;
+                ctx.deployment_sum_query_time = dsQry;
+                ctx.deployment_sum_data_set_store_size = dsSto;
+              } else {
+                ctx.datastream_sum_indexing_time = dsIdx;
+                ctx.datastream_sum_query_time = dsQry;
+                ctx.datastream_sum_data_set_store_size = dsSto;
+                ctx.has_native_usage = true;
+              }
+              long bestSyncTs = -1L;
+              String bestKey = '';
+              List bestParts = null;
+              if (v1Map.get('meta') instanceof Map) {
+                for (def keyObj : ((Map)v1Map.get('meta')).keySet()) {
+                  String recKey = keyObj.toString();
+                  List parts = new ArrayList();
+                  int pStart = 0;
+                  while (true) {
+                    int pIdx = recKey.indexOf(sep, pStart);
+                    if (pIdx < 0) {
+                      parts.add(recKey.substring(pStart));
+                      break;
+                    }
+                    parts.add(recKey.substring(pStart, pIdx));
+                    pStart = pIdx + 1;
+                  }
+                  if (parts.size() < 10) { continue; }
+                  long sTs = 0L;
+                  try { sTs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
+                  if (bestParts == null || sTs > bestSyncTs || (sTs == bestSyncTs && recKey.compareTo(bestKey) > 0)) {
+                    bestSyncTs = sTs;
+                    bestKey = recKey;
+                    bestParts = parts;
+                  }
+                }
+                if (bestParts != null) {
+                  if (bestParts.get(1).toString() != '') { ctx.project_name = bestParts.get(1).toString(); }
+                  if (bestParts.get(2).toString() != '') { ctx.project_type = bestParts.get(2).toString(); }
+                  ctx.deployment_group = bestParts.get(3).toString();
+                  if (!isProjLevel) {
+                    if (bestParts.get(4).toString() != '') { ctx.ds_type = bestParts.get(4).toString(); }
+                    if (bestParts.get(5).toString() != '') { ctx.ds_dataset = bestParts.get(5).toString(); }
+                    if (bestParts.get(6).toString() != '') { ctx.ds_namespace = bestParts.get(6).toString(); }
+                  }
+                  try {
+                    double cr = Double.parseDouble(bestParts.get(7).toString());
+                    if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
+                  } catch (Exception e) {}
+                  if (bestParts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(8).toString(); }
+                  if (bestParts.get(9).toString() != '') { ctx.conf_currency_symbol = bestParts.get(9).toString(); }
+                }
+              }
+              if (!isProjLevel) {
+                if (bestSyncTs > 0L) {
+                  ctx.source_sync_ts = Instant.ofEpochMilli(bestSyncTs).toString();
+                } else if (ctx['@timestamp'] != null) {
+                  ctx.source_sync_ts = ctx['@timestamp'];
+                }
               }
             }
           } else {
@@ -784,7 +1156,14 @@ processors:
           }
         }
         if (ctx.es_url == 'null') { ctx.es_url = ''; }
-        if (ctx.updated_at instanceof Number) {
+        if (ctx.updated_at instanceof Map) {
+          def uv = ctx.updated_at.value;
+          if (uv instanceof Number) {
+            ctx.updated_at = Instant.ofEpochMilli(((Number)uv).longValue()).toString();
+          } else {
+            ctx.remove('updated_at');
+          }
+        } else if (ctx.updated_at instanceof Number) {
           ctx.updated_at = Instant.ofEpochMilli(((Number)ctx.updated_at).longValue()).toString();
         }
         ctx.remove('by_backing_index');

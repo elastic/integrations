@@ -1,10 +1,16 @@
 description: Aggregates daily AI/ML model inference metrics per Serverless project and model into a single daily figure.
 source:
   index:
-    - metrics-chargeback_serverless.usage-*
+  - metrics-chargeback_serverless.usage-*
+  - serverless_ai_model_contribution_lookup-1*
   query:
-    term:
-      doc_type: "ai_model"
+    bool:
+      should:
+      - term:
+          doc_type: ai_model
+      - term:
+          _index: serverless_ai_model_contribution_lookup-1
+      minimum_should_match: 1
   runtime_mappings:
     cb_ing_ms:
       type: long
@@ -36,6 +42,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_ai_model_contribution_lookup-1') { return; }
           String sep = Character.toString((char)31);
           long ingMs = 0L;
           for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
@@ -94,26 +101,173 @@ source:
           }
           if (v_conf_currency_symbol == '' && params._source?.conf_currency_symbol != null) { v_conf_currency_symbol = params._source.conf_currency_symbol.toString().trim(); }
           emit('ai' + sep + String.valueOf(ingMs) + sep + v_project_name.replace(sep, ' ') + sep + v_project_type.replace(sep, ' ') + sep + v_deployment_group.replace(sep, ' ') + sep + cRate + sep + v_conf_chargeable_unit_rate_unit.replace(sep, ' ') + sep + v_conf_currency_symbol.replace(sep, ' '));
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_ai_model_contribution_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
+                  return;
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_raw_inference_count:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_ai_model_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('inference_count') && !doc['inference_count'].empty) {
+              emit(((Number)doc['inference_count'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('inference_count') instanceof Number) {
+              emit(((Number)params._source.get('inference_count')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_avg_inf_ms:
+      type: double
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_ai_model_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('average_inference_time_ms') && !doc['average_inference_time_ms'].empty) {
+              emit(((Number)doc['average_inference_time_ms'].value).doubleValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('average_inference_time_ms') instanceof Number) {
+              emit(((Number)params._source.get('average_inference_time_ms')).doubleValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_tot_inf_ms:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_ai_model_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('total_inference_time_ms') && !doc['total_inference_time_ms'].empty) {
+              emit(((Number)doc['total_inference_time_ms'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('total_inference_time_ms') instanceof Number) {
+              emit(((Number)params._source.get('total_inference_time_ms')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_ai_rec:
+      type: keyword
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_ai_model_contribution_lookup-1') {
+            return;
+          }
+          String sep = Character.toString((char)31);
+          long ingMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                ingMs = doc[tf].value.toInstant().toEpochMilli();
+                if (ingMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          long infCnt = 0L;
+          double avgInfMs = 0.0;
+          long totInfMs = 0L;
+          try { if (doc.containsKey('inference_count') && !doc['inference_count'].empty) { infCnt = ((Number)doc['inference_count'].value).longValue(); } else if (params._source?.inference_count instanceof Number) { infCnt = ((Number)params._source.inference_count).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('average_inference_time_ms') && !doc['average_inference_time_ms'].empty) { avgInfMs = ((Number)doc['average_inference_time_ms'].value).doubleValue(); } else if (params._source?.average_inference_time_ms instanceof Number) { avgInfMs = ((Number)params._source.average_inference_time_ms).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('total_inference_time_ms') && !doc['total_inference_time_ms'].empty) { totInfMs = ((Number)doc['total_inference_time_ms'].value).longValue(); } else if (params._source?.total_inference_time_ms instanceof Number) { totInfMs = ((Number)params._source.total_inference_time_ms).longValue(); } } catch (Exception e) {}
+          String pName = '';
+          String pType = '';
+          String depGrp = '';
+          String cRate = '-1';
+          String cUnit = '';
+          String cSym = '';
+          try { if (doc.containsKey('project_name') && !doc['project_name'].empty) { pName = doc['project_name'].value.toString().trim(); } else if (params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('project_type') && !doc['project_type'].empty) { pType = doc['project_type'].value.toString().trim(); } else if (params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) { depGrp = doc['deployment_group'].value.toString().trim(); } else if (params._source?.deployment_group != null) { depGrp = params._source.deployment_group.toString().trim(); } } catch (Exception e) {}
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            }
+          } catch (Exception e) {}
+          try { if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) { cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString().trim(); } else if (params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) { cSym = doc['conf_currency_symbol'].value.toString().trim(); } else if (params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); } } catch (Exception e) {}
+          emit(
+            String.valueOf(ingMs) + sep
+            + Long.toString(infCnt) + sep
+            + Double.toString(avgInfMs) + sep
+            + Long.toString(totInfMs) + sep
+            + pName.replace(sep, ' ') + sep
+            + pType.replace(sep, ' ') + sep
+            + depGrp.replace(sep, ' ') + sep
+            + cRate + sep
+            + cUnit.replace(sep, ' ') + sep
+            + cSym.replace(sep, ' ')
+          );
 dest:
   index: serverless_ai_model_contribution_lookup-2
   aliases:
-    - alias: serverless_ai_model_contribution_lookup
-      move_on_creation: true
-  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}'
+  - alias: serverless_ai_model_contribution_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
@@ -127,20 +281,31 @@ pivot:
   aggregations:
     inference_count:
       max:
-        field: inference_count
+        field: cb_raw_inference_count
     average_inference_time_ms:
       max:
-        field: average_inference_time_ms
+        field: cb_raw_avg_inf_ms
     total_inference_time_ms:
       max:
-        field: total_inference_time_ms
+        field: cb_raw_tot_inf_ms
     usage_meta:
       terms:
         field: cb_meta_rec
         size: 20
         order:
-          - max_ing: desc
-          - _key: desc
+        - max_ing: desc
+        - _key: desc
+      aggs:
+        max_ing:
+          max:
+            field: cb_ing_ms
+    v1_ai_carryover:
+      terms:
+        field: cb_v1_ai_rec
+        size: 5
+        order:
+        - max_ing: desc
+        - _key: desc
       aggs:
         max_ing:
           max:

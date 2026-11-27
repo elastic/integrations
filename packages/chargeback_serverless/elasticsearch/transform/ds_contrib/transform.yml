@@ -1,31 +1,43 @@
 description: Aggregates daily indexing time, query time, and dataset storage size per Serverless project and data stream across native Chargeback Serverless and legacy monitoring-indices sources without double-counting.
 source:
   index:
-    - metrics-chargeback_serverless.usage-*
-    - monitoring-indices*
-    - "*:monitoring-indices*"
-    - -monitoring-indices-chargeback*
-    - "*:-monitoring-indices-chargeback*"
-    - -serverless_*_lookup*
-    - "*:-serverless_*_lookup*"
-    - -serverless_billing_credits_lines*
-    - "*:-serverless_billing_credits_lines*"
+  - metrics-chargeback_serverless.usage-*
+  - monitoring-indices*
+  - '*:monitoring-indices*'
+  - serverless_datastream_contribution_lookup-1*
+  - -monitoring-indices-chargeback*
+  - '*:-monitoring-indices-chargeback*'
+  - -serverless_datastream_contribution_lookup-2*
+  - -serverless_billing_cost_lookup*
+  - -serverless_billing_realized_pool_lookup*
+  - -serverless_project_status_lookup*
+  - -serverless_project_contribution_lookup*
+  - -serverless_ai_model_contribution_lookup*
+  - -serverless_synthetics_monitor_contribution_lookup*
+  - -serverless_chargeback_conf_lookup*
+  - -serverless_billing_credits*
+  - '*:-serverless_*_lookup*'
+  - '*:-serverless_billing_credits_lines*'
   query:
     bool:
       must_not:
-        - terms:
-            doc_type:
-              - config_snapshot
-              - ai_model
-              - project_status
-              - synthetics_monitor
-        - term:
-            cb_excluded_index: true
+      - terms:
+          doc_type:
+          - config_snapshot
+          - ai_model
+          - project_status
+          - synthetics_monitor
+      - term:
+          cb_excluded_index: true
   runtime_mappings:
     cb_sync_ts:
       type: date
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
           try {
             if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
               emit(doc['event.ingested'].value.toInstant().toEpochMilli());
@@ -161,6 +173,21 @@ source:
       type: boolean
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') {
+            String v = '';
+            if (doc.containsKey('datastream') && !doc['datastream'].empty) { v = doc['datastream'].value.toString().trim(); }
+            else if (params._source?.datastream != null) { v = params._source.datastream.toString().trim(); }
+            if (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
+                || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
+                || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
+                || v.startsWith('serverless_billing_credits_lines')
+                || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')) {
+              emit(true);
+            } else {
+              emit(false);
+            }
+            return;
+          }
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
                 && doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage') {
@@ -283,6 +310,7 @@ source:
       type: boolean
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -296,6 +324,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -318,6 +347,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -340,6 +370,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -362,6 +393,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -436,6 +468,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -462,6 +495,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -482,6 +516,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -504,6 +539,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -528,6 +564,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -550,6 +587,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -574,6 +612,7 @@ source:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
@@ -596,12 +635,125 @@ source:
             }
           } catch (Exception e) {}
           emit(stoB < 0L ? 0L : stoB);
+    cb_source_tier:
+      type: keyword
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') {
+            emit('v1');
+            return;
+          }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          emit(isNat ? 'nat' : 'leg');
+    cb_v1_ds_idx:
+      type: long
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
+              emit(((Number)doc['datastream_sum_indexing_time'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_indexing_time') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_indexing_time')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_ds_qry:
+      type: long
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
+              emit(((Number)doc['datastream_sum_query_time'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_query_time') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_query_time')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_ds_sto:
+      type: long
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
+              emit(((Number)doc['datastream_sum_data_set_store_size'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_data_set_store_size') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_data_set_store_size')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_ds_meta_rec:
+      type: keyword
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') {
+            return;
+          }
+          long syncMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                syncMs = doc[tf].value.toInstant().toEpochMilli();
+                if (syncMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          Map m = [:];
+          for (String mf : ['project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+            try {
+              if (doc.containsKey(mf) && !doc[mf].empty) {
+                m[mf] = doc[mf].value.toString();
+              } else if (params._source != null && params._source.get(mf) != null) {
+                m[mf] = params._source.get(mf).toString();
+              }
+            } catch (Exception e) {}
+          }
+          double cRate = -1.0;
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+            }
+          } catch (Exception e) {}
+          String sep = Character.toString((char)31);
+          String pName = m.containsKey('project_name') ? m.get('project_name').toString().replace(sep, '') : '';
+          String pType = m.containsKey('project_type') ? m.get('project_type').toString().replace(sep, '') : '';
+          String depGrp = m.containsKey('deployment_group') ? m.get('deployment_group').toString().replace(sep, '') : '';
+          String dsType = m.containsKey('ds_type') ? m.get('ds_type').toString().replace(sep, '') : '';
+          String dsDataset = m.containsKey('ds_dataset') ? m.get('ds_dataset').toString().replace(sep, '') : '';
+          String dsNamespace = m.containsKey('ds_namespace') ? m.get('ds_namespace').toString().replace(sep, '') : '';
+          String cUnit = m.containsKey('conf_chargeable_unit_rate_unit') ? m.get('conf_chargeable_unit_rate_unit').toString().replace(sep, '') : '';
+          String cSym = m.containsKey('conf_currency_symbol') ? m.get('conf_currency_symbol').toString().replace(sep, '') : '';
+          emit(
+            Long.toString(syncMs) + sep + pName + sep + pType + sep + depGrp + sep
+            + dsType + sep + dsDataset + sep + dsNamespace + sep
+            + Double.toString(cRate) + sep + cUnit + sep + cSym
+          );
 dest:
   index: serverless_datastream_contribution_lookup-2
   aliases:
-    - alias: serverless_datastream_contribution_lookup
-      move_on_creation: true
-  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}'
+  - alias: serverless_datastream_contribution_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}
 frequency: 5m
 sync:
   time:
@@ -609,13 +761,13 @@ sync:
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
@@ -624,8 +776,6 @@ pivot:
       terms:
         field: cb_datastream
   aggregations:
-    # Prefer native chargeback_serverless.usage metrics over legacy monitoring-indices*
-    # for the same (day, project_id, datastream) bucket using Serverless-supported aggregations.
     rollup:
       filter:
         match_all: {}
@@ -633,7 +783,7 @@ pivot:
         nat:
           filter:
             term:
-              cb_is_native_usage: true
+              cb_source_tier: nat
           aggs:
             cnt:
               value_count:
@@ -660,7 +810,7 @@ pivot:
         leg:
           filter:
             term:
-              cb_is_native_usage: false
+              cb_source_tier: leg
           aggs:
             all_slots:
               cardinality:
@@ -702,6 +852,36 @@ pivot:
                   cardinality:
                     field: cb_leg_slot
                     precision_threshold: 1000
+            cnt:
+              value_count:
+                field: cb_sync_ms
+        v1:
+          filter:
+            term:
+              cb_source_tier: v1
+          aggs:
+            cnt:
+              value_count:
+                field: cb_sync_ms
+            idx:
+              max:
+                field: cb_v1_ds_idx
+            qry:
+              max:
+                field: cb_v1_ds_qry
+            sto:
+              max:
+                field: cb_v1_ds_sto
+            meta:
+              terms:
+                field: cb_v1_ds_meta_rec
+                size: 5
+                order:
+                  sync_ms: desc
+              aggs:
+                sync_ms:
+                  max:
+                    field: cb_sync_ms
 settings:
   deduce_mappings: false
   unattended: true

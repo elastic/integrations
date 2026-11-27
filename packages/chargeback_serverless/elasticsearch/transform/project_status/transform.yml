@@ -1,10 +1,16 @@
 description: Aggregates daily Serverless project harvest status into a single daily figure per project.
 source:
   index:
-    - metrics-chargeback_serverless.usage-*
+  - metrics-chargeback_serverless.usage-*
+  - serverless_project_status_lookup-1*
   query:
-    term:
-      doc_type: "project_status"
+    bool:
+      should:
+      - term:
+          doc_type: project_status
+      - term:
+          _index: serverless_project_status_lookup-1
+      minimum_should_match: 1
   runtime_mappings:
     cb_ing_ms:
       type: long
@@ -62,6 +68,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') { return; }
           String sep = Character.toString((char)31);
           long updMs = 0L;
           for (String tf : ['updated_at', 'event.ingested', '@timestamp']) {
@@ -104,6 +111,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') { return; }
           String sep = Character.toString((char)31);
           long ingMs = 0L;
           for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
@@ -172,26 +180,235 @@ source:
           }
           if (v_es_url == '' && params._source?.es_url != null) { v_es_url = params._source.es_url.toString().trim(); }
           emit('ps' + sep + String.valueOf(ingMs) + sep + v_project_name.replace(sep, ' ') + sep + v_project_type.replace(sep, ' ') + sep + v_deployment_group.replace(sep, ' ') + sep + cRate + sep + v_conf_chargeable_unit_rate_unit.replace(sep, ' ') + sep + v_conf_currency_symbol.replace(sep, ' ') + sep + v_optimized_for.replace(sep, ' ') + sep + v_es_url.replace(sep, ' '));
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
+                  return;
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_raw_index_count:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') { return; }
+          try {
+            if (doc.containsKey('index_count') && !doc['index_count'].empty) {
+              emit(((Number)doc['index_count'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('index_count') instanceof Number) {
+              emit(((Number)params._source.get('index_count')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_datastream_count:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_count') && !doc['datastream_count'].empty) {
+              emit(((Number)doc['datastream_count'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_count') instanceof Number) {
+              emit(((Number)params._source.get('datastream_count')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_ai_model_count:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') { return; }
+          try {
+            if (doc.containsKey('ai_model_count') && !doc['ai_model_count'].empty) {
+              emit(((Number)doc['ai_model_count'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('ai_model_count') instanceof Number) {
+              emit(((Number)params._source.get('ai_model_count')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_synthetics_monitor_count:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') { return; }
+          try {
+            if (doc.containsKey('synthetics_monitor_count') && !doc['synthetics_monitor_count'].empty) {
+              emit(((Number)doc['synthetics_monitor_count'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('synthetics_monitor_count') instanceof Number) {
+              emit(((Number)params._source.get('synthetics_monitor_count')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_updated_at:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_status_lookup-1') { return; }
+          try {
+            if (doc.containsKey('updated_at') && !doc['updated_at'].empty) {
+              emit(doc['updated_at'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('updated_at') != null) {
+              def rv = params._source.get('updated_at');
+              if (rv instanceof Number) { emit(((Number)rv).longValue()); }
+              else if (rv.toString().trim() != '') { emit(ZonedDateTime.parse(rv.toString().trim()).toInstant().toEpochMilli()); }
+            }
+          } catch (Exception e) {}
+    cb_v1_ps_rec:
+      type: keyword
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_project_status_lookup-1') {
+            return;
+          }
+          String sep = Character.toString((char)31);
+          long ingMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                ingMs = doc[tf].value.toInstant().toEpochMilli();
+                if (ingMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          long idxCnt = 0L;
+          long dsCnt = 0L;
+          long aiCnt = 0L;
+          long synCnt = 0L;
+          long updMs = 0L;
+          try { if (doc.containsKey('index_count') && !doc['index_count'].empty) { idxCnt = ((Number)doc['index_count'].value).longValue(); } else if (params._source?.index_count instanceof Number) { idxCnt = ((Number)params._source.index_count).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('datastream_count') && !doc['datastream_count'].empty) { dsCnt = ((Number)doc['datastream_count'].value).longValue(); } else if (params._source?.datastream_count instanceof Number) { dsCnt = ((Number)params._source.datastream_count).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('ai_model_count') && !doc['ai_model_count'].empty) { aiCnt = ((Number)doc['ai_model_count'].value).longValue(); } else if (params._source?.ai_model_count instanceof Number) { aiCnt = ((Number)params._source.ai_model_count).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('synthetics_monitor_count') && !doc['synthetics_monitor_count'].empty) { synCnt = ((Number)doc['synthetics_monitor_count'].value).longValue(); } else if (params._source?.synthetics_monitor_count instanceof Number) { synCnt = ((Number)params._source.synthetics_monitor_count).longValue(); } } catch (Exception e) {}
+          for (String tf : ['updated_at', 'event.ingested', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                updMs = doc[tf].value.toInstant().toEpochMilli();
+                if (updMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          String lastSt = '';
+          String apiKeyType = '';
+          String synSt = '';
+          String pName = '';
+          String pType = '';
+          String depGrp = '';
+          String optFor = '';
+          String esUrl = '';
+          String cRate = '-1';
+          String cUnit = '';
+          String cSym = '';
+          try { if (doc.containsKey('last_status') && !doc['last_status'].empty) { lastSt = doc['last_status'].value.toString().trim(); } else if (params._source?.last_status != null) { lastSt = params._source.last_status.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('api_key_type') && !doc['api_key_type'].empty) { apiKeyType = doc['api_key_type'].value.toString().trim(); } else if (params._source?.api_key_type != null) { apiKeyType = params._source.api_key_type.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('synthetics_status') && !doc['synthetics_status'].empty) { synSt = doc['synthetics_status'].value.toString().trim(); } else if (params._source?.synthetics_status != null) { synSt = params._source.synthetics_status.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('project_name') && !doc['project_name'].empty) { pName = doc['project_name'].value.toString().trim(); } else if (params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('project_type') && !doc['project_type'].empty) { pType = doc['project_type'].value.toString().trim(); } else if (params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) { depGrp = doc['deployment_group'].value.toString().trim(); } else if (params._source?.deployment_group != null) { depGrp = params._source.deployment_group.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('optimized_for') && !doc['optimized_for'].empty) { optFor = doc['optimized_for'].value.toString().trim(); } else if (params._source?.optimized_for != null) { optFor = params._source.optimized_for.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('es_url') && !doc['es_url'].empty) { esUrl = doc['es_url'].value.toString().trim(); } else if (params._source?.es_url != null) { esUrl = params._source.es_url.toString().trim(); } } catch (Exception e) {}
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            }
+          } catch (Exception e) {}
+          try { if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) { cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString().trim(); } else if (params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); } } catch (Exception e) {}
+          try { if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) { cSym = doc['conf_currency_symbol'].value.toString().trim(); } else if (params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); } } catch (Exception e) {}
+          emit(
+            String.valueOf(ingMs) + sep
+            + Long.toString(idxCnt) + sep
+            + Long.toString(dsCnt) + sep
+            + Long.toString(aiCnt) + sep
+            + Long.toString(synCnt) + sep
+            + Long.toString(updMs) + sep
+            + lastSt.replace(sep, ' ') + sep
+            + apiKeyType.replace(sep, ' ') + sep
+            + synSt.replace(sep, ' ') + sep
+            + pName.replace(sep, ' ') + sep
+            + pType.replace(sep, ' ') + sep
+            + depGrp.replace(sep, ' ') + sep
+            + optFor.replace(sep, ' ') + sep
+            + esUrl.replace(sep, ' ') + sep
+            + cRate + sep
+            + cUnit.replace(sep, ' ') + sep
+            + cSym.replace(sep, ' ')
+          );
 dest:
   index: serverless_project_status_lookup-2
   aliases:
-    - alias: serverless_project_status_lookup
-      move_on_creation: true
-  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}'
+  - alias: serverless_project_status_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
@@ -199,26 +416,26 @@ pivot:
   aggregations:
     index_count:
       max:
-        field: index_count
+        field: cb_raw_index_count
     datastream_count:
       max:
-        field: datastream_count
+        field: cb_raw_datastream_count
     ai_model_count:
       max:
-        field: ai_model_count
+        field: cb_raw_ai_model_count
     synthetics_monitor_count:
       max:
-        field: synthetics_monitor_count
+        field: cb_raw_synthetics_monitor_count
     updated_at:
       max:
-        field: updated_at
+        field: cb_raw_updated_at
     status_meta:
       terms:
         field: cb_status_rec
         size: 20
         order:
-          - max_upd: desc
-          - _key: desc
+        - max_upd: desc
+        - _key: desc
       aggs:
         max_upd:
           max:
@@ -228,8 +445,19 @@ pivot:
         field: cb_meta_rec
         size: 20
         order:
-          - max_ing: desc
-          - _key: desc
+        - max_ing: desc
+        - _key: desc
+      aggs:
+        max_ing:
+          max:
+            field: cb_ing_ms
+    v1_ps_carryover:
+      terms:
+        field: cb_v1_ps_rec
+        size: 5
+        order:
+        - max_ing: desc
+        - _key: desc
       aggs:
         max_ing:
           max:

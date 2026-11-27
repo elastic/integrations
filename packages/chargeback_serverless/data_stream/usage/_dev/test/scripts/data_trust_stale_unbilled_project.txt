@@ -13,6 +13,7 @@
 [!exec:sh] skip 'Skipping test requiring absent sh command'
 
 use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+exec sh seed_v1_upgrade.sh
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 
 exec sh run_regression.sh
@@ -45,7 +46,7 @@ exec jq -r '.[0].unit' monthly_rows.json
 stdout '^ZAR$'
 
 exec jq -r 'length' new_group_rows.json
-stdout '^1$'
+stdout '^3$'
 
 exec jq -r '[.[].deployment_group] | sort | join(",")' new_group_rows.json
 stdout '^legacy-mixed-grp,multi-pol-new-grp,replayed-new-grp$'
@@ -110,7 +111,13 @@ stdout '^false$'
 exec jq -r '(.old_alias_cnt == 0) and (.new_alias_cnt == 1)' e2e_move_on_creation.json
 stdout '^true$'
 
-exec jq -r '.docs[0].doc._source | (.group_initial_backfill == false) and ((.group_observations | length) == 2)' e2e_bill_multipol_out.json
+exec jq -r '([.docs[].doc._source | {day: .["@timestamp"], bf: .group_initial_backfill, cnt: (.group_observations | length)}] | sort_by(.day)) | (.[0].bf == true and .[0].cnt == 1 and .[1].bf == false and .[1].cnt == 2)' e2e_bill_multipol_out.json
+stdout '^true$'
+
+exec jq -r '.vacated_ok and .aliases_ok and .docs_ok' live_carryover_e2e.json
+stdout '^true$'
+
+exec jq -r '.older_ok and .current_ok' live_upgrade_e2e.json
 stdout '^true$'
 
 exec jq -r '.docs[0].doc._source | "\(.conf_chargeable_unit_rate)|\(.conf_chargeable_unit_rate_unit)|\(.conf_currency_symbol)"' e2e_conf_out.json
@@ -142,6 +149,251 @@ stdout '^\|120\|finops-core\|340$'
 
 exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dgrp: .deployment_group, dur: .total_duration_ms}] | sort_by(.day) | "\(.[0].dgrp)|\(.[0].dur)|\(.[1].dgrp)|\(.[1].dur)"' e2e_v1_sy_out.json
 stdout '^\|300(\.0)?\|finops-core\|500(\.0)?$'
+
+-- seed_v1_upgrade.sh --
+#!/bin/sh
+set -eu
+
+STACK_CFG="${CONFIG_PROFILES}/${PROFILE}/stack/config.json"
+if [ -f "${STACK_CFG}" ]; then
+  ES_HOST="$(jq -r '.elasticsearch_host' "${STACK_CFG}")"
+  ES_USER="$(jq -r '.elasticsearch_username' "${STACK_CFG}")"
+  ES_PASS="$(jq -r '.elasticsearch_password' "${STACK_CFG}")"
+  CA_CERT="$(jq -r '.ca_cert_file' "${STACK_CFG}")"
+else
+  ES_HOST="https://localhost:9200"
+  ES_USER="elastic"
+  ES_PASS="changeme"
+  CA_CERT="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+fi
+
+es_curl() {
+  BODY_FILE="$(mktemp)"
+  HTTP_CODE="$(curl -sS -o "${BODY_FILE}" -w '%{http_code}' -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" "$@")" || {
+    cat "${BODY_FILE}" >&2
+    rm -f "${BODY_FILE}"
+    return 22
+  }
+  if [ "${HTTP_CODE}" -ge 400 ]; then
+    echo "HTTP ${HTTP_CODE} on $*" >&2
+    cat "${BODY_FILE}" >&2
+    rm -f "${BODY_FILE}"
+    return 22
+  fi
+  cat "${BODY_FILE}"
+  rm -f "${BODY_FILE}"
+}
+
+# Clear any leftover package transforms or lookup indices so upgrade seeding is deterministic
+for tid in $(es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*" 2>/dev/null | jq -r '.transforms[]?.id' 2>/dev/null || true); do
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X POST "${ES_HOST}/_transform/${tid}/_stop?force=true&wait_for_completion=true" >/dev/null 2>&1 || true
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X DELETE "${ES_HOST}/_transform/${tid}" >/dev/null 2>&1 || true
+done
+ALL_LOOKUP_INDICES="serverless_billing_cost_lookup-1,serverless_billing_cost_lookup-2,serverless_billing_realized_pool_lookup-1,serverless_billing_realized_pool_lookup-2,serverless_project_status_lookup-1,serverless_project_status_lookup-2,serverless_datastream_contribution_lookup-1,serverless_datastream_contribution_lookup-2,serverless_project_contribution_lookup-1,serverless_project_contribution_lookup-2,serverless_ai_model_contribution_lookup-1,serverless_ai_model_contribution_lookup-2,serverless_synthetics_monitor_contribution_lookup-1,serverless_synthetics_monitor_contribution_lookup-2,serverless_billing_credits_lines-1,serverless_billing_credits_lookup-1,serverless_chargeback_conf_lookup-1"
+CB_E2E_INDICES="cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage,cb-e2e-src-bill-multipol,cb-e2e-move-dest-1,cb-e2e-move-dest-2,cb-e2e-live-v2-bill,cb-e2e-live-v2-usage,cb-e2e-live-v2-bill-stage1,cb-e2e-live-v2-ds-stage1"
+es_curl -X DELETE "${ES_HOST}/${ALL_LOOKUP_INDICES},${CB_E2E_INDICES}?ignore_unavailable=true" >/dev/null
+if [ "$(es_curl "${ES_HOST}/serverless_*/_alias" | jq 'length')" -ne 0 ]; then
+  echo "Unexpected residual serverless_* lookup indices after DELETE" >&2
+  es_curl "${ES_HOST}/serverless_*/_alias" >&2
+  exit 1
+fi
+curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}"   -X DELETE "${ES_HOST}/_data_stream/metrics-chargeback_serverless.billing-e2e-health,metrics-chargeback_serverless.usage-e2e-health?ignore_unavailable=true" >/dev/null 2>&1 || true
+
+V1_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 2 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
+V1_UPD="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 2 * 86400 + 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
+
+# Seed all 7 0.1.0 -1 lookup indices (index.mode: lookup, dynamic: false, no 0.2.0 fields) with historical carryover rows
+es_curl -X PUT "${ES_HOST}/serverless_billing_cost_lookup-1" -H 'Content-Type: application/json' -d '{
+  "settings": {"index.mode": "lookup"},
+  "aliases": {"serverless_billing_cost_lookup": {}},
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "sku": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "total_ecu": {"type": "double"},
+      "quantity_value": {"type": "double"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/serverless_billing_realized_pool_lookup-1" -H 'Content-Type: application/json' -d '{
+  "settings": {"index.mode": "lookup"},
+  "aliases": {"serverless_billing_realized_pool_lookup": {}},
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "indexing_ecu": {"type": "double"},
+      "query_ecu": {"type": "double"},
+      "storage_ecu": {"type": "double"},
+      "ai_ecu": {"type": "double"},
+      "synthetics_ecu": {"type": "double"},
+      "synthetics_pings_ecu": {"type": "double"},
+      "synthetics_executions_ecu": {"type": "double"},
+      "all_sku_ecu": {"type": "double"},
+      "data_tier_capacity_ecu": {"type": "double"},
+      "realized_chargeable_units": {"type": "double"},
+      "total_chargeable_units": {"type": "double"},
+      "total_ecu": {"type": "double"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/serverless_project_status_lookup-1" -H 'Content-Type: application/json' -d '{
+  "settings": {"index.mode": "lookup"},
+  "aliases": {"serverless_project_status_lookup": {}},
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "optimized_for": {"type": "keyword"},
+      "es_url": {"type": "keyword"},
+      "last_status": {"type": "keyword"},
+      "api_key_type": {"type": "keyword"},
+      "synthetics_status": {"type": "keyword"},
+      "index_count": {"type": "long"},
+      "datastream_count": {"type": "long"},
+      "ai_model_count": {"type": "long"},
+      "synthetics_monitor_count": {"type": "long"},
+      "updated_at": {"type": "date"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/serverless_datastream_contribution_lookup-1" -H 'Content-Type: application/json' -d '{
+  "settings": {"index.mode": "lookup"},
+  "aliases": {"serverless_datastream_contribution_lookup": {}},
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "datastream": {"type": "keyword"},
+      "ds_type": {"type": "keyword"},
+      "ds_dataset": {"type": "keyword"},
+      "ds_namespace": {"type": "keyword"},
+      "datastream_sum_indexing_time": {"type": "long"},
+      "datastream_sum_query_time": {"type": "long"},
+      "datastream_sum_data_set_store_size": {"type": "long"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/serverless_project_contribution_lookup-1" -H 'Content-Type: application/json' -d '{
+  "settings": {"index.mode": "lookup"},
+  "aliases": {"serverless_project_contribution_lookup": {}},
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "deployment_sum_indexing_time": {"type": "long"},
+      "deployment_sum_query_time": {"type": "long"},
+      "deployment_sum_data_set_store_size": {"type": "long"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/serverless_ai_model_contribution_lookup-1" -H 'Content-Type: application/json' -d '{
+  "settings": {"index.mode": "lookup"},
+  "aliases": {"serverless_ai_model_contribution_lookup": {}},
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "model_id": {"type": "keyword"},
+      "task_type": {"type": "keyword"},
+      "inference_count": {"type": "long"},
+      "average_inference_time_ms": {"type": "double"},
+      "total_inference_time_ms": {"type": "long"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/serverless_synthetics_monitor_contribution_lookup-1" -H 'Content-Type: application/json' -d '{
+  "settings": {"index.mode": "lookup"},
+  "aliases": {"serverless_synthetics_monitor_contribution_lookup": {}},
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "monitor_id": {"type": "keyword"},
+      "monitor_name": {"type": "keyword"},
+      "monitor_namespace": {"type": "keyword"},
+      "monitor_type": {"type": "keyword"},
+      "check_count": {"type": "long"},
+      "up_count": {"type": "long"},
+      "down_count": {"type": "long"},
+      "locations_count": {"type": "long"},
+      "average_duration_ms": {"type": "double"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+
+es_curl -X POST "${ES_HOST}/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
+{"index":{"_index":"serverless_billing_cost_lookup-1"}}
+{"@timestamp":"'"${V1_DAY}"'","event":{"ingested":"'"${V1_UPD}"'"},"project_id":"proj-v1-carryover","sku":"es.search-vcu","project_name":"V1 Carryover ES","project_type":"elasticsearch","total_ecu":42.5,"quantity_value":42.5,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_billing_realized_pool_lookup-1"}}
+{"@timestamp":"'"${V1_DAY}"'","event":{"ingested":"'"${V1_UPD}"'"},"project_id":"proj-v1-carryover","project_name":"V1 Carryover ES","project_type":"elasticsearch","indexing_ecu":12.5,"query_ecu":20.0,"storage_ecu":10.0,"ai_ecu":0.0,"synthetics_ecu":0.0,"synthetics_pings_ecu":0.0,"synthetics_executions_ecu":0.0,"all_sku_ecu":42.5,"data_tier_capacity_ecu":0.0,"realized_chargeable_units":42.5,"total_chargeable_units":42.5,"total_ecu":42.5,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_project_status_lookup-1"}}
+{"@timestamp":"'"${V1_DAY}"'","event":{"ingested":"'"${V1_UPD}"'"},"project_id":"proj-v1-carryover","project_name":"V1 Carryover ES","project_type":"elasticsearch","optimized_for":"general_purpose","es_url":"https://v1-carryover.example","last_status":"ok","api_key_type":"hub_key","synthetics_status":"ok","index_count":5,"datastream_count":2,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${V1_UPD}"'","conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_datastream_contribution_lookup-1"}}
+{"@timestamp":"'"${V1_DAY}"'","event":{"ingested":"'"${V1_UPD}"'"},"project_id":"proj-v1-carryover","project_name":"V1 Carryover ES","project_type":"elasticsearch","datastream":"logs-v1-carryover","ds_type":"logs","ds_dataset":"v1","ds_namespace":"carryover","datastream_sum_indexing_time":150,"datastream_sum_query_time":50,"datastream_sum_data_set_store_size":4096,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_project_contribution_lookup-1"}}
+{"@timestamp":"'"${V1_DAY}"'","event":{"ingested":"'"${V1_UPD}"'"},"project_id":"proj-v1-carryover","project_name":"V1 Carryover ES","project_type":"elasticsearch","deployment_sum_indexing_time":150,"deployment_sum_query_time":50,"deployment_sum_data_set_store_size":4096,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_ai_model_contribution_lookup-1"}}
+{"@timestamp":"'"${V1_DAY}"'","event":{"ingested":"'"${V1_UPD}"'"},"project_id":"proj-v1-carryover","project_name":"V1 Carryover ES","project_type":"elasticsearch","model_id":"elser","task_type":"query_inference","inference_count":120,"average_inference_time_ms":10.0,"total_inference_time_ms":1200,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_synthetics_monitor_contribution_lookup-1"}}
+{"@timestamp":"'"${V1_DAY}"'","event":{"ingested":"'"${V1_UPD}"'"},"project_id":"proj-v1-carryover","project_name":"V1 Carryover ES","project_type":"elasticsearch","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":4,"up_count":4,"down_count":0,"locations_count":1,"average_duration_ms":75.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+' >/dev/null
 
 -- run_regression.sh --
 #!/bin/sh
@@ -185,7 +437,7 @@ cleanup_transforms_and_indices() {
       -X DELETE "${ES_HOST}/_transform/${tid}" >/dev/null 2>&1 || true
   done
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage,cb-e2e-src-bill-multipol,cb-e2e-move-dest-1,cb-e2e-move-dest-2?ignore_unavailable=true" >/dev/null 2>&1 || true
+    -X DELETE "${ES_HOST}/cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage,cb-e2e-src-bill-multipol,cb-e2e-move-dest-1,cb-e2e-move-dest-2,cb-e2e-live-v2-bill,cb-e2e-live-v2-usage,cb-e2e-live-v2-bill-stage1,cb-e2e-live-v2-ds-stage1?ignore_unavailable=true" >/dev/null 2>&1 || true
 }
 
 cleanup() {
@@ -196,29 +448,127 @@ cleanup() {
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X POST "${ES_HOST}/serverless_billing_cost_lookup-2,serverless_project_status_lookup-2,serverless_project_contribution_lookup-2/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
-    -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive","proj-legacy-only","proj-currency-flip","proj-grp-backfill","proj-grp-new","proj-grp-legacy-mix-old","proj-grp-legacy-mix-new","proj-mpol"]}}}' >/dev/null 2>&1 || true
+    -d '{"query":{"terms":{"project_id":["proj-healthy","proj-stale-unbilled","proj-inactive","proj-legacy-only","proj-currency-flip","proj-grp-backfill","proj-grp-new","proj-grp-legacy-mix-old","proj-grp-legacy-mix-new","proj-mpol","proj-v1-carryover","proj-v1-phaseb"]}}}' >/dev/null 2>&1 || true
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
     -X POST "${ES_HOST}/serverless_billing_credits_lookup-1/_delete_by_query?refresh=true" \
     -H 'Content-Type: application/json' \
     -d '{"query":{"term":{"ess.billing.organization_id":"org-health-test"}}}' >/dev/null 2>&1 || true
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
-    -X POST "${ES_HOST}/serverless_ai_model_contribution_lookup-2,serverless_synthetics_monitor_contribution_lookup-2/_delete_by_query?refresh=true" \
+    -X POST "${ES_HOST}/serverless_billing_cost_lookup-1,serverless_billing_cost_lookup-2,serverless_billing_realized_pool_lookup-1,serverless_billing_realized_pool_lookup-2,serverless_project_status_lookup-1,serverless_project_status_lookup-2,serverless_datastream_contribution_lookup-1,serverless_datastream_contribution_lookup-2,serverless_project_contribution_lookup-1,serverless_project_contribution_lookup-2,serverless_ai_model_contribution_lookup-1,serverless_ai_model_contribution_lookup-2,serverless_synthetics_monitor_contribution_lookup-1,serverless_synthetics_monitor_contribution_lookup-2/_delete_by_query?refresh=true&ignore_unavailable=true" \
     -H 'Content-Type: application/json' \
-    -d '{"query":{"term":{"project_id":"proj-health-workload"}}}' >/dev/null 2>&1 || true
+    -d '{"query":{"terms":{"project_id":["proj-health-workload","proj-v1-carryover","proj-v1-phaseb"]}}}' >/dev/null 2>&1 || true
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" \
+    -X DELETE "${ES_HOST}/serverless_billing_cost_lookup-1,serverless_billing_realized_pool_lookup-1,serverless_project_status_lookup-1,serverless_datastream_contribution_lookup-1,serverless_project_contribution_lookup-1,serverless_ai_model_contribution_lookup-1,serverless_synthetics_monitor_contribution_lookup-1?ignore_unavailable=true" >/dev/null 2>&1 || true
   return "${RC}"
 }
 trap cleanup EXIT
 
+# Phase A: Wait for all 10 0.2.0 continuous transforms to install and start, then trigger real
+# Checkpoint 1 execution across Stage 1 and Stage 2 so all 7 -2 indices materialise, vacate -1
+# aliases automatically, and carry over historical -1 records without manual PUT stubs.
 i=0
-while [ "$i" -lt 30 ]; do
-  if es_curl "${ES_HOST}/_alias/serverless_billing_cost_lookup" >/dev/null 2>&1 && \
-     es_curl "${ES_HOST}/_alias/serverless_project_status_lookup" >/dev/null 2>&1 && \
-     es_curl "${ES_HOST}/_alias/serverless_project_contribution_lookup" >/dev/null 2>&1; then
+while [ "$i" -lt 60 ]; do
+  TR_STATS="$(es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*/_stats" 2>/dev/null || echo '{"count":0,"transforms":[]}')"
+  STARTED_CNT="$(echo "${TR_STATS}" | jq '[.transforms[] | select(.state == "started")] | length')"
+  if [ "${STARTED_CNT}" -eq 10 ]; then
     break
   fi
   i=$((i + 1))
   sleep 1
 done
+if [ "${STARTED_CNT:-0}" -ne 10 ]; then
+  echo "Expected 10 started transforms, got ${STARTED_CNT:-0}" >&2
+  exit 1
+fi
+
+es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*" > initial_transforms.json
+
+ensure_checkpoint1() {
+  T_PART="$1"
+  TID="$(jq -r --arg part "$T_PART" '.transforms[] | select(.id | startswith("logs-chargeback_serverless." + $part + "-")) | .id' initial_transforms.json)"
+  if [ -z "${TID}" ]; then
+    echo "Transform not found for ${T_PART}" >&2
+    return 1
+  fi
+  ci=0
+  while [ "${ci}" -lt 45 ]; do
+    ST_JSON="$(es_curl "${ES_HOST}/_transform/${TID}/_stats")"
+    T_STATE="$(echo "${ST_JSON}" | jq -r '.transforms[0].state')"
+    CP_NUM="$(echo "${ST_JSON}" | jq -r '.transforms[0].checkpointing.last.checkpoint // 0')"
+    HAS_NEXT="$(echo "${ST_JSON}" | jq -r '.transforms[0].checkpointing.next != null')"
+    if [ "${T_STATE}" = "failed" ]; then
+      echo "${ST_JSON}" >&2
+      return 1
+    fi
+    if [ "${CP_NUM}" -ge 1 ] && [ "${HAS_NEXT}" = "false" ]; then
+      return 0
+    fi
+    if [ "${CP_NUM}" -eq 0 ] && [ "${HAS_NEXT}" = "false" ]; then
+      curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}"         -X POST "${ES_HOST}/_transform/${TID}/_schedule_now" >/dev/null 2>&1 || true
+    fi
+    ci=$((ci + 1))
+    sleep 1
+  done
+  es_curl "${ES_HOST}/_transform/${TID}/_stats" >&2
+  return 1
+}
+
+for s1_part in chargeback_conf billing_credits_lines billing_cost ds_contrib project_status ai_contrib synthetics_contrib; do
+  ensure_checkpoint1 "${s1_part}"
+done
+es_curl -X POST "${ES_HOST}/serverless_*_lookup-2,serverless_*_lines-1,serverless_*_conf_lookup-1/_refresh?ignore_unavailable=true" >/dev/null
+
+for s2_part in billing_credits realized_pool proj_contrib; do
+  ensure_checkpoint1 "${s2_part}"
+done
+es_curl -X POST "${ES_HOST}/serverless_*_lookup-2,serverless_*_lookup-1/_refresh?ignore_unavailable=true" >/dev/null
+
+es_curl "${ES_HOST}/serverless_*/_alias" > v1_to_v2_aliases.json
+es_curl -X POST "${ES_HOST}/serverless_*_lookup-2/_search?size=50" -H 'Content-Type: application/json'   -d '{"query":{"term":{"project_id":"proj-v1-carryover"}}}' > v1_carryover_docs.json
+jq -s '
+  (.[0]) as $am |
+  (.[1].hits.hits) as $hits |
+  def idx_doc($idx): ($hits | map(select(._index == $idx) | ._source) | .[0] // null);
+  {
+    vacated_ok: (
+      ($am["serverless_billing_cost_lookup-1"].aliases | length) == 0 and
+      ($am["serverless_billing_realized_pool_lookup-1"].aliases | length) == 0 and
+      ($am["serverless_project_status_lookup-1"].aliases | length) == 0 and
+      ($am["serverless_datastream_contribution_lookup-1"].aliases | length) == 0 and
+      ($am["serverless_project_contribution_lookup-1"].aliases | length) == 0 and
+      ($am["serverless_ai_model_contribution_lookup-1"].aliases | length) == 0 and
+      ($am["serverless_synthetics_monitor_contribution_lookup-1"].aliases | length) == 0
+    ),
+    aliases_ok: (
+      ($am["serverless_billing_cost_lookup-2"].aliases | has("serverless_billing_cost_lookup")) and
+      ($am["serverless_billing_realized_pool_lookup-2"].aliases | has("serverless_billing_realized_pool_lookup")) and
+      ($am["serverless_project_status_lookup-2"].aliases | has("serverless_project_status_lookup")) and
+      ($am["serverless_datastream_contribution_lookup-2"].aliases | has("serverless_datastream_contribution_lookup")) and
+      ($am["serverless_project_contribution_lookup-2"].aliases | has("serverless_project_contribution_lookup")) and
+      ($am["serverless_ai_model_contribution_lookup-2"].aliases | has("serverless_ai_model_contribution_lookup")) and
+      ($am["serverless_synthetics_monitor_contribution_lookup-2"].aliases | has("serverless_synthetics_monitor_contribution_lookup"))
+    ),
+    docs_ok: (
+      (idx_doc("serverless_billing_cost_lookup-2") | . != null and .total_ecu == 42.5 and .project_name == "V1 Carryover ES") and
+      (idx_doc("serverless_billing_realized_pool_lookup-2") | . != null and .total_ecu == 42.5 and .project_name == "V1 Carryover ES") and
+      (idx_doc("serverless_project_status_lookup-2") | . != null and .index_count == 5 and .project_name == "V1 Carryover ES") and
+      (idx_doc("serverless_datastream_contribution_lookup-2") | . != null and .datastream_sum_indexing_time == 150 and .project_name == "V1 Carryover ES") and
+      (idx_doc("serverless_project_contribution_lookup-2") | . != null and .deployment_sum_indexing_time == 150 and .project_name == "V1 Carryover ES") and
+      (idx_doc("serverless_ai_model_contribution_lookup-2") | . != null and .inference_count == 120 and .project_name == "V1 Carryover ES") and
+      (idx_doc("serverless_synthetics_monitor_contribution_lookup-2") | . != null and .check_count == 4 and .total_duration_ms == 300.0 and .project_name == "V1 Carryover ES")
+    )
+  }
+' v1_to_v2_aliases.json v1_carryover_docs.json > live_carryover_e2e.json
+if [ "$(jq -r '.vacated_ok and .aliases_ok and .docs_ok' live_carryover_e2e.json)" != "true" ]; then
+  cat live_carryover_e2e.json >&2
+  cat v1_to_v2_aliases.json >&2
+  cat v1_carryover_docs.json >&2
+  exit 1
+fi
+
+# Remove temporary carryover seed docs before alert-rule assertions so unbilled/stale fixture counts stay exact
+es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-1,serverless_billing_cost_lookup-2,serverless_billing_realized_pool_lookup-1,serverless_billing_realized_pool_lookup-2,serverless_project_status_lookup-1,serverless_project_status_lookup-2,serverless_datastream_contribution_lookup-1,serverless_datastream_contribution_lookup-2,serverless_project_contribution_lookup-1,serverless_project_contribution_lookup-2,serverless_ai_model_contribution_lookup-1,serverless_ai_model_contribution_lookup-2,serverless_synthetics_monitor_contribution_lookup-1,serverless_synthetics_monitor_contribution_lookup-2/_delete_by_query?refresh=true" \
+  -H 'Content-Type: application/json' -d '{"query":{"term":{"project_id":"proj-v1-carryover"}}}' >/dev/null
 
 BILL_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
 HEALTHY_UPDATED_AT="$(jq -nr '(now - 3600) | strftime("%Y-%m-%dT%H:%M:%SZ")')"
@@ -541,7 +891,7 @@ es_curl -X POST "${ES_HOST}/cb-e2e-src-bill-multipol/_bulk?refresh=true" -H 'Con
 {"index":{}}
 {"@timestamp":"'"${REPLAY_OLD_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"doc_type":"billing_line_item","conf_policy_id":"pol-2","policy_created_at":"'"${HEALTHY_UPDATED_AT}"'","project_id":"proj-mpol","project_name":"Multi Policy ES","project_type":"elasticsearch","deployment_group":"multi-pol-new-grp","sku":"aws.es-search-vcu_us-east-1","total_ecu":15.0,"quantity_value":15.0,"group_first_seen_at":"'"${REPLAY_OLD_DAY}"'","group_initial_backfill":true,"ess":{"billing":{"organization_id":"org-health-test"}}}
 ' >/dev/null
-T_MP_ID="$(es_curl "${ES_HOST}/_transform/_all" | jq -r '.transforms[] | select(.id | contains(".billing_cost-")) | .id')"
+T_MP_ID="$(es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*" | jq -r '.transforms[] | select(.id | startswith("logs-chargeback_serverless.billing_cost-")) | .id')"
 es_curl "${ES_HOST}/_transform/${T_MP_ID}" | jq '.transforms[0] | {source: .source, pivot: .pivot, settings: .settings} | .source.index = ["cb-e2e-src-bill-multipol"]' > prev_tdef_mp.json
 es_curl -X POST "${ES_HOST}/_transform/_preview" -H 'Content-Type: application/json' -d @prev_tdef_mp.json > prev_mp_raw.json
 jq '{docs: [.preview[] | {"_index": "cb-e2e-preview", "_source": .}]}' prev_mp_raw.json > sim_mp_req.json
@@ -656,21 +1006,9 @@ jq -n \
   -H 'Content-Type: application/json' -d @- > lookup_usage_sim.json
 
 
-# Ensure all 7 upgraded -2 lookup indices and remaining -1 lookup indices are materialised,
-# then verify -2 / -1 aliases and 0.2.0 field mappings across every upgraded destination.
-for pair in \
-  "serverless_billing_realized_pool_lookup-2:serverless_billing_realized_pool_lookup" \
-  "serverless_datastream_contribution_lookup-2:serverless_datastream_contribution_lookup" \
-  "serverless_billing_credits_lines-1:serverless_billing_credits_lines" \
-  "serverless_chargeback_conf_lookup-1:serverless_chargeback_conf_lookup"; do
-  IDX="${pair%%:*}"
-  AL="${pair##*:}"
-  if ! es_curl "${ES_HOST}/${IDX}" >/dev/null 2>&1; then
-    es_curl -X PUT "${ES_HOST}/${IDX}" -H 'Content-Type: application/json' -d '{"aliases":{"'"${AL}"'":{}}}' >/dev/null
-  fi
-done
-es_curl "${ES_HOST}/_alias/serverless_*" > alias_map.json
-es_curl "${ES_HOST}/_transform/_all" > all_transforms.json
+# All 10 destination indices (-2 for upgraded, -1 for new) MUST exist natively from Checkpoint 1 above.
+es_curl "${ES_HOST}/serverless_*/_alias" > alias_map.json
+es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*" > all_transforms.json
 es_curl "${ES_HOST}/serverless_*_lookup-2/_mapping" > upgraded_mappings.json
 jq -s '
   (.[0]) as $am |
@@ -680,9 +1018,9 @@ jq -s '
   def has_alias($idx; $alias):
     ($am | has($idx)) and ($am[$idx].aliases | has($alias));
   def has_dest($part; $idx; $alias):
-    ([$ts[] | select((.key | contains("." + $part + "-")) and .value.index == $idx and any(.value.aliases[]?; .alias == $alias and .move_on_creation == true))] | length) == 1;
+    ([$ts[] | select((.key | startswith("logs-chargeback_serverless." + $part + "-")) and .value.index == $idx and any(.value.aliases[]?; .alias == $alias and .move_on_creation == true))] | length) == 1;
   def has_src($part; $src):
-    ([$full[] | select((.id | contains("." + $part + "-")) and (.source.index | index($src) != null))] | length) == 1;
+    ([$full[] | select((.id | startswith("logs-chargeback_serverless." + $part + "-")) and (.source.index | index($src) != null))] | length) == 1;
   def prop_type($idx; $field):
     $maps[$idx].mappings.properties[$field].type;
   {
@@ -712,8 +1050,15 @@ jq -s '
     ),
     chained_ok: (
       has_src("billing_credits"; "serverless_billing_credits_lines-1") and
-      has_src("realized_pool"; "serverless_billing_cost_lookup-2") and
-      has_src("proj_contrib"; "serverless_datastream_contribution_lookup-2") and
+      has_src("realized_pool"; "serverless_billing_cost_lookup-2*") and
+      has_src("realized_pool"; "serverless_billing_realized_pool_lookup-1*") and
+      has_src("proj_contrib"; "serverless_datastream_contribution_lookup-2*") and
+      has_src("proj_contrib"; "serverless_project_contribution_lookup-1*") and
+      has_src("billing_cost"; "serverless_billing_cost_lookup-1*") and
+      has_src("ds_contrib"; "serverless_datastream_contribution_lookup-1*") and
+      has_src("project_status"; "serverless_project_status_lookup-1*") and
+      has_src("ai_contrib"; "serverless_ai_model_contribution_lookup-1*") and
+      has_src("synthetics_contrib"; "serverless_synthetics_monitor_contribution_lookup-1*") and
       ([$full[] | ._meta.order] | map(select(. != null)) | unique | length) == 10
     ),
     mappings_ok: (
@@ -744,7 +1089,7 @@ run_preview_and_sim() {
   PIPE_ID="$3"
   OUT_FILE="$4"
   jq --arg tn "$T_NAME" --arg si "$SRC_IDX" '
-    (.transforms[] | select(.id | contains("." + $tn + "-"))) |
+    (.transforms[] | select(.id | startswith("logs-chargeback_serverless." + $tn + "-"))) |
     {
       source: (.source + {index: ($si | split(","))}),
       pivot: .pivot,
@@ -797,7 +1142,7 @@ run_batch_transform() {
   BT_PIPE="$5"
   BT_PAGE="$6"
   jq --arg tn "$BT_TMPL" --arg si "$BT_SRC" --arg di "$BT_DEST" --arg pl "$BT_PIPE" --argjson ps "$BT_PAGE" '
-    (.transforms[] | select(.id | contains("." + $tn + "-"))) |
+    (.transforms[] | select(.id | startswith("logs-chargeback_serverless." + $tn + "-"))) |
     {
       source: (.source + {index: ($si | split(","))}),
       pivot: .pivot,
@@ -1255,7 +1600,7 @@ run_preview_and_sim "synthetics_contrib" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${US
 
 # 2c. Live move_on_creation: true alias migration check (-1 -> -2)
 es_curl -X PUT "${ES_HOST}/cb-e2e-move-dest-1" -H 'Content-Type: application/json' -d '{"mappings":{"dynamic":false,"properties":{"@timestamp":{"type":"date"}}},"aliases":{"cb-e2e-move-alias":{}}}' >/dev/null
-T_AI_ID="$(es_curl "${ES_HOST}/_transform/_all" | jq -r '.transforms[] | select(.id | contains(".ai_contrib-")) | .id')"
+T_AI_ID="$(es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*" | jq -r '.transforms[] | select(.id | startswith("logs-chargeback_serverless.ai_contrib-")) | .id')"
 es_curl "${ES_HOST}/_transform/${T_AI_ID}" | jq '.transforms[0] | {
   source: (.source | .index = ["cb-e2e-v2-usage"]),
   dest: {index: "cb-e2e-move-dest-2", pipeline: .dest.pipeline, aliases: [{alias: "cb-e2e-move-alias", move_on_creation: true}]},
@@ -1263,8 +1608,212 @@ es_curl "${ES_HOST}/_transform/${T_AI_ID}" | jq '.transforms[0] | {
   settings: .settings
 }' | es_curl -X PUT "${ES_HOST}/_transform/cb-e2e-move-t2" -H 'Content-Type: application/json' -d @- >/dev/null
 es_curl -X POST "${ES_HOST}/_transform/cb-e2e-move-t2/_start" >/dev/null
-wait_batch_transform "cb-e2e-move-t2"
+mv_i=0
+while [ "${mv_i}" -lt 30 ]; do
+  mv_state="$(es_curl "${ES_HOST}/_transform/cb-e2e-move-t2/_stats" | jq -r '.transforms[0].state')"
+  if [ "${mv_state}" = "stopped" ]; then
+    break
+  fi
+  if [ "${mv_state}" = "failed" ]; then
+    es_curl "${ES_HOST}/_transform/cb-e2e-move-t2/_stats" >&2
+    exit 1
+  fi
+  mv_i=$((mv_i + 1))
+  sleep 1
+done
+if [ "${mv_state:-}" != "stopped" ]; then
+  es_curl "${ES_HOST}/_transform/cb-e2e-move-t2/_stats" >&2
+  exit 1
+fi
+es_curl -X POST "${ES_HOST}/cb-e2e-move-dest-2/_refresh" >/dev/null
 es_curl "${ES_HOST}/_alias/cb-e2e-move-alias" | jq '{
   old_alias_cnt: (if has("cb-e2e-move-dest-1") then (.["cb-e2e-move-dest-1"].aliases | length) else 0 end),
   new_alias_cnt: (if has("cb-e2e-move-dest-2") then (.["cb-e2e-move-dest-2"].aliases | keys | length) else 0 end)
 }' > e2e_move_on_creation.json
+
+# Phase B: Raw 0.2.0 stream supersedes -1 carryover on overlapping day while retaining older -1 carryover rows
+es_curl -X POST "${ES_HOST}/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
+{"index":{"_index":"serverless_billing_cost_lookup-1"}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","sku":"es.search-vcu","project_name":"V1 Carryover","project_type":"elasticsearch","total_ecu":11.0,"quantity_value":11.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_billing_cost_lookup-1"}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","sku":"es.search-vcu","project_name":"V1 Shadow","project_type":"elasticsearch","total_ecu":999.0,"quantity_value":999.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_billing_realized_pool_lookup-1"}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Carryover","project_type":"elasticsearch","indexing_ecu":11.0,"query_ecu":0.0,"storage_ecu":0.0,"ai_ecu":0.0,"synthetics_ecu":0.0,"synthetics_pings_ecu":0.0,"synthetics_executions_ecu":0.0,"all_sku_ecu":11.0,"data_tier_capacity_ecu":0.0,"realized_chargeable_units":11.0,"total_chargeable_units":11.0,"total_ecu":11.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_billing_realized_pool_lookup-1"}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Shadow","project_type":"elasticsearch","indexing_ecu":999.0,"query_ecu":0.0,"storage_ecu":0.0,"ai_ecu":0.0,"synthetics_ecu":0.0,"synthetics_pings_ecu":0.0,"synthetics_executions_ecu":0.0,"all_sku_ecu":999.0,"data_tier_capacity_ecu":0.0,"realized_chargeable_units":999.0,"total_chargeable_units":999.0,"total_ecu":999.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_project_status_lookup-1"}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Carryover","project_type":"elasticsearch","optimized_for":"general_purpose","es_url":"https://v1.example","last_status":"ok","api_key_type":"hub_key","synthetics_status":"ok","index_count":3,"datastream_count":1,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${OLDER_DAY}"'","conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_project_status_lookup-1"}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Shadow","project_type":"elasticsearch","optimized_for":"general_purpose","es_url":"https://v1.example","last_status":"ok","api_key_type":"hub_key","synthetics_status":"ok","index_count":99,"datastream_count":1,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${OLDER_DAY}"'","conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_datastream_contribution_lookup-1"}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Carryover","project_type":"elasticsearch","datastream":"logs-v1-pb","ds_type":"logs","ds_dataset":"v1","ds_namespace":"pb","datastream_sum_indexing_time":100,"datastream_sum_query_time":20,"datastream_sum_data_set_store_size":1024,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_datastream_contribution_lookup-1"}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Shadow","project_type":"elasticsearch","datastream":"logs-v1-pb","ds_type":"logs","ds_dataset":"v1","ds_namespace":"pb","datastream_sum_indexing_time":9999,"datastream_sum_query_time":9999,"datastream_sum_data_set_store_size":9999,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_project_contribution_lookup-1"}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Carryover","project_type":"elasticsearch","deployment_sum_indexing_time":100,"deployment_sum_query_time":20,"deployment_sum_data_set_store_size":1024,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_project_contribution_lookup-1"}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Shadow","project_type":"elasticsearch","deployment_sum_indexing_time":9999,"deployment_sum_query_time":9999,"deployment_sum_data_set_store_size":9999,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_ai_model_contribution_lookup-1"}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Carryover","project_type":"elasticsearch","model_id":"elser","task_type":"query_inference","inference_count":50,"average_inference_time_ms":10.0,"total_inference_time_ms":500,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_ai_model_contribution_lookup-1"}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Shadow","project_type":"elasticsearch","model_id":"elser","task_type":"query_inference","inference_count":9999,"average_inference_time_ms":10.0,"total_inference_time_ms":99990,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_synthetics_monitor_contribution_lookup-1"}}
+{"@timestamp":"'"${OLDER_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Carryover","project_type":"elasticsearch","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":2,"up_count":2,"down_count":0,"locations_count":1,"average_duration_ms":80.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"index":{"_index":"serverless_synthetics_monitor_contribution_lookup-1"}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${OLDER_DAY}"'"},"project_id":"proj-v1-phaseb","project_name":"V1 Shadow","project_type":"elasticsearch","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":99,"up_count":99,"down_count":0,"locations_count":1,"average_duration_ms":999.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-bill" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "data_stream": {"properties": {"dataset": {"type": "keyword"}}},
+      "doc_type": {"type": "keyword"},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "deployment_group": {"type": "keyword"},
+      "sku": {"type": "keyword"},
+      "total_ecu": {"type": "double"},
+      "quantity_value": {"type": "double"}
+    }
+  }
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/cb-e2e-live-v2-bill/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing"},"project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","sku":"es.search-vcu","total_ecu":77.0,"quantity_value":77.0}
+' >/dev/null
+
+es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-usage" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "data_stream": {"properties": {"dataset": {"type": "keyword"}}},
+      "doc_type": {"type": "keyword"},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "deployment_group": {"type": "keyword"},
+      "optimized_for": {"type": "keyword"},
+      "es_url": {"type": "keyword"},
+      "last_status": {"type": "keyword"},
+      "api_key_type": {"type": "keyword"},
+      "synthetics_status": {"type": "keyword"},
+      "index_count": {"type": "long"},
+      "datastream_count": {"type": "long"},
+      "ai_model_count": {"type": "long"},
+      "synthetics_monitor_count": {"type": "long"},
+      "updated_at": {"type": "date"},
+      "datastream": {"type": "keyword"},
+      "ds_type": {"type": "keyword"},
+      "ds_dataset": {"type": "keyword"},
+      "ds_namespace": {"type": "keyword"},
+      "datastream_sum_indexing_time": {"type": "long"},
+      "datastream_sum_query_time": {"type": "long"},
+      "datastream_sum_data_set_store_size": {"type": "long"},
+      "model_id": {"type": "keyword"},
+      "task_type": {"type": "keyword"},
+      "inference_count": {"type": "long"},
+      "average_inference_time_ms": {"type": "double"},
+      "total_inference_time_ms": {"type": "long"},
+      "monitor_id": {"type": "keyword"},
+      "monitor_name": {"type": "keyword"},
+      "monitor_namespace": {"type": "keyword"},
+      "monitor_type": {"type": "keyword"},
+      "check_count": {"type": "long"},
+      "up_count": {"type": "long"},
+      "down_count": {"type": "long"},
+      "locations_count": {"type": "long"},
+      "average_duration_ms": {"type": "double"},
+      "total_duration_ms": {"type": "double"}
+    }
+  }
+}' >/dev/null
+es_curl -X POST "${ES_HOST}/cb-e2e-live-v2-usage/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"project_status","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","optimized_for":"vector","es_url":"https://v2-live.example","last_status":"ok","api_key_type":"cloud_key","synthetics_status":"ok","index_count":8,"datastream_count":3,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${HEALTHY_UPDATED_AT}"'"}
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"datastream","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","datastream":"logs-v1-pb","ds_type":"logs","ds_dataset":"v1","ds_namespace":"pb","datastream_sum_indexing_time":222,"datastream_sum_query_time":33,"datastream_sum_data_set_store_size":2048}
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"ai_model","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","model_id":"elser","task_type":"query_inference","inference_count":70,"average_inference_time_ms":10.0,"total_inference_time_ms":700}
+{"index":{}}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"synthetics_monitor","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":5,"up_count":5,"down_count":0,"locations_count":1,"average_duration_ms":50.0,"total_duration_ms":250.0}
+' >/dev/null
+
+POOL_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_realized_pool"
+run_preview_and_sim "billing_cost" "cb-e2e-live-v2-bill,serverless_billing_cost_lookup-1" "${BILL_PIPELINE}" "e2e_pb_bill_out.json"
+es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-bill-stage1" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "deployment_group": {"type": "keyword"},
+      "sku": {"type": "keyword"},
+      "total_ecu": {"type": "double"},
+      "quantity_value": {"type": "double"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+jq -c --arg day "${BILL_DAY}" '.docs[].doc._source | select((.["@timestamp"] // "") | startswith($day[0:10])) | {"index":{}}, .' e2e_pb_bill_out.json | es_curl -X POST "${ES_HOST}/cb-e2e-live-v2-bill-stage1/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
+run_preview_and_sim "realized_pool" "cb-e2e-live-v2-bill-stage1,serverless_billing_realized_pool_lookup-1" "${POOL_PIPELINE}" "e2e_pb_pool_out.json"
+
+run_preview_and_sim "project_status" "cb-e2e-live-v2-usage,serverless_project_status_lookup-1" "${USAGE_PIPELINE}" "e2e_pb_ps_out.json"
+run_preview_and_sim "ds_contrib" "cb-e2e-live-v2-usage,serverless_datastream_contribution_lookup-1" "${USAGE_PIPELINE}" "e2e_pb_ds_out.json"
+es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-ds-stage1" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "source_sync_ts": {"type": "date"},
+      "has_native_usage": {"type": "boolean"},
+      "project_id": {"type": "keyword"},
+      "project_name": {"type": "keyword"},
+      "project_type": {"type": "keyword"},
+      "deployment_group": {"type": "keyword"},
+      "datastream": {"type": "keyword"},
+      "datastream_sum_indexing_time": {"type": "long"},
+      "datastream_sum_query_time": {"type": "long"},
+      "datastream_sum_data_set_store_size": {"type": "long"},
+      "conf_chargeable_unit_rate": {"type": "double"},
+      "conf_chargeable_unit_rate_unit": {"type": "keyword"},
+      "conf_currency_symbol": {"type": "keyword"}
+    }
+  }
+}' >/dev/null
+jq -c --arg day "${BILL_DAY}" '.docs[].doc._source | select((.["@timestamp"] // "") | startswith($day[0:10])) | {"index":{}}, .' e2e_pb_ds_out.json | es_curl -X POST "${ES_HOST}/cb-e2e-live-v2-ds-stage1/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
+run_preview_and_sim "proj_contrib" "cb-e2e-live-v2-ds-stage1,serverless_project_contribution_lookup-1" "${USAGE_PIPELINE}" "e2e_pb_proj_out.json"
+run_preview_and_sim "ai_contrib" "cb-e2e-live-v2-usage,serverless_ai_model_contribution_lookup-1" "${USAGE_PIPELINE}" "e2e_pb_ai_out.json"
+run_preview_and_sim "synthetics_contrib" "cb-e2e-live-v2-usage,serverless_synthetics_monitor_contribution_lookup-1" "${USAGE_PIPELINE}" "e2e_pb_sy_out.json"
+
+jq -s --arg old "${OLDER_DAY}" --arg cur "${BILL_DAY}" '
+  def by_day($arr; $day):
+    ([$arr[].doc._source | select(.project_id == "proj-v1-phaseb" and ((.["@timestamp"] // "") | startswith($day[0:10])))] | .[0] // null);
+  {
+    older_ok: (
+      (by_day(.[0].docs; $old) | . != null and .total_ecu == 11.0 and .project_name == "V1 Carryover") and
+      (by_day(.[1].docs; $old) | . != null and .total_ecu == 11.0 and .project_name == "V1 Carryover") and
+      (by_day(.[2].docs; $old) | . != null and .index_count == 3 and .project_name == "V1 Carryover") and
+      (by_day(.[3].docs; $old) | . != null and .datastream_sum_indexing_time == 100 and .project_name == "V1 Carryover") and
+      (by_day(.[4].docs; $old) | . != null and .deployment_sum_indexing_time == 100 and .project_name == "V1 Carryover") and
+      (by_day(.[5].docs; $old) | . != null and .inference_count == 50 and .project_name == "V1 Carryover") and
+      (by_day(.[6].docs; $old) | . != null and .check_count == 2 and .total_duration_ms == 160.0 and .project_name == "V1 Carryover")
+    ),
+    current_ok: (
+      (by_day(.[0].docs; $cur) | . != null and .total_ecu == 77.0 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
+      (by_day(.[1].docs; $cur) | . != null and .total_ecu == 77.0 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
+      (by_day(.[2].docs; $cur) | . != null and .index_count == 8 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
+      (by_day(.[3].docs; $cur) | . != null and .datastream_sum_indexing_time == 222 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
+      (by_day(.[4].docs; $cur) | . != null and .deployment_sum_indexing_time == 222 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
+      (by_day(.[5].docs; $cur) | . != null and .inference_count == 70 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
+      (by_day(.[6].docs; $cur) | . != null and .check_count == 5 and .total_duration_ms == 250.0 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw")
+    )
+  }
+' e2e_pb_bill_out.json e2e_pb_pool_out.json e2e_pb_ps_out.json e2e_pb_ds_out.json e2e_pb_proj_out.json e2e_pb_ai_out.json e2e_pb_sy_out.json > live_upgrade_e2e.json

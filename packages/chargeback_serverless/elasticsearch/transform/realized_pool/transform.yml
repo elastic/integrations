@@ -1,7 +1,8 @@
 description: Aggregates daily allocatable ECU pools (indexing, query, storage, AI) per Serverless project into a single daily figure for LOOKUP JOIN attribution.
 source:
   index:
-    - serverless_billing_cost_lookup-2
+  - serverless_billing_cost_lookup-2*
+  - serverless_billing_realized_pool_lookup-1*
   runtime_mappings:
     cb_ing_ms:
       type: long
@@ -33,6 +34,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_realized_pool_lookup-1') { return; }
           String sep = Character.toString((char)31);
           long ingMs = 0L;
           for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
@@ -91,26 +93,189 @@ source:
           }
           if (v_conf_currency_symbol == '' && params._source?.conf_currency_symbol != null) { v_conf_currency_symbol = params._source.conf_currency_symbol.toString().trim(); }
           emit(String.valueOf(ingMs) + sep + v_project_name.replace(sep, ' ') + sep + v_project_type.replace(sep, ' ') + sep + v_deployment_group.replace(sep, ' ') + sep + cRate + sep + v_conf_chargeable_unit_rate_unit.replace(sep, ' ') + sep + v_conf_currency_symbol.replace(sep, ' '));
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_realized_pool_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
+                  return;
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_raw_total_ecu:
+      type: double
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_realized_pool_lookup-1') { return; }
+          try {
+            if (doc.containsKey('total_ecu') && !doc['total_ecu'].empty) {
+              emit(((Number)doc['total_ecu'].value).doubleValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('total_ecu') instanceof Number) {
+              emit(((Number)params._source.get('total_ecu')).doubleValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_pool_rec:
+      type: keyword
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_billing_realized_pool_lookup-1') {
+            return;
+          }
+          String sep = Character.toString((char)31);
+          long ingMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                ingMs = doc[tf].value.toInstant().toEpochMilli();
+                if (ingMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ingMs <= 0L && params._source != null) {
+            try {
+              def ev = params._source.get('event');
+              def rawTs = (ev instanceof Map) ? (((Map)ev).get('ingested') != null ? ((Map)ev).get('ingested') : ((Map)ev).get('created')) : null;
+              if (rawTs == null) { rawTs = params._source.get('@timestamp'); }
+              if (rawTs instanceof Number) { ingMs = ((Number)rawTs).longValue(); }
+              else if (rawTs != null && rawTs.toString().trim() != '') {
+                ingMs = ZonedDateTime.parse(rawTs.toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          if (ingMs < 0L) { ingMs = 0L; }
+          double idxEcu = 0.0;
+          double qryEcu = 0.0;
+          double stgEcu = 0.0;
+          double aiEcu = 0.0;
+          double synEcu = 0.0;
+          double synPingsEcu = 0.0;
+          double synExecEcu = 0.0;
+          double allSkuEcu = -1.0;
+          try { if (doc.containsKey('indexing_ecu') && !doc['indexing_ecu'].empty) { idxEcu = ((Number)doc['indexing_ecu'].value).doubleValue(); } else if (params._source?.indexing_ecu instanceof Number) { idxEcu = ((Number)params._source.indexing_ecu).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('query_ecu') && !doc['query_ecu'].empty) { qryEcu = ((Number)doc['query_ecu'].value).doubleValue(); } else if (params._source?.query_ecu instanceof Number) { qryEcu = ((Number)params._source.query_ecu).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('storage_ecu') && !doc['storage_ecu'].empty) { stgEcu = ((Number)doc['storage_ecu'].value).doubleValue(); } else if (params._source?.storage_ecu instanceof Number) { stgEcu = ((Number)params._source.storage_ecu).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('ai_ecu') && !doc['ai_ecu'].empty) { aiEcu = ((Number)doc['ai_ecu'].value).doubleValue(); } else if (params._source?.ai_ecu instanceof Number) { aiEcu = ((Number)params._source.ai_ecu).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('synthetics_ecu') && !doc['synthetics_ecu'].empty) { synEcu = ((Number)doc['synthetics_ecu'].value).doubleValue(); } else if (params._source?.synthetics_ecu instanceof Number) { synEcu = ((Number)params._source.synthetics_ecu).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('synthetics_pings_ecu') && !doc['synthetics_pings_ecu'].empty) { synPingsEcu = ((Number)doc['synthetics_pings_ecu'].value).doubleValue(); } else if (params._source?.synthetics_pings_ecu instanceof Number) { synPingsEcu = ((Number)params._source.synthetics_pings_ecu).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('synthetics_executions_ecu') && !doc['synthetics_executions_ecu'].empty) { synExecEcu = ((Number)doc['synthetics_executions_ecu'].value).doubleValue(); } else if (params._source?.synthetics_executions_ecu instanceof Number) { synExecEcu = ((Number)params._source.synthetics_executions_ecu).doubleValue(); } } catch (Exception e) {}
+          for (String af : ['all_sku_ecu', 'total_ecu', 'total_chargeable_units']) {
+            try {
+              if (doc.containsKey(af) && !doc[af].empty) { allSkuEcu = ((Number)doc[af].value).doubleValue(); break; }
+              else if (params._source != null && params._source.get(af) instanceof Number) { allSkuEcu = ((Number)params._source.get(af)).doubleValue(); break; }
+            } catch (Exception e) {}
+          }
+          if (allSkuEcu < 0.0) { allSkuEcu = idxEcu + qryEcu + stgEcu + aiEcu + synEcu; }
+          String pName = '';
+          for (String f : ['project_name', 'project_name.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { pName = doc[f].value.toString().trim(); if (pName != '') break; } } catch (Exception e) {}
+          }
+          if (pName == '' && params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); }
+          String pType = '';
+          for (String f : ['project_type', 'project_type.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {}
+          }
+          if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
+          String depGrp = '';
+          for (String f : ['deployment_group', 'deployment_group.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { depGrp = doc[f].value.toString().trim(); if (depGrp != '') break; } } catch (Exception e) {}
+          }
+          if (depGrp == '' && params._source?.deployment_group != null) { depGrp = params._source.deployment_group.toString().trim(); }
+          String cRate = '-1';
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            }
+          } catch (Exception e) {}
+          String cUnit = '';
+          for (String f : ['conf_chargeable_unit_rate_unit', 'conf_chargeable_unit_rate_unit.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { cUnit = doc[f].value.toString().trim(); if (cUnit != '') break; } } catch (Exception e) {}
+          }
+          if (cUnit == '' && params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); }
+          String cSym = '';
+          for (String f : ['conf_currency_symbol', 'conf_currency_symbol.keyword']) {
+            try { if (doc.containsKey(f) && !doc[f].empty) { cSym = doc[f].value.toString().trim(); if (cSym != '') break; } } catch (Exception e) {}
+          }
+          if (cSym == '' && params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); }
+          emit(
+            String.valueOf(ingMs) + sep
+            + Double.toString(idxEcu) + sep
+            + Double.toString(qryEcu) + sep
+            + Double.toString(stgEcu) + sep
+            + Double.toString(aiEcu) + sep
+            + Double.toString(synEcu) + sep
+            + Double.toString(synPingsEcu) + sep
+            + Double.toString(synExecEcu) + sep
+            + Double.toString(allSkuEcu) + sep
+            + pName.replace(sep, ' ') + sep
+            + pType.replace(sep, ' ') + sep
+            + depGrp.replace(sep, ' ') + sep
+            + cRate + sep
+            + cUnit.replace(sep, ' ') + sep
+            + cSym.replace(sep, ' ')
+          );
 dest:
   index: serverless_billing_realized_pool_lookup-2
   aliases:
-    - alias: serverless_billing_realized_pool_lookup
-      move_on_creation: true
-  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_realized_pool" }}'
+  - alias: serverless_billing_realized_pool_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_realized_pool" }}
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
@@ -119,78 +284,89 @@ pivot:
     indexing_ecu:
       filter:
         term:
-          allocation_driver: "indexing"
+          allocation_driver: indexing
       aggs:
         val:
           sum:
-            field: total_ecu
+            field: cb_raw_total_ecu
     query_ecu:
       filter:
         term:
-          allocation_driver: "query"
+          allocation_driver: query
       aggs:
         val:
           sum:
-            field: total_ecu
+            field: cb_raw_total_ecu
     storage_ecu:
       filter:
         term:
-          allocation_driver: "storage"
+          allocation_driver: storage
       aggs:
         val:
           sum:
-            field: total_ecu
+            field: cb_raw_total_ecu
     ai_ecu:
       filter:
         term:
-          allocation_driver: "ai"
+          allocation_driver: ai
       aggs:
         val:
           sum:
-            field: total_ecu
+            field: cb_raw_total_ecu
     synthetics_ecu:
       filter:
         term:
-          allocation_driver: "synthetics"
+          allocation_driver: synthetics
       aggs:
         val:
           sum:
-            field: total_ecu
+            field: cb_raw_total_ecu
     synthetics_pings_ecu:
       filter:
         wildcard:
           sku:
-            value: "*synthetic*ping*"
+            value: '*synthetic*ping*'
             case_insensitive: true
       aggs:
         val:
           sum:
-            field: total_ecu
+            field: cb_raw_total_ecu
     synthetics_executions_ecu:
       filter:
         bool:
           must:
-            - term:
-                allocation_driver: "synthetics"
+          - term:
+              allocation_driver: synthetics
           must_not:
-            - wildcard:
-                sku:
-                  value: "*ping*"
-                  case_insensitive: true
+          - wildcard:
+              sku:
+                value: '*ping*'
+                case_insensitive: true
       aggs:
         val:
           sum:
-            field: total_ecu
+            field: cb_raw_total_ecu
     all_sku_ecu:
       sum:
-        field: total_ecu
+        field: cb_raw_total_ecu
     pool_meta:
       terms:
         field: cb_pool_meta_rec
         size: 20
         order:
-          - max_ing: desc
-          - _key: desc
+        - max_ing: desc
+        - _key: desc
+      aggs:
+        max_ing:
+          max:
+            field: cb_ing_ms
+    v1_carryover:
+      terms:
+        field: cb_v1_pool_rec
+        size: 5
+        order:
+        - max_ing: desc
+        - _key: desc
       aggs:
         max_ing:
           max:

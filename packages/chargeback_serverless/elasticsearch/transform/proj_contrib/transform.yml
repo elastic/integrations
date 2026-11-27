@@ -1,12 +1,14 @@
 description: Aggregates daily total indexing time, query time, and dataset storage size per Serverless project from selected data stream contribution rows so project denominators match stream numerators exactly.
 source:
   index:
-    - serverless_datastream_contribution_lookup-2
+  - serverless_datastream_contribution_lookup-2*
+  - serverless_project_contribution_lookup-1*
   runtime_mappings:
     cb_proj_meta_rank:
       type: long
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_contribution_lookup-1') { return; }
           boolean isNat = false;
           try {
             if (doc.containsKey('has_native_usage') && !doc['has_native_usage'].empty) {
@@ -41,6 +43,7 @@ source:
       type: keyword
       script:
         source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_contribution_lookup-1') { return; }
           String sep = Character.toString((char)31);
           boolean isNat = false;
           try {
@@ -113,26 +116,193 @@ source:
           cUnit = cUnit.replace(sep, ' ');
           cSym = cSym.replace(sep, ' ');
           emit(String.valueOf(rankVal) + sep + pName + sep + pType + sep + dGrp + sep + cRate + sep + cUnit + sep + cSym);
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_contribution_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
+                  return;
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_ing_ms:
+      type: long
+      script:
+        source: |
+          long ingMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                ingMs = doc[tf].value.toInstant().toEpochMilli();
+                if (ingMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ingMs < 0L) { ingMs = 0L; }
+          emit(ingMs);
+    cb_raw_ds_idx:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
+              emit(((Number)doc['datastream_sum_indexing_time'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_indexing_time') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_indexing_time')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_ds_qry:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
+              emit(((Number)doc['datastream_sum_query_time'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_query_time') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_query_time')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_raw_ds_sto:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_project_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
+              emit(((Number)doc['datastream_sum_data_set_store_size'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_data_set_store_size') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_data_set_store_size')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_proj_rec:
+      type: keyword
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_project_contribution_lookup-1') {
+            return;
+          }
+          String sep = Character.toString((char)31);
+          long ingMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                ingMs = doc[tf].value.toInstant().toEpochMilli();
+                if (ingMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          long depIdx = 0L;
+          long depQry = 0L;
+          long depSto = 0L;
+          try { if (doc.containsKey('deployment_sum_indexing_time') && !doc['deployment_sum_indexing_time'].empty) { depIdx = ((Number)doc['deployment_sum_indexing_time'].value).longValue(); } else if (params._source?.deployment_sum_indexing_time instanceof Number) { depIdx = ((Number)params._source.deployment_sum_indexing_time).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('deployment_sum_query_time') && !doc['deployment_sum_query_time'].empty) { depQry = ((Number)doc['deployment_sum_query_time'].value).longValue(); } else if (params._source?.deployment_sum_query_time instanceof Number) { depQry = ((Number)params._source.deployment_sum_query_time).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('deployment_sum_data_set_store_size') && !doc['deployment_sum_data_set_store_size'].empty) { depSto = ((Number)doc['deployment_sum_data_set_store_size'].value).longValue(); } else if (params._source?.deployment_sum_data_set_store_size instanceof Number) { depSto = ((Number)params._source.deployment_sum_data_set_store_size).longValue(); } } catch (Exception e) {}
+          String pName = '';
+          String pType = '';
+          String dGrp = '';
+          String cRate = '-1';
+          String cUnit = '';
+          String cSym = '';
+          for (String f : ['project_name', 'project_name.keyword']) { try { if (doc.containsKey(f) && !doc[f].empty) { pName = doc[f].value.toString().trim(); if (pName != '') break; } } catch (Exception e) {} }
+          if (pName == '' && params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); }
+          for (String f : ['project_type', 'project_type.keyword']) { try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {} }
+          if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
+          for (String f : ['deployment_group', 'deployment_group.keyword']) { try { if (doc.containsKey(f) && !doc[f].empty) { dGrp = doc[f].value.toString().trim(); if (dGrp != '') break; } } catch (Exception e) {} }
+          if (dGrp == '' && params._source?.deployment_group != null) { dGrp = params._source.deployment_group.toString().trim(); }
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+              if (r >= 0.0) { cRate = String.valueOf(r); }
+            }
+          } catch (Exception e) {}
+          for (String f : ['conf_chargeable_unit_rate_unit', 'conf_chargeable_unit_rate_unit.keyword']) { try { if (doc.containsKey(f) && !doc[f].empty) { cUnit = doc[f].value.toString().trim(); if (cUnit != '') break; } } catch (Exception e) {} }
+          if (cUnit == '' && params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); }
+          for (String f : ['conf_currency_symbol', 'conf_currency_symbol.keyword']) { try { if (doc.containsKey(f) && !doc[f].empty) { cSym = doc[f].value.toString().trim(); if (cSym != '') break; } } catch (Exception e) {} }
+          if (cSym == '' && params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); }
+          emit(
+            String.valueOf(ingMs) + sep
+            + Long.toString(depIdx) + sep
+            + Long.toString(depQry) + sep
+            + Long.toString(depSto) + sep
+            + pName.replace(sep, ' ') + sep
+            + pType.replace(sep, ' ') + sep
+            + dGrp.replace(sep, ' ') + sep
+            + cRate + sep
+            + cUnit.replace(sep, ' ') + sep
+            + cSym.replace(sep, ' ')
+          );
 dest:
   index: serverless_project_contribution_lookup-2
   aliases:
-    - alias: serverless_project_contribution_lookup
-      move_on_creation: true
-  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}'
+  - alias: serverless_project_contribution_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
@@ -140,24 +310,35 @@ pivot:
   aggregations:
     deployment_sum_indexing_time:
       sum:
-        field: datastream_sum_indexing_time
+        field: cb_raw_ds_idx
     deployment_sum_query_time:
       sum:
-        field: datastream_sum_query_time
+        field: cb_raw_ds_qry
     deployment_sum_data_set_store_size:
       sum:
-        field: datastream_sum_data_set_store_size
+        field: cb_raw_ds_sto
     proj_meta:
       terms:
         field: cb_proj_meta_rec
         size: 50
         order:
-          - max_rank: desc
-          - _key: desc
+        - max_rank: desc
+        - _key: desc
       aggs:
         max_rank:
           max:
             field: cb_proj_meta_rank
+    v1_proj_carryover:
+      terms:
+        field: cb_v1_proj_rec
+        size: 5
+        order:
+        - max_ing: desc
+        - _key: desc
+      aggs:
+        max_ing:
+          max:
+            field: cb_ing_ms
 settings:
   deduce_mappings: false
   unattended: true
