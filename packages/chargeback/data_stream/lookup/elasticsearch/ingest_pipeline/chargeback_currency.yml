@@ -90,7 +90,8 @@ processors:
         }
         String resolvedUnit = (rawUnit != '') ? rawUnit.toUpperCase(Locale.ROOT) : 'EUR';
         String rawSym = m.get('conf_currency_symbol') != null ? m.get('conf_currency_symbol').toString().trim() : '';
-        String resolvedSym = (rawSym != '') ? rawSym : (resolvedUnit == 'USD' ? '$' : (resolvedUnit == 'GBP' ? '£' : (resolvedUnit == 'ZAR' ? 'R' : '€')));
+        boolean useDefaultSym = (rawSym == '') || ('€'.equals(rawSym) && ('USD'.equals(resolvedUnit) || 'GBP'.equals(resolvedUnit) || 'ZAR'.equals(resolvedUnit)));
+        String resolvedSym = !useDefaultSym ? rawSym : (resolvedUnit == 'USD' ? '$' : (resolvedUnit == 'GBP' ? '£' : (resolvedUnit == 'ZAR' ? 'R' : '€')));
 
         long startMillis = 1262304000000L;
         long endMillis = 2430518399999L;

@@ -272,6 +272,106 @@ R_MAN_AFTER=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_looku
 [ "$R_CFG_AFTER" = "1.25" ]
 [ "$R_MAN_AFTER" = "0.78" ]
 
+# 7. Enable sync_fleet_config=true with currency_unit="USD" (without setting currency_symbol)
+# and confirm 0.7.0 updates config while deriving "$" instead of "€" and keeping fy24_manual intact.
+# Roll over the 0.6.0 billing data stream so the new write index picks up the 0.7.0
+# metrics-chargeback.billing template (including the cb_sync_ts -> event.ingested alias
+# needed by Elasticsearch 9.2.0 continuous transform change detection).
+for ds in $(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_data_stream/metrics-chargeback.billing-*" | jq -r '.data_streams[]?.name'); do
+  curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/${ds}/_rollover" >/dev/null
+done
+KBN="https://localhost:5601"
+POL_FULL=$(curl -sSf -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" "$KBN/api/fleet/package_policies?perPage=100" | jq '.items[] | select(.package.name == "chargeback")')
+POL_ID=$(printf '%s' "$POL_FULL" | jq -r '.id')
+[ -n "$POL_ID" ] && [ "$POL_ID" != "null" ]
+
+printf '%s' "$POL_FULL" | jq '{
+  name,
+  description,
+  namespace,
+  policy_id,
+  policy_ids,
+  output_id,
+  package: {name: .package.name, version: .package.version},
+  enabled,
+  force: true,
+  inputs: (.inputs | map(
+    if .type == "cel" then
+      .vars = ((.vars // {}) + {sync_fleet_config: {type: "bool", value: true}})
+      | .streams = (.streams | map(
+          del(.compiled_stream)
+          | if .data_stream.dataset == "chargeback.billing" then
+              .vars = ((.vars // {}) + {
+                unit_rate: {type: "text", value: "1.10"},
+                currency_unit: {type: "text", value: "USD"}
+              })
+            else . end
+        ))
+    else
+      .streams = (.streams | map(del(.compiled_stream)))
+    end
+  ))
+} | with_entries(select(.value != null))' > pol_update.json
+
+HTTP_PUT=$(curl -sS -o put_resp.json -w "%{http_code}" -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" -H "Content-Type: application/json" -X PUT "$KBN/api/fleet/package_policies/${POL_ID}" -d @pol_update.json)
+if [ "$HTTP_PUT" != "200" ]; then
+  echo "PUT /api/fleet/package_policies/${POL_ID} failed with HTTP ${HTTP_PUT}:" >&2
+  cat put_resp.json >&2
+  exit 1
+fi
+
+# Wait for the reconfigured agent to ingest a sync-enabled config_snapshot, then clear sync.time.delay.
+i=0
+sync_doc="0"
+while [ "$i" -lt 45 ]; do
+  cnt=$(curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/metrics-chargeback.billing-*/_count" -d '{"query":{"bool":{"must":[{"term":{"doc_type":"config_snapshot"}},{"term":{"conf_sync_enabled":true}}]}}}' | jq -r '.count // 0')
+  if [ "$cnt" -gt 0 ]; then
+    sync_doc="1"
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+[ "$sync_doc" = "1" ]
+sleep 65
+
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CONF07}/_schedule_now" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CUR}/_schedule_now" >/dev/null
+
+i=0
+synced_ok="0"
+while [ "$i" -lt 30 ]; do
+  if [ "$i" -eq 10 ]; then
+    curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CONF07}/_schedule_now" >/dev/null || true
+    curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CUR}/_schedule_now" >/dev/null || true
+  fi
+  cur_code=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config")
+  if [ "$cur_code" = "200" ] && curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" | jq -e '._source.conf_chargeable_unit_rate == 1.1' >/dev/null 2>&1; then
+    synced_ok="1"
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+if [ "$synced_ok" != "1" ]; then
+  echo "Step 7 sync check timed out; conf and currency docs:" >&2
+  curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" >&2 || true
+  curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config" >&2 || true
+  exit 1
+fi
+
+R_SYNC_UNIT=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" | jq -r '._source.conf_chargeable_unit_rate_unit')
+R_MAN_SYNC=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/fy24_manual" | jq -r '._source.conf_chargeable_unit_rate')
+CUR_UNIT=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config" | jq -r '._source.conf_currency_unit')
+CUR_SYM=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config" | jq -r '._source.conf_currency_symbol')
+[ "$R_SYNC_UNIT" = "USD" ]
+[ "$R_MAN_SYNC" = "0.78" ]
+[ "$CUR_UNIT" = "USD" ]
+[ "$CUR_SYM" = "$" ]
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_query?format=json" -d @spend_query.json > spend_res_sync.json
+jq -e '.values | length == 1 and (.[0][1] == 110 or .[0][1] == 110.0) and .[0][2] == "USD" and .[0][3] == "$"' spend_res_sync.json >/dev/null
+
 -- test_config.yaml --
 input: cel
 vars:

@@ -10,9 +10,9 @@ processors:
         if (!ctx.containsKey('snapshots')) {
           String manualKey = ctx.config_join_key != null ? ctx.config_join_key.toString().trim() : '';
           String manualRowId = ctx.conf_row_id != null ? ctx.conf_row_id.toString().trim() : '';
-          if ('chargeback_config_onprem'.equals(manualKey) || (manualKey == '' && 'config_onprem'.equals(manualRowId))) {
+          if ('chargeback_config_onprem'.equalsIgnoreCase(manualKey) || (manualKey == '' && 'config_onprem'.equalsIgnoreCase(manualRowId))) {
             ctx.config_join_key = 'chargeback_config_onprem';
-          } else if (manualKey == '') {
+          } else if (manualKey == '' || 'chargeback_config'.equalsIgnoreCase(manualKey)) {
             ctx.config_join_key = 'chargeback_config';
           } else {
             ctx.config_join_key = manualKey;
@@ -27,7 +27,13 @@ processors:
         }
         ctx._from_transform = true;
         String joinKey = ctx.config_join_key != null ? ctx.config_join_key.toString().trim() : '';
-        ctx.config_join_key = joinKey != '' ? joinKey : 'chargeback_config';
+        if ('chargeback_config_onprem'.equalsIgnoreCase(joinKey)) {
+          ctx.config_join_key = 'chargeback_config_onprem';
+        } else if (joinKey == '' || 'chargeback_config'.equalsIgnoreCase(joinKey)) {
+          ctx.config_join_key = 'chargeback_config';
+        } else {
+          ctx.config_join_key = joinKey;
+        }
         Map snapRoot = null;
         if (ctx.snapshots instanceof Map) {
           snapRoot = (ctx.snapshots.latest instanceof Map) ? (Map)ctx.snapshots.latest : (Map)ctx.snapshots;
@@ -167,7 +173,7 @@ processors:
           String lUnit = (rawLUnit != null && rawLUnit.toString().trim() != '') ? rawLUnit.toString().trim().toUpperCase(Locale.ROOT) : 'EUR';
           String lcJoinKey = lc.get('config_join_key') != null ? lc.get('config_join_key').toString().trim() : '';
           String lcRowId = lc.get('conf_row_id') != null ? lc.get('conf_row_id').toString().trim() : '';
-          boolean srcWasOnprem = 'chargeback_config_onprem'.equals(lcJoinKey) || 'config_onprem'.equals(lcRowId);
+          boolean srcWasOnprem = 'chargeback_config_onprem'.equalsIgnoreCase(lcJoinKey) || 'config_onprem'.equalsIgnoreCase(lcRowId);
           ctx.conf_chargeable_unit_rate = (isLegacyOnpremKey && !srcWasOnprem) ? lOnpremRate : lRate;
           ctx.conf_chargeable_unit_rate_unit = lUnit;
           ctx.conf_indexing_weight = lIdxW;

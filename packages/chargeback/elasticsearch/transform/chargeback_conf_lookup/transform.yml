@@ -36,7 +36,7 @@ source:
           if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'chargeback_conf_lookup') {
             String srcJoinKey = (params._source != null && params._source.get('config_join_key') != null) ? params._source.get('config_join_key').toString().trim() : '';
             String srcRowId = (params._source != null && params._source.get('conf_row_id') != null) ? params._source.get('conf_row_id').toString().trim() : '';
-            if ('chargeback_config_onprem'.equals(srcJoinKey) || 'config_onprem'.equals(srcRowId)) {
+            if ('chargeback_config_onprem'.equalsIgnoreCase(srcJoinKey) || 'config_onprem'.equalsIgnoreCase(srcRowId)) {
               emit('chargeback_config_onprem');
             } else {
               emit('chargeback_config');
@@ -135,10 +135,10 @@ pivot:
               if (srcIdx == 'chargeback_conf_lookup') {
                 String rawJoinKey = params._source.get('config_join_key') != null ? params._source.get('config_join_key').toString().trim() : '';
                 String srcRowId = params._source.get('conf_row_id') != null ? params._source.get('conf_row_id').toString().trim() : '';
-                boolean isLegacyOnprem = 'chargeback_config_onprem'.equals(rawJoinKey) || 'config_onprem'.equals(srcRowId);
+                boolean isLegacyOnprem = 'chargeback_config_onprem'.equalsIgnoreCase(rawJoinKey) || 'config_onprem'.equalsIgnoreCase(srcRowId);
                 String srcJoinKey = isLegacyOnprem
                   ? 'chargeback_config_onprem'
-                  : (('chargeback_config'.equals(rawJoinKey) || 'config'.equals(srcRowId)) ? 'chargeback_config' : rawJoinKey);
+                  : (('chargeback_config'.equalsIgnoreCase(rawJoinKey) || 'config'.equalsIgnoreCase(srcRowId)) ? 'chargeback_config' : rawJoinKey);
                 long lSync = (doc.containsKey('cb_sync_ts') && !doc['cb_sync_ts'].empty)
                   ? doc['cb_sync_ts'].value.toInstant().toEpochMilli()
                   : 0L;
