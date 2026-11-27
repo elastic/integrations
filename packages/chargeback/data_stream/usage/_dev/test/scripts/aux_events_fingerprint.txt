@@ -29,7 +29,8 @@ curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_data_stream/${DS}" >
 #    9: exact duplicate replay of item 1 (must conflict with 409)
 # 10-12: two distinct synthetics_monitor entries plus distinct host.name collector
 #   13: index-less collection error event
-#   14: empty object dropped as noop
+#   14-15: identical index_usage observation from two collectors (second must conflict 409)
+#   16: empty object dropped as noop
 cat <<'EOF' > bulk_aux.ndjson
 {"create":{}}
 {"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"ai_model","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"}},"model_id":".elser_model_2","task_type":"sparse_embedding","inference_count":10}
@@ -58,22 +59,27 @@ cat <<'EOF' > bulk_aux.ndjson
 {"create":{}}
 {"@timestamp":"2026-03-16T00:05:00Z","error":{"code":"partial_shard_stats","id":"dep-1","message":"GET https://es.example:9200/*/_stats: partial shards"}}
 {"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"index_usage","conf_policy_id":"pol-1","agent":{"id":"ag-1"},"elasticsearch":{"cluster":{"name":"dep-1"},"index":{"name":"orders-2026.03","tier":"hot/content","primaries":{"docs":{"count":100},"store":{"total_data_set_size_in_bytes":1024}},"total":{"store":{"size_in_bytes":1024}}}}}
+{"create":{}}
+{"period_start":"2026-03-16T00:05:00Z","period_obs_ts":"2026-03-16T00:05:00Z","doc_type":"index_usage","conf_policy_id":"pol-1","agent":{"id":"ag-2"},"host":{"id":"host-2"},"elasticsearch":{"cluster":{"name":"dep-1"},"index":{"name":"orders-2026.03","tier":"hot/content","primaries":{"docs":{"count":100},"store":{"total_data_set_size_in_bytes":1024}},"total":{"store":{"size_in_bytes":1024}}}}}
+{"create":{}}
 {}
 EOF
 
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/x-ndjson" -X POST "$ES/${DS}/_bulk?refresh=true" --data-binary @bulk_aux.ndjson > bulk_res.json
 
-# Verify exact bulk outcome counts: 12 created, 1 duplicate replay 409 conflict (item index 8), 1 noop drop (item index 13).
-jq -e '[.items[].create.status] | length == 14' bulk_res.json >/dev/null
-jq -e '[.items[0,1,2,3,4,5,6,7,9,10,11,12].create.status == 201] | all' bulk_res.json >/dev/null
-jq -e '.items[8].create.status == 409' bulk_res.json >/dev/null
-jq -e '.items[13].create.result == "noop" and .items[13].create.status == 200' bulk_res.json >/dev/null
+# Verify exact bulk outcome counts: 13 created, 2 duplicate 409 conflicts (item 8 ai_model replay and item 14 cross-collector index_usage), 1 noop drop (item 15).
+jq -e '[.items[].create.status] | length == 16' bulk_res.json >/dev/null
+jq -e '[.items[0,1,2,3,4,5,6,7,9,10,11,12,13].create.status == 201] | all' bulk_res.json >/dev/null
+jq -e '.items[8].create.status == 409 and .items[14].create.status == 409' bulk_res.json >/dev/null
+jq -e '.items[15].create.result == "noop" and .items[15].create.status == 200' bulk_res.json >/dev/null
 
-# Verify all 12 valid documents survived with expected fields and 11 distinct auxiliary _id fingerprints.
+# Verify all 13 valid documents survived with expected fields and 11 distinct auxiliary _id fingerprints.
 curl -sSf -u elastic:changeme --cacert "$CA" "$ES/${DS}/_search?size=50" > search_res.json
-jq -e '.hits.total.value == 12' search_res.json >/dev/null
+jq -e '.hits.total.value == 13' search_res.json >/dev/null
 jq -e '[.hits.hits[]._source | select(.doc_type == "ai_model")] | length == 8' search_res.json >/dev/null
 jq -e '[.hits.hits[]._source | select(.doc_type == "synthetics_monitor")] | length == 3' search_res.json >/dev/null
+jq -e '[.hits.hits[]._source | select(.doc_type == "index_usage")] | length == 1' search_res.json >/dev/null
 jq -e '[.hits.hits[]._source | select(.error.code == "partial_shard_stats")] | length == 1' search_res.json >/dev/null
 jq -e '([.hits.hits[] | select(._source.doc_type == "ai_model" or ._source.doc_type == "synthetics_monitor") | ._id] | unique | length) == 11' search_res.json >/dev/null
 jq -e '[.hits.hits[]._source | (.event.ingested != null and (.period_start == null) and (.period_obs_ts == null) and (._cb_fp_key == null))] | all' search_res.json >/dev/null

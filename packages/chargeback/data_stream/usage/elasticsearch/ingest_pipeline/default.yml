@@ -174,8 +174,8 @@ processors:
       if: "ctx._drop_internal == true"
   - script:
       lang: painless
-      tag: build_usage_fingerprint_key
-      if: "ctx.doc_type == 'ai_model' || ctx.doc_type == 'synthetics_monitor' || ctx.elasticsearch?.index?.name != null"
+      tag: build_aux_fingerprint_key
+      if: "ctx.doc_type == 'ai_model' || ctx.doc_type == 'synthetics_monitor'"
       source: |
         String ns = (ctx.data_stream instanceof Map && ctx.data_stream.namespace != null)
           ? ctx.data_stream.namespace.toString().trim()
@@ -230,20 +230,12 @@ processors:
           String intStart = ctx.interval_start != null ? ctx.interval_start.toString().trim() : '';
           String intEnd = ctx.interval_end != null ? ctx.interval_end.toString().trim() : '';
           fpKey += '|model=' + modelId + '|task=' + taskType + '|istart=' + intStart + '|iend=' + intEnd;
-        } else if (dtype == 'synthetics_monitor') {
+        } else {
           String monId = ctx.monitor_id != null ? ctx.monitor_id.toString().trim() : '';
           String monType = ctx.monitor_type != null ? ctx.monitor_type.toString().trim() : '';
           String intStart = ctx.interval_start != null ? ctx.interval_start.toString().trim() : '';
           String intEnd = ctx.interval_end != null ? ctx.interval_end.toString().trim() : '';
           fpKey += '|mon=' + monId + '|mtype=' + monType + '|istart=' + intStart + '|iend=' + intEnd;
-        } else {
-          String idxName = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.index instanceof Map && ctx.elasticsearch.index.name != null)
-            ? ctx.elasticsearch.index.name.toString().trim()
-            : '';
-          String idxTier = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.index instanceof Map && ctx.elasticsearch.index.tier != null)
-            ? ctx.elasticsearch.index.tier.toString().trim()
-            : '';
-          fpKey += '|idx=' + idxName + '|tier=' + idxTier;
         }
         ctx._cb_fp_key = fpKey;
   - fingerprint:
@@ -252,7 +244,20 @@ processors:
         - _cb_fp_key
       target_field: _id
       ignore_missing: true
-      tag: fingerprint_usage_or_aux_event
+      tag: fingerprint_ai_or_synthetics_event
+  - fingerprint:
+      if: "ctx.doc_type != 'ai_model' && ctx.doc_type != 'synthetics_monitor'"
+      fields:
+        - conf_policy_id
+        - data_stream.namespace
+        - elasticsearch.cluster.name
+        - "@timestamp"
+        - period_obs_ts
+        - elasticsearch.index.name
+        - elasticsearch.index.tier
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_usage_event
   - remove:
       field:
         - _cb_fp_key
