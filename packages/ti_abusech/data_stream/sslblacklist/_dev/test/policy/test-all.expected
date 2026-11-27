@@ -27,8 +27,20 @@ inputs:
                 target: environment
           program: |-
             state.with(
-              get(state.url).as(resp,
-                (resp.StatusCode == 200) ?
+              try(get(state.url)).as(resp,
+                type(resp) == string ?
+                  dyn(
+                    {
+                      "events": {
+                        "error": {
+                          "code": "connection_error",
+                          "id": "transport_error",
+                          "message": "GET " + state.url + ": " + string(resp),
+                        },
+                      },
+                    }
+                  )
+                : (resp.StatusCode == 200) ?
                   dyn(
                     {
                       "events": string(resp.Body).split("\n").map(l,

@@ -45,7 +45,7 @@ inputs:
                           has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
                             state.token
                           :
-                            request(
+                            try(request(
                               "POST",
                               base_url + "/v1/login",
                               {
@@ -59,7 +59,19 @@ inputs:
                                   "Content-Type": ["application/json"],
                                 },
                               }
-                            ).do_request().as(auth_resp, auth_resp.StatusCode == 200 ?
+                            ).do_request()).as(auth_resp,
+                              type(auth_resp) == string ?
+                                {
+                                  "events": {
+                                    "error": {
+                                      "code": "connection_error",
+                                      "id": "transport_error",
+                                      "message": "POST " + base_url + "/v1/login: " + string(auth_resp),
+                                    },
+                                  },
+                                  "want_more": false,
+                                }
+                              : auth_resp.StatusCode == 200 ?
                               auth_resp.Body.decode_json().as(auth_body,
                                 {
                                   "access_token": auth_body.token,
@@ -86,7 +98,7 @@ inputs:
                         ).as(token, !has(token.access_token) ?
                           token
                         :
-                          request(
+                          try(request(
                             "GET",
                             base_url + "/urlhaus/v1/urls?" + {
                               "since": [since],
@@ -99,7 +111,19 @@ inputs:
                                 "Authorization": ["Bearer " + token.access_token],
                               },
                             }
-                          ).do_request().as(resp, resp.StatusCode == 200 ?
+                          ).do_request()).as(resp,
+                            type(resp) == string ?
+                              {
+                                "events": {
+                                  "error": {
+                                    "code": "connection_error",
+                                    "id": "transport_error",
+                                    "message": "GET " + base_url + "/urlhaus/v1/urls: " + string(resp),
+                                  },
+                                },
+                                "want_more": false,
+                              }
+                            : resp.StatusCode == 200 ?
                             resp.Body.decode_json().as(body,
                               {
                                 "events": body.items.map(ind,
@@ -184,15 +208,26 @@ inputs:
                       "want_more": false,
                     }
                   :
-                    request("GET", state.url).with(
+                    try(request("GET", state.url).with(
                       {
                         "Header": {
                           "Content-Type": ["application/json"],
                           "Auth-Key": [state.auth_key],
                         },
                       }
-                    ).as(req,
-                      req.do_request().as(resp, resp.StatusCode == 200 ?
+                    ).do_request()).as(resp,
+                      type(resp) == string ?
+                        {
+                          "events": {
+                            "error": {
+                              "code": "connection_error",
+                              "id": "transport_error",
+                              "message": "GET " + state.url.trim_right("/") + ":" + string(resp),
+                            },
+                          },
+                          "want_more": false,
+                        }
+                      : resp.StatusCode == 200 ?
                         resp.Body.decode_json().as(body,
                           {
                             "events": has(body.urls) ?
@@ -218,7 +253,6 @@ inputs:
                           "want_more": false,
                         }
                       )
-                    )
                 )
               )
             )

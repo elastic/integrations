@@ -66,7 +66,7 @@ program: |
                 has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
                   state.token
                 :
-                  request(
+                  try(request(
                     "POST",
                     base_url + "/v1/login",
                     {
@@ -80,7 +80,19 @@ program: |
                         "Content-Type": ["application/json"],
                       },
                     }
-                  ).do_request().as(auth_resp, auth_resp.StatusCode == 200 ?
+                  ).do_request()).as(auth_resp,
+                    type(auth_resp) == string ?
+                      {
+                        "events": {
+                          "error": {
+                            "code": "connection_error",
+                            "id": "transport_error",
+                            "message": "POST " + base_url + "/v1/login: " + string(auth_resp),
+                          },
+                        },
+                        "want_more": false,
+                      }
+                    : auth_resp.StatusCode == 200 ?
                     auth_resp.Body.decode_json().as(auth_body,
                       {
                         "access_token": auth_body.token,
@@ -107,7 +119,7 @@ program: |
               ).as(token, !has(token.access_token) ?
                 token
               :
-                request(
+                try(request(
                   "GET",
                   base_url + "/yaraify/v1/rules?" + {
                     "since": [since],
@@ -120,7 +132,19 @@ program: |
                       "Authorization": ["Bearer " + token.access_token],
                     },
                   }
-                ).do_request().as(resp, resp.StatusCode == 200 ?
+                ).do_request()).as(resp,
+                  type(resp) == string ?
+                    {
+                      "events": {
+                        "error": {
+                          "code": "connection_error",
+                          "id": "transport_error",
+                          "message": "GET " + base_url + "/yaraify/v1/rules: " + string(resp),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  : resp.StatusCode == 200 ?
                   resp.Body.decode_json().as(body,
                     {
                       "events": body.items.map(ind,
@@ -183,14 +207,26 @@ program: |
             "want_more": false,
           }
         :
-          request("POST", state.url, "{\"query\":\"recent_yararules\"}").with(
+          try(request("POST", state.url, "{\"query\":\"recent_yararules\"}").with(
             {
               "Header": {
                 "Content-Type": ["application/json"],
                 "Auth-Key": [state.auth_key],
               },
             }
-          ).do_request().as(resp, resp.StatusCode == 200 ?
+          ).do_request()).as(resp,
+            type(resp) == string ?
+              {
+                "events": {
+                  "error": {
+                    "code": "connection_error",
+                    "id": "transport_error",
+                    "message": "POST " + state.url.trim_right("/") + ": " + string(resp),
+                  },
+                },
+                "want_more": false,
+              }
+            : resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, body.?query_status == optional.of("ok") ?
               {
                 "events": body.data.map(item, {"message": item.encode_json()}),
