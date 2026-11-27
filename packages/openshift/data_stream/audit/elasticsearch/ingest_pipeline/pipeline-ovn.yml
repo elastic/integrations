@@ -195,7 +195,15 @@ processors:
       tag: set_event_type_allowed
       field: event.type
       value: [connection, allowed]
-      if: ctx.event?.action == 'allow' || ctx.event?.action == 'pass'
+      if: ctx.event?.action == 'allow'
+  - set:
+      tag: set_event_type_pass
+      description: >-
+        An admin network policy "pass" verdict hands the decision to the
+        following policies; it does not mean the traffic was allowed.
+      field: event.type
+      value: [connection]
+      if: ctx.event?.action == 'pass'
   - set:
       tag: set_event_type_denied
       field: event.type

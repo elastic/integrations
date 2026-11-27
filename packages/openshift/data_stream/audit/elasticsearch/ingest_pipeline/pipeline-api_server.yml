@@ -199,12 +199,25 @@ processors:
       field: orchestrator.api_version
       copy_from: kubernetes.audit.objectRef.apiVersion
       if: ctx.orchestrator?.api_version == null && ctx.kubernetes?.audit?.objectRef?.apiVersion != null
+  - set:
+      tag: set_outcome_success_from_status
+      description: >-
+        The response status decides the outcome. An allowed request can still
+        fail, for example with 404, 409, or 500.
+      field: event.outcome
+      value: success
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
+  - set:
+      tag: set_outcome_failure_from_status
+      field: event.outcome
+      value: failure
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - script:
       tag: script_annotations_and_outcome
       description: >-
-        Replaces dots in annotation keys with underscores and derives
-        event.outcome from the authorization decision, as the Kubernetes
-        integration does.
+        Replaces dots in annotation keys with underscores. Without a response
+        status, for example at the RequestReceived stage, derives event.outcome
+        from the authorization decision.
       lang: painless
       if: ctx.kubernetes?.audit?.annotations instanceof Map
       source: |
@@ -214,22 +227,15 @@ processors:
           dedotted.put(entry.getKey().replace('.', '_'), entry.getValue());
         }
         ctx.kubernetes.audit.annotations = dedotted;
+        if (ctx.event.outcome != null) {
+          return;
+        }
         def decision = annotations.get('authorization.k8s.io/decision');
         if (decision == 'allow') {
           ctx.event.outcome = 'success';
         } else if (decision == 'forbid') {
           ctx.event.outcome = 'failure';
         }
-  - set:
-      tag: set_outcome_success_from_status
-      field: event.outcome
-      value: success
-      if: ctx.event?.outcome == null && ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
-  - set:
-      tag: set_outcome_failure_from_status
-      field: event.outcome
-      value: failure
-      if: ctx.event?.outcome == null && ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - append:
       tag: append_event_category_api
       field: event.category

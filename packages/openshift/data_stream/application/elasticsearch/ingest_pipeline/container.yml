@@ -113,6 +113,20 @@ processors:
           dedotted.put(entry.getKey().replace('.', '_'), entry.getValue());
         }
         ctx.kubernetes.annotations = dedotted;
+  - convert:
+      tag: convert_scalar_structured_to_message
+      description: >-
+        The collector's JSON parse filter also accepts JSON that is not an
+        object, such as `123` or `"text"`, and then drops `message`. Keep such
+        a line as the message; only objects fit the flattened field.
+      field: structured
+      target_field: message
+      type: string
+      if: ctx.structured != null && !(ctx.structured instanceof Map) && ctx.message == null
+  - remove:
+      tag: remove_scalar_structured
+      field: structured
+      if: ctx.structured != null && !(ctx.structured instanceof Map)
   - rename:
       tag: rename_structured
       description: The collector's JSON parse filter puts the parsed application log line here.
@@ -124,12 +138,12 @@ processors:
       description: The collector drops `message` when the line was parsed as JSON.
       field: message
       copy_from: openshift.structured.message
-      if: ctx.message == null && ctx.openshift?.structured?.message instanceof String
+      if: ctx.message == null && ctx.openshift?.structured instanceof Map && ctx.openshift.structured.message instanceof String
   - set:
       tag: set_message_from_structured_msg
       field: message
       copy_from: openshift.structured.msg
-      if: ctx.message == null && ctx.openshift?.structured?.msg instanceof String
+      if: ctx.message == null && ctx.openshift?.structured instanceof Map && ctx.openshift.structured.msg instanceof String
   - remove:
       tag: remove_tmp
       field: _tmp
