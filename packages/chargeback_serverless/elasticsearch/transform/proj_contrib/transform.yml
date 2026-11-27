@@ -78,7 +78,6 @@ source:
           long rankVal = (isNat ? 10000000000000L : 0L) + tsMs;
           String pName = '';
           String pType = '';
-          String dGrp = '';
           String cRate = '-1';
           String cUnit = '';
           String cSym = '';
@@ -90,10 +89,6 @@ source:
             try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {}
           }
           if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
-          for (String f : ['deployment_group', 'deployment_group.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { dGrp = doc[f].value.toString().trim(); if (dGrp != '') break; } } catch (Exception e) {}
-          }
-          if (dGrp == '' && params._source?.deployment_group != null) { dGrp = params._source.deployment_group.toString().trim(); }
           try {
             if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
               double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
@@ -113,10 +108,9 @@ source:
           if (cSym == '' && params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); }
           pName = pName.replace(sep, ' ');
           pType = pType.replace(sep, ' ');
-          dGrp = dGrp.replace(sep, ' ');
           cUnit = cUnit.replace(sep, ' ');
           cSym = cSym.replace(sep, ' ');
-          emit(String.valueOf(rankVal) + sep + pName + sep + pType + sep + dGrp + sep + cRate + sep + cUnit + sep + cSym);
+          emit(String.valueOf(rankVal) + sep + pName + sep + pType + sep + cRate + sep + cUnit + sep + cSym);
     cb_sync_ts:
       type: date
       script:
@@ -249,7 +243,6 @@ source:
           try { if (doc.containsKey('deployment_sum_data_set_store_size') && !doc['deployment_sum_data_set_store_size'].empty) { depSto = ((Number)doc['deployment_sum_data_set_store_size'].value).longValue(); } else if (params._source?.deployment_sum_data_set_store_size instanceof Number) { depSto = ((Number)params._source.deployment_sum_data_set_store_size).longValue(); } } catch (Exception e) {}
           String pName = '';
           String pType = '';
-          String dGrp = '';
           String cRate = '-1';
           String cUnit = '';
           String cSym = '';
@@ -257,8 +250,6 @@ source:
           if (pName == '' && params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); }
           for (String f : ['project_type', 'project_type.keyword']) { try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {} }
           if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
-          for (String f : ['deployment_group', 'deployment_group.keyword']) { try { if (doc.containsKey(f) && !doc[f].empty) { dGrp = doc[f].value.toString().trim(); if (dGrp != '') break; } } catch (Exception e) {} }
-          if (dGrp == '' && params._source?.deployment_group != null) { dGrp = params._source.deployment_group.toString().trim(); }
           try {
             if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
               double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
@@ -279,7 +270,6 @@ source:
             + Long.toString(depSto) + sep
             + pName.replace(sep, ' ') + sep
             + pType.replace(sep, ' ') + sep
-            + dGrp.replace(sep, ' ') + sep
             + cRate + sep
             + cUnit.replace(sep, ' ') + sep
             + cSym.replace(sep, ' ')

@@ -52,118 +52,8 @@ processors:
         String bKind = '';
         String bUnit = '';
         boolean hasNatSnap = false;
-        if (ctx.nat_snapshots instanceof Map || ctx.leg_intervals instanceof Map || ctx.grp_obs instanceof Map || ctx.grp_meta instanceof Map || ctx.v1_carryover instanceof Map) {
+        if (ctx.nat_snapshots instanceof Map || ctx.leg_intervals instanceof Map || ctx.v1_carryover instanceof Map) {
           String sep = Character.toString((char)31);
-          String tab = Character.toString((char)9);
-          Map mergedGrpObsByEmitter = new HashMap();
-          if (ctx.grp_obs instanceof Map) {
-            List goEntries = new ArrayList();
-            if (((Map)ctx.grp_obs).get('buckets') instanceof List) {
-              for (def bObj : (List)((Map)ctx.grp_obs).get('buckets')) {
-                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
-                  goEntries.add([((Map)bObj).get('key').toString(), bObj]);
-                }
-              }
-            } else {
-              for (def geObj : ((Map)ctx.grp_obs).entrySet()) {
-                Map.Entry ge = (Map.Entry)geObj;
-                if (ge.getKey() != null) {
-                  goEntries.add([ge.getKey().toString(), ge.getValue()]);
-                }
-              }
-            }
-            for (def pairObj : goEntries) {
-              List pair = (List)pairObj;
-              String recKey = pair.get(0).toString();
-              def valObj = pair.get(1);
-              int sIdx = recKey.indexOf(sep);
-              if (sIdx <= 0) { continue; }
-              String gk = recKey.substring(0, sIdx);
-              String payload = recKey.substring(sIdx + 1);
-              List pParts = new ArrayList();
-              int pSt = 0;
-              while (true) {
-                int tIdx = payload.indexOf(tab, pSt);
-                if (tIdx < 0) {
-                  pParts.add(payload.substring(pSt));
-                  break;
-                }
-                pParts.add(payload.substring(pSt, tIdx));
-                pSt = tIdx + 1;
-              }
-              if (pParts.size() < 5) { continue; }
-              String emitterId = pParts.get(2).toString();
-              long ingMs = 0L;
-              if (valObj instanceof Map) {
-                def im = ((Map)valObj).get('ing_ms');
-                if (im instanceof Number) {
-                  ingMs = ((Number)im).longValue();
-                } else if (im instanceof Map && ((Map)im).get('value') instanceof Number) {
-                  ingMs = ((Number)((Map)im).get('value')).longValue();
-                }
-              }
-              Map byEmit = (Map)mergedGrpObsByEmitter.get(gk);
-              if (byEmit == null) {
-                byEmit = new HashMap();
-                mergedGrpObsByEmitter.put(gk, byEmit);
-              }
-              List prevE = (List)byEmit.get(emitterId);
-              if (prevE == null) {
-                byEmit.put(emitterId, [ingMs, payload]);
-              } else {
-                long prevIng = ((Number)prevE.get(0)).longValue();
-                String prevPl = prevE.get(1).toString();
-                if (ingMs > prevIng || (ingMs == prevIng && payload.compareTo(prevPl) < 0)) {
-                  byEmit.put(emitterId, [ingMs, payload]);
-                }
-              }
-            }
-          }
-          Map mergedGrpObs = new HashMap();
-          Map mergedGrpSeen = new HashMap();
-          Map mergedGrpBf = new HashMap();
-          for (def ge : mergedGrpObsByEmitter.entrySet()) {
-            String gk = ((Map.Entry)ge).getKey().toString();
-            Map byEmit = (Map)((Map.Entry)ge).getValue();
-            List sortedObs = new ArrayList();
-            for (def ev : byEmit.values()) {
-              sortedObs.add(((List)ev).get(1).toString());
-            }
-            Collections.sort(sortedObs);
-            if (!sortedObs.isEmpty()) {
-              mergedGrpObs.put(gk, sortedObs);
-              String desPayload = sortedObs.get(0).toString();
-              List dParts = new ArrayList();
-              int dSt = 0;
-              while (true) {
-                int dIdx = desPayload.indexOf(tab, dSt);
-                if (dIdx < 0) {
-                  dParts.add(desPayload.substring(dSt));
-                  break;
-                }
-                dParts.add(desPayload.substring(dSt, dIdx));
-                dSt = dIdx + 1;
-              }
-              if (dParts.size() >= 5) {
-                mergedGrpBf.put(gk, dParts.get(3).toString() == '1');
-                mergedGrpSeen.put(gk, dParts.get(4).toString());
-              }
-            }
-          }
-          if (ctx.grp_meta instanceof Map) {
-            for (def ge : ((Map)ctx.grp_meta).entrySet()) {
-              String gk = ge.getKey() != null ? ge.getKey().toString() : '';
-              if (gk == '' || mergedGrpObs.containsKey(gk) || !(ge.getValue() instanceof Map)) { continue; }
-              Map gv = (Map)ge.getValue();
-              if (gv.get('first_seen') instanceof Number) {
-                long fs = Math.round(((Number)gv.get('first_seen')).doubleValue());
-                if (fs > 0L) { mergedGrpSeen.put(gk, fs); }
-              }
-              if (gv.get('any_backfill') instanceof Number) {
-                mergedGrpBf.put(gk, ((Number)gv.get('any_backfill')).doubleValue() > 0.0);
-              }
-            }
-          }
           Map bestNat = null;
           String bestNatKey = '';
           if (ctx.nat_snapshots instanceof Map && !((Map)ctx.nat_snapshots).isEmpty()) {
@@ -193,22 +83,21 @@ processors:
                 parts.add(recKey.substring(pStart, pIdx));
                 pStart = pIdx + 1;
               }
-              if (parts.size() < 14) { continue; }
+              if (parts.size() < 13) { continue; }
               Map cand = [
                 'ing_ts': Long.parseLong(parts.get(0).toString()),
                 'total_ecu': Double.parseDouble(parts.get(1).toString()),
                 'quantity_value': Double.parseDouble(parts.get(2).toString()),
                 'project_name': parts.get(3).toString(),
                 'project_type': parts.get(4).toString(),
-                'deployment_group': parts.get(5).toString(),
-                'organization_id': parts.get(6).toString(),
-                'cloud_region': parts.get(7).toString(),
-                'billing_type': parts.get(8).toString(),
-                'billing_kind': parts.get(9).toString(),
-                'billing_unit': parts.get(10).toString(),
-                'conf_chargeable_unit_rate': Double.parseDouble(parts.get(11).toString()),
-                'conf_chargeable_unit_rate_unit': parts.get(12).toString(),
-                'conf_currency_symbol': parts.get(13).toString()
+                'organization_id': parts.get(5).toString(),
+                'cloud_region': parts.get(6).toString(),
+                'billing_type': parts.get(7).toString(),
+                'billing_kind': parts.get(8).toString(),
+                'billing_unit': parts.get(9).toString(),
+                'conf_chargeable_unit_rate': Double.parseDouble(parts.get(10).toString()),
+                'conf_chargeable_unit_rate_unit': parts.get(11).toString(),
+                'conf_currency_symbol': parts.get(12).toString()
               ];
               if (bestNat == null) {
                 bestNat = cand;
@@ -220,8 +109,8 @@ processors:
                 double bEcu = ((Number)bestNat.get('total_ecu')).doubleValue();
                 int cPos = (cEcu > 0.0 ? 1 : 0);
                 int bPos = (bEcu > 0.0 ? 1 : 0);
-                int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
-                int bMeta = (bestNat.get('deployment_group') != '' ? 2 : 0) + (bestNat.get('project_name') != '' ? 1 : 0);
+                int cMeta = (cand.get('project_name') != '' ? 1 : 0);
+                int bMeta = (bestNat.get('project_name') != '' ? 1 : 0);
                 if (cTs > bTs || (cTs == bTs && (cPos > bPos || (cPos == bPos && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestNatKey) > 0)))))))) {
                   bestNat = cand;
                   bestNatKey = recKey;
@@ -234,20 +123,6 @@ processors:
             bestNat.remove('ing_ts');
             if (((Number)bestNat.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
               bestNat.remove('conf_chargeable_unit_rate');
-            }
-            String outGrp = bestNat.get('deployment_group') != null ? bestNat.get('deployment_group').toString() : '';
-            if (outGrp != '') {
-              if (mergedGrpObs.containsKey(outGrp)) {
-                bestNat.put('group_observations', mergedGrpObs.get(outGrp));
-              }
-              if (mergedGrpSeen.containsKey(outGrp)) {
-                bestNat.put('group_first_seen_at', mergedGrpSeen.get(outGrp));
-              }
-              if (mergedGrpBf.containsKey(outGrp)) {
-                bestNat.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(outGrp)));
-              } else if (mergedGrpSeen.containsKey(outGrp)) {
-                bestNat.put('group_initial_backfill', false);
-              }
             }
             ctx.latest_snapshot = bestNat;
           }
@@ -294,22 +169,21 @@ processors:
                   parts.add(recKey.substring(pStart, pIdx));
                   pStart = pIdx + 1;
                 }
-                if (parts.size() < 14) { continue; }
+                if (parts.size() < 13) { continue; }
                 Map cand = [
                   'ing_ts': Long.parseLong(parts.get(0).toString()),
                   'total_ecu': Double.parseDouble(parts.get(1).toString()),
                   'quantity_value': Double.parseDouble(parts.get(2).toString()),
                   'project_name': parts.get(3).toString(),
                   'project_type': parts.get(4).toString(),
-                  'deployment_group': parts.get(5).toString(),
-                  'organization_id': parts.get(6).toString(),
-                  'cloud_region': parts.get(7).toString(),
-                  'billing_type': parts.get(8).toString(),
-                  'billing_kind': parts.get(9).toString(),
-                  'billing_unit': parts.get(10).toString(),
-                  'conf_chargeable_unit_rate': Double.parseDouble(parts.get(11).toString()),
-                  'conf_chargeable_unit_rate_unit': parts.get(12).toString(),
-                  'conf_currency_symbol': parts.get(13).toString()
+                  'organization_id': parts.get(5).toString(),
+                  'cloud_region': parts.get(6).toString(),
+                  'billing_type': parts.get(7).toString(),
+                  'billing_kind': parts.get(8).toString(),
+                  'billing_unit': parts.get(9).toString(),
+                  'conf_chargeable_unit_rate': Double.parseDouble(parts.get(10).toString()),
+                  'conf_chargeable_unit_rate_unit': parts.get(11).toString(),
+                  'conf_currency_symbol': parts.get(12).toString()
                 ];
                 if (bestRec == null) {
                   bestRec = cand;
@@ -317,8 +191,8 @@ processors:
                 } else {
                   long cTs = ((Number)cand.get('ing_ts')).longValue();
                   long bTs = ((Number)bestRec.get('ing_ts')).longValue();
-                  int cMeta = (cand.get('deployment_group') != '' ? 2 : 0) + (cand.get('project_name') != '' ? 1 : 0);
-                  int bMeta = (bestRec.get('deployment_group') != '' ? 2 : 0) + (bestRec.get('project_name') != '' ? 1 : 0);
+                  int cMeta = (cand.get('project_name') != '' ? 1 : 0);
+                  int bMeta = (bestRec.get('project_name') != '' ? 1 : 0);
                   double cEcu = ((Number)cand.get('total_ecu')).doubleValue();
                   double bEcu = ((Number)bestRec.get('total_ecu')).doubleValue();
                   if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestRecKey) > 0)))))) {
@@ -333,10 +207,8 @@ processors:
               double sumEcu = 0.0;
               double sumQty = 0.0;
               long bestTs = -1L;
-              long bestGroupTs = -1L;
               String pName = '';
               String pType = '';
-              String depGroup = '';
               String pOrgId = '';
               String pRegion = '';
               String pBType = '';
@@ -350,11 +222,6 @@ processors:
                 sumEcu += ((Number)rec.get('total_ecu')).doubleValue();
                 sumQty += ((Number)rec.get('quantity_value')).doubleValue();
                 long rTs = ((Number)rec.get('ing_ts')).longValue();
-                String rGroup = rec.get('deployment_group') != null ? rec.get('deployment_group').toString() : '';
-                if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
-                  bestGroupTs = rTs;
-                  depGroup = rGroup;
-                }
                 boolean isNewer = rTs >= bestTs;
                 if (isNewer) { bestTs = rTs; }
                 if (rec.get('project_name') != '' && (pName == '' || isNewer)) { pName = rec.get('project_name').toString(); }
@@ -372,7 +239,6 @@ processors:
               Map legOut = [
                 'project_name': pName,
                 'project_type': pType,
-                'deployment_group': depGroup,
                 'total_ecu': sumEcu,
                 'quantity_value': sumQty,
                 'organization_id': pOrgId,
@@ -384,19 +250,6 @@ processors:
               if (cRate >= 0.0) { legOut.put('conf_chargeable_unit_rate', cRate); }
               if (cUnit != '') { legOut.put('conf_chargeable_unit_rate_unit', cUnit); }
               if (cSym != '') { legOut.put('conf_currency_symbol', cSym); }
-              if (depGroup != '') {
-                if (mergedGrpObs.containsKey(depGroup)) {
-                  legOut.put('group_observations', mergedGrpObs.get(depGroup));
-                }
-                if (mergedGrpSeen.containsKey(depGroup)) {
-                  legOut.put('group_first_seen_at', mergedGrpSeen.get(depGroup));
-                }
-                if (mergedGrpBf.containsKey(depGroup)) {
-                  legOut.put('group_initial_backfill', Boolean.TRUE.equals(mergedGrpBf.get(depGroup)));
-                } else if (mergedGrpSeen.containsKey(depGroup)) {
-                  legOut.put('group_initial_backfill', false);
-                }
-              }
               ctx.latest_snapshot = legOut;
             }
           }
@@ -429,22 +282,21 @@ processors:
                 parts.add(recKey.substring(pStart, pIdx));
                 pStart = pIdx + 1;
               }
-              if (parts.size() < 14) { continue; }
+              if (parts.size() < 13) { continue; }
               Map cand = [
                 'ing_ts': Long.parseLong(parts.get(0).toString()),
                 'total_ecu': Double.parseDouble(parts.get(1).toString()),
                 'quantity_value': Double.parseDouble(parts.get(2).toString()),
                 'project_name': parts.get(3).toString(),
                 'project_type': parts.get(4).toString(),
-                'deployment_group': parts.get(5).toString(),
-                'organization_id': parts.get(6).toString(),
-                'cloud_region': parts.get(7).toString(),
-                'billing_type': parts.get(8).toString(),
-                'billing_kind': parts.get(9).toString(),
-                'billing_unit': parts.get(10).toString(),
-                'conf_chargeable_unit_rate': Double.parseDouble(parts.get(11).toString()),
-                'conf_chargeable_unit_rate_unit': parts.get(12).toString(),
-                'conf_currency_symbol': parts.get(13).toString()
+                'organization_id': parts.get(5).toString(),
+                'cloud_region': parts.get(6).toString(),
+                'billing_type': parts.get(7).toString(),
+                'billing_kind': parts.get(8).toString(),
+                'billing_unit': parts.get(9).toString(),
+                'conf_chargeable_unit_rate': Double.parseDouble(parts.get(10).toString()),
+                'conf_chargeable_unit_rate_unit': parts.get(11).toString(),
+                'conf_currency_symbol': parts.get(12).toString()
               ];
               if (bestV1 == null) {
                 bestV1 = cand;
@@ -468,8 +320,6 @@ processors:
           }
           ctx.remove('nat_snapshots');
           ctx.remove('leg_intervals');
-          ctx.remove('grp_obs');
-          ctx.remove('grp_meta');
           ctx.remove('v1_carryover');
         }
         if (ctx.latest_snapshot instanceof Map) {
@@ -482,9 +332,6 @@ processors:
           }
           if (snap.project_type != null && snap.project_type.toString() != '') {
             ctx.project_type = snap.project_type.toString();
-          }
-          if (snap.deployment_group != null) {
-            ctx.deployment_group = snap.deployment_group.toString();
           }
           if (snap.organization_id != null && snap.organization_id.toString() != '') {
             orgId = snap.organization_id.toString();
@@ -521,18 +368,6 @@ processors:
           }
           if (snap.conf_currency_symbol != null && snap.conf_currency_symbol.toString() != '') {
             ctx.conf_currency_symbol = snap.conf_currency_symbol.toString();
-          }
-          if (snap.group_first_seen_at instanceof Number) {
-            ctx.group_first_seen_at = Instant.ofEpochMilli(((Number)snap.group_first_seen_at).longValue()).toString();
-          } else if (snap.group_first_seen_at != null && snap.group_first_seen_at.toString() != '') {
-            try { ctx.group_first_seen_at = ZonedDateTime.parse(snap.group_first_seen_at.toString()).toInstant().toString(); }
-            catch (Exception e) { ctx.group_first_seen_at = snap.group_first_seen_at.toString(); }
-          }
-          if (snap.group_initial_backfill != null) {
-            ctx.group_initial_backfill = (snap.group_initial_backfill instanceof Boolean) ? ((Boolean)snap.group_initial_backfill).booleanValue() : snap.group_initial_backfill.toString().trim().equalsIgnoreCase('true');
-          }
-          if (snap.group_observations instanceof List) {
-            ctx.group_observations = snap.group_observations;
           }
           ctx.remove('latest_snapshot');
         }
@@ -579,21 +414,6 @@ processors:
           else if (ptNorm == 'es') { ptNorm = 'elasticsearch'; }
           else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
           ctx.project_type = ptNorm;
-        }
-        if (ctx.deployment_group == null) {
-          ctx.deployment_group = '';
-        }
-        if (ctx.deployment_group == null || ctx.deployment_group == '') {
-          ctx.remove('group_first_seen_at');
-          ctx.remove('group_initial_backfill');
-          ctx.remove('group_observations');
-        } else if (ctx.group_observations == null && (ctx.group_first_seen_at != null || ctx.group_initial_backfill != null)) {
-          String fbTab = Character.toString((char)9);
-          boolean fbBf = Boolean.TRUE.equals(ctx.group_initial_backfill);
-          String fbTs = ctx.group_first_seen_at != null ? ctx.group_first_seen_at.toString() : (ctx['@timestamp'] != null ? ctx['@timestamp'].toString() : '');
-          if (fbTs != '') {
-            ctx.group_observations = ['9999-12-31T23:59:59.999Z' + fbTab + '1' + fbTab + '_row_' + fbTab + (fbBf ? '1' : '0') + fbTab + fbTs];
-          }
         }
         if (ctx.has_native_billing == null) {
           ctx.has_native_billing = hasNatSnap;

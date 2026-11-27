@@ -258,17 +258,6 @@ inputs:
             candidate_keys[0].as(primary_cand,
             (has(p.endpoints) && p.endpoints != null && has(p.endpoints.elasticsearch) && p.endpoints.elasticsearch != null ? string(dyn(p.endpoints).elasticsearch) : "").trim_space().as(_raw_es_url,
             (_raw_es_url.endsWith("/") ? _raw_es_url.substring(0, size(_raw_es_url) - 1) : _raw_es_url).as(es_base_url,
-            (
-            (has(p.tags) && p.tags != null && type(p.tags) == list ? p.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-            (has(p.metadata) && p.metadata != null && has(p.metadata.tags) && p.metadata.tags != null && type(p.metadata.tags) == list ? p.metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-            ((has(bill_body.instances) && bill_body.instances != null) ?
-            bill_body.instances.filter(bi, has(bi.id) && bi.id != null && string(bi.id) == string(p.id)).map(bi,
-            (has(bi.deployment_tags) && bi.deployment_tags != null && type(bi.deployment_tags) == list ? bi.deployment_tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-            (has(bi.tags) && bi.tags != null && type(bi.tags) == list ? bi.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-            (has(bi.metadata) && bi.metadata != null && has(bi.metadata.tags) && bi.metadata.tags != null && type(bi.metadata.tags) == list ? bi.metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : [])
-            ).flatten() : [])
-            ).filter(s, s.to_lower().startsWith("chargeback_group:")).map(s, s.substring(17, size(s)).trim_space()).filter(g, g != "").as(_pg_vals,
-            (size(_pg_vals) > 0 ? _pg_vals[0] : "").as(proj_group,
             (es_base_url + "/_cat/indices?h=index,dataset.size,indexing.index_time,search.query_time&format=json&bytes=b&time=ms&expand_wildcards=open,hidden").as(cat_url,
             ((es_base_url == "" || (!es_base_url.startsWith("https://") && !clean_cloud_base.startsWith("http://"))) ?
             { "resp": { "StatusCode": 404, "Status": "missing_endpoint", "Body": bytes("") }, "key": primary_cand.key, "ktype": "missing_key" }
@@ -391,7 +380,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "monitor_id": string(b.key),
             "monitor_name": (has(b.monitor_name) && has(b.monitor_name.buckets) && size(b.monitor_name.buckets) > 0 && has(b.monitor_name.buckets[0].key)) ? string(b.monitor_name.buckets[0].key) : string(b.key),
             "monitor_type": mtype,
@@ -416,7 +404,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "monitor_id": "other-monitors-overflow-" + mtype,
             "monitor_name": "Other Monitors (Aggregation Overflow - " + mtype + ")",
             "monitor_type": mtype,
@@ -473,7 +460,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "monitor_id": "billing-derived-lightweight",
             "monitor_name": "Lightweight Monitors (Billing SKU)",
             "monitor_type": "http",
@@ -498,7 +484,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "monitor_id": "billing-derived-browser",
             "monitor_name": "Browser Monitors (Billing SKU)",
             "monitor_type": "browser",
@@ -612,7 +597,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "model_id": d.model_id,
             "task_type": d.task_type,
             "inference_count": comb_delta_inf,
@@ -648,7 +632,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "model_id": string(ep.inference_id),
             "task_type": (has(ep.task_type) && ep.task_type != null && string(ep.task_type) != "") ? string(ep.task_type) : "inference",
             "inference_count": 0,
@@ -679,7 +662,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "model_id": "billing-derived-ai",
             "task_type": "billing_derived",
             "inference_count": 0,
@@ -792,7 +774,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "datastream": ds_grp[0].representative_index,
             "backing_index": ds_name,
             "datastream_sum_indexing_time": ds_grp.map(r, r.idx_time).sum(),
@@ -813,7 +794,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "datastream": "billing-derived-retention",
             "backing_index": "billing-derived-retention",
             "datastream_sum_indexing_time": 1,
@@ -841,7 +821,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
             "es_url": es_base_url,
             "last_status": sub_transient_err ? "transient_error" : (ai_auth_err ? "empty_or_unauthorized" : "ok"),
@@ -941,7 +920,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "monitor_id": "billing-derived-lightweight",
             "monitor_name": "Lightweight Monitors (Billing SKU)",
             "monitor_type": "http",
@@ -966,7 +944,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "monitor_id": "billing-derived-browser",
             "monitor_name": "Browser Monitors (Billing SKU)",
             "monitor_type": "browser",
@@ -992,7 +969,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "model_id": "billing-derived-ai",
             "task_type": "billing_derived",
             "inference_count": 0,
@@ -1013,7 +989,6 @@ inputs:
             "project_id": p.id,
             "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
             "project_type": p.project_type,
-            "deployment_group": proj_group,
             "optimized_for": has(p.optimized_for) ? p.optimized_for : "general_purpose",
             "es_url": es_base_url,
             "last_status": resolved_ktype == "transient_error" ? "transient_error" : "empty_or_unauthorized",
@@ -1029,8 +1004,6 @@ inputs:
             "conf_currency_symbol": state.conf_currency_symbol,
             }
             ]
-            )
-            )
             )
             )
             )
@@ -1086,12 +1059,6 @@ inputs:
             ((has(inst.name) && inst.name != null && string(inst.name) != "") ? string(inst.name) : string(inst.id)).as(del_pname,
             ((has(inst.type) && inst.type != null) ? string(inst.type).to_lower() : "").as(raw_del_type,
             ((raw_del_type == "observability" || raw_del_type == "oblt" || raw_del_type.contains("observability") || raw_del_type.contains("oblt")) ? "observability" : ((raw_del_type == "security" || raw_del_type == "sec" || raw_del_type.contains("security")) ? "security" : ((raw_del_type == "vectordb" || raw_del_type == "vector" || raw_del_type.contains("vectordb") || raw_del_type.contains("vector")) ? "vectordb" : ((raw_del_type == "elasticsearch" || raw_del_type == "es" || raw_del_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_del_type == "search" || raw_del_type == "enterprise_search" || raw_del_type.contains("search")) ? "search" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains(".observability.") || s.contains(".oblt.") || s.contains("synthetic")))) ? "observability" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.") || s.contains(".security.") || s.contains(".sec.")))) ? "security" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("vectordb.") || s.startsWith("serverless.vectordb.") || s.contains(".vectordb.")))) ? "vectordb" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.") || s.contains(".elasticsearch.")))) ? "elasticsearch" : ((has(inst.product_line_items) && inst.product_line_items != null && inst.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("search.") || s.startsWith("serverless.search.")))) ? "search" : "elasticsearch")))))))))).as(del_ptype,
-            (
-            (has(inst.deployment_tags) && inst.deployment_tags != null && type(inst.deployment_tags) == list ? inst.deployment_tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-            (has(inst.tags) && inst.tags != null && type(inst.tags) == list ? inst.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-            (has(inst.metadata) && inst.metadata != null && has(inst.metadata.tags) && inst.metadata.tags != null && type(inst.metadata.tags) == list ? inst.metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : [])
-            ).filter(s, s.to_lower().startsWith("chargeback_group:")).map(s, s.substring(17, size(s)).trim_space()).filter(g, g != "").as(_dg_vals,
-            (size(_dg_vals) > 0 ? _dg_vals[0] : "").as(del_group,
             inst.product_line_items.filter(li,
             has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s,
             (s.contains("retained") || s.contains("storage") || s.contains("retention")) && !s.contains("snapshot")
@@ -1131,7 +1098,6 @@ inputs:
             "project_id": string(inst.id),
             "project_name": del_pname,
             "project_type": del_ptype,
-            "deployment_group": del_group,
             "monitor_id": "billing-derived-lightweight",
             "monitor_name": "Lightweight Monitors (Billing SKU)",
             "monitor_type": "http",
@@ -1156,7 +1122,6 @@ inputs:
             "project_id": string(inst.id),
             "project_name": del_pname,
             "project_type": del_ptype,
-            "deployment_group": del_group,
             "monitor_id": "billing-derived-browser",
             "monitor_name": "Browser Monitors (Billing SKU)",
             "monitor_type": "browser",
@@ -1188,7 +1153,6 @@ inputs:
             "project_id": string(inst.id),
             "project_name": del_pname,
             "project_type": del_ptype,
-            "deployment_group": del_group,
             "model_id": "billing-derived-ai",
             "task_type": "billing_derived",
             "inference_count": 0,
@@ -1207,7 +1171,6 @@ inputs:
             "project_id": string(inst.id),
             "project_name": del_pname,
             "project_type": del_ptype,
-            "deployment_group": del_group,
             "datastream": "billing-derived-retention",
             "backing_index": "billing-derived-retention",
             "datastream_sum_indexing_time": 1,
@@ -1227,7 +1190,6 @@ inputs:
             "project_id": string(inst.id),
             "project_name": del_pname,
             "project_type": del_ptype,
-            "deployment_group": del_group,
             "optimized_for": "decommissioned",
             "es_url": "",
             "last_status": "inactive",
@@ -1243,8 +1205,6 @@ inputs:
             "conf_currency_symbol": state.conf_currency_symbol,
             }
             ]
-            )
-            )
             )
             )
             )

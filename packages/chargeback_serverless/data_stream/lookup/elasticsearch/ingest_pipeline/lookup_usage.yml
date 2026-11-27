@@ -96,7 +96,7 @@ processors:
               parts.add(recKey.substring(pStart, pIdx));
               pStart = pIdx + 1;
             }
-            if (parts.size() < 8) { continue; }
+            if (parts.size() < 7) { continue; }
             long iMs = 0L;
             try { iMs = Long.parseLong(parts.get(1).toString()); } catch (Exception e) {}
             if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
@@ -115,27 +115,25 @@ processors:
             String uMode = bestUParts.get(0).toString();
             String uName = bestUParts.get(2).toString();
             String uType = bestUParts.get(3).toString();
-            String uGrp = bestUParts.get(4).toString();
-            String uRate = bestUParts.get(5).toString();
-            String uUnit = bestUParts.get(6).toString();
-            String uSym = bestUParts.get(7).toString();
+            String uRate = bestUParts.get(4).toString();
+            String uUnit = bestUParts.get(5).toString();
+            String uSym = bestUParts.get(6).toString();
             if (uName != '' && uName != 'null') { ctx.project_name = uName; }
             if (uType != '' && uType != 'null') { ctx.project_type = uType; }
-            ctx.deployment_group = (uGrp == 'null') ? '' : uGrp;
             try {
               double cr = Double.parseDouble(uRate);
               if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
             } catch (Exception e) {}
             if (uUnit != '' && uUnit != 'null') { ctx.conf_chargeable_unit_rate_unit = uUnit; }
             if (uSym != '' && uSym != 'null') { ctx.conf_currency_symbol = uSym; }
-            if (uMode == 'ps' && bestUParts.size() >= 10) {
-              String uOpt = bestUParts.get(8).toString();
-              String uUrl = bestUParts.get(9).toString();
+            if (uMode == 'ps' && bestUParts.size() >= 9) {
+              String uOpt = bestUParts.get(7).toString();
+              String uUrl = bestUParts.get(8).toString();
               if (uOpt != '' && uOpt != 'null') { ctx.optimized_for = uOpt; }
               ctx.es_url = (uUrl == 'null') ? '' : uUrl;
-            } else if (uMode == 'sy' && bestUParts.size() >= 10) {
-              String mName = bestUParts.get(8).toString();
-              String mNs = bestUParts.get(9).toString();
+            } else if (uMode == 'sy' && bestUParts.size() >= 9) {
+              String mName = bestUParts.get(7).toString();
+              String mNs = bestUParts.get(8).toString();
               if (mName != '' && mName != 'null') { ctx.monitor_name = mName; }
               if (mNs != '' && mNs != 'null') { ctx.monitor_namespace = mNs; }
             }
@@ -161,7 +159,7 @@ processors:
                 parts.add(recKey.substring(pStart, pIdx));
                 pStart = pIdx + 1;
               }
-              if (parts.size() < 7) { continue; }
+              if (parts.size() < 6) { continue; }
               long rnk = 0L;
               try { rnk = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
               if (bm.get('max_rank') instanceof Map && ((Map)bm.get('max_rank')).get('value') instanceof Number) {
@@ -185,7 +183,7 @@ processors:
                 parts.add(recKey.substring(pStart, pIdx));
                 pStart = pIdx + 1;
               }
-              if (parts.size() < 7) { continue; }
+              if (parts.size() < 6) { continue; }
               long rnk = 0L;
               try { rnk = Long.parseLong(parts.get(0).toString()); } catch (Exception ex) {}
               if (e.getValue() instanceof Map && ((Map)e.getValue()).get('max_rank') instanceof Number) {
@@ -202,13 +200,11 @@ processors:
             hasRawProj = true;
             String pName = bestProjParts.get(1).toString();
             String pType = bestProjParts.get(2).toString();
-            String pGrp = bestProjParts.get(3).toString();
-            String pRate = bestProjParts.get(4).toString();
-            String pUnit = bestProjParts.get(5).toString();
-            String pSym = bestProjParts.get(6).toString();
+            String pRate = bestProjParts.get(3).toString();
+            String pUnit = bestProjParts.get(4).toString();
+            String pSym = bestProjParts.get(5).toString();
             if (pName != '' && pName != 'null') { ctx.project_name = pName; }
             if (pType != '' && pType != 'null') { ctx.project_type = pType; }
-            ctx.deployment_group = (pGrp == 'null') ? '' : pGrp;
             try {
               double cr = Double.parseDouble(pRate);
               if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
@@ -249,7 +245,7 @@ processors:
                 parts.add(recKey.substring(ps, pi));
                 ps = pi + 1;
               }
-              if (parts.size() < 17) { continue; }
+              if (parts.size() < 16) { continue; }
               long iMs = 0L;
               try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
               if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
@@ -277,18 +273,16 @@ processors:
               String ss = bestParts.get(8).toString();
               String pName = bestParts.get(9).toString();
               String pType = bestParts.get(10).toString();
-              String depGrp = bestParts.get(11).toString();
-              String optFor = bestParts.get(12).toString();
-              String esUrl = bestParts.get(13).toString();
-              String cRate = bestParts.get(14).toString();
-              String cUnit = bestParts.get(15).toString();
-              String cSym = bestParts.get(16).toString();
+              String optFor = bestParts.get(11).toString();
+              String esUrl = bestParts.get(12).toString();
+              String cRate = bestParts.get(13).toString();
+              String cUnit = bestParts.get(14).toString();
+              String cSym = bestParts.get(15).toString();
               ctx.last_status = (ls == '' || ls == 'null') ? 'ok' : ls;
               ctx.api_key_type = (ak == '' || ak == 'null') ? 'missing_key' : ak;
               ctx.synthetics_status = (ss == '' || ss == 'null') ? 'ok' : ss;
               if (pName != '' && pName != 'null') { ctx.project_name = pName; }
               if (pType != '' && pType != 'null') { ctx.project_type = pType; }
-              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
               if (optFor != '' && optFor != 'null') { ctx.optimized_for = optFor; }
               ctx.es_url = (esUrl == 'null') ? '' : esUrl;
               try {
@@ -332,7 +326,7 @@ processors:
                 parts.add(recKey.substring(ps, pi));
                 ps = pi + 1;
               }
-              if (parts.size() < 10) { continue; }
+              if (parts.size() < 9) { continue; }
               long iMs = 0L;
               try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
               if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
@@ -352,13 +346,11 @@ processors:
               try { ctx.total_inference_time_ms = Long.parseLong(bestParts.get(3).toString()); } catch (Exception e) {}
               String pName = bestParts.get(4).toString();
               String pType = bestParts.get(5).toString();
-              String depGrp = bestParts.get(6).toString();
-              String cRate = bestParts.get(7).toString();
-              String cUnit = bestParts.get(8).toString();
-              String cSym = bestParts.get(9).toString();
+              String cRate = bestParts.get(6).toString();
+              String cUnit = bestParts.get(7).toString();
+              String cSym = bestParts.get(8).toString();
               if (pName != '' && pName != 'null') { ctx.project_name = pName; }
               if (pType != '' && pType != 'null') { ctx.project_type = pType; }
-              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
               try {
                 double cr = Double.parseDouble(cRate);
                 if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
@@ -400,7 +392,7 @@ processors:
                 parts.add(recKey.substring(ps, pi));
                 ps = pi + 1;
               }
-              if (parts.size() < 15) { continue; }
+              if (parts.size() < 14) { continue; }
               long iMs = 0L;
               try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
               if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
@@ -423,15 +415,13 @@ processors:
               try { ctx.total_duration_ms = Double.parseDouble(bestParts.get(6).toString()); } catch (Exception e) {}
               String pName = bestParts.get(7).toString();
               String pType = bestParts.get(8).toString();
-              String depGrp = bestParts.get(9).toString();
-              String monName = bestParts.get(10).toString();
-              String monNs = bestParts.get(11).toString();
-              String cRate = bestParts.get(12).toString();
-              String cUnit = bestParts.get(13).toString();
-              String cSym = bestParts.get(14).toString();
+              String monName = bestParts.get(9).toString();
+              String monNs = bestParts.get(10).toString();
+              String cRate = bestParts.get(11).toString();
+              String cUnit = bestParts.get(12).toString();
+              String cSym = bestParts.get(13).toString();
               if (pName != '' && pName != 'null') { ctx.project_name = pName; }
               if (pType != '' && pType != 'null') { ctx.project_type = pType; }
-              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
               if (monName != '' && monName != 'null') { ctx.monitor_name = monName; }
               if (monNs != '' && monNs != 'null') { ctx.monitor_namespace = monNs; }
               try {
@@ -475,7 +465,7 @@ processors:
                 parts.add(recKey.substring(ps, pi));
                 ps = pi + 1;
               }
-              if (parts.size() < 10) { continue; }
+              if (parts.size() < 9) { continue; }
               long iMs = 0L;
               try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
               if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
@@ -495,13 +485,11 @@ processors:
               try { ctx.deployment_sum_data_set_store_size = Long.parseLong(bestParts.get(3).toString()); } catch (Exception e) {}
               String pName = bestParts.get(4).toString();
               String pType = bestParts.get(5).toString();
-              String depGrp = bestParts.get(6).toString();
-              String cRate = bestParts.get(7).toString();
-              String cUnit = bestParts.get(8).toString();
-              String cSym = bestParts.get(9).toString();
+              String cRate = bestParts.get(6).toString();
+              String cUnit = bestParts.get(7).toString();
+              String cSym = bestParts.get(8).toString();
               if (pName != '' && pName != 'null') { ctx.project_name = pName; }
               if (pType != '' && pType != 'null') { ctx.project_type = pType; }
-              ctx.deployment_group = (depGrp == 'null') ? '' : depGrp;
               try {
                 double cr = Double.parseDouble(cRate);
                 if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
@@ -635,7 +623,7 @@ processors:
                     parts.add(recKey.substring(pStart, pIdx));
                     pStart = pIdx + 1;
                   }
-                  if (parts.size() < 10) { continue; }
+                  if (parts.size() < 9) { continue; }
                   long sTs = 0L;
                   try { sTs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
                   if (bestParts == null || sTs > bestSyncTs || (sTs == bestSyncTs && recKey.compareTo(bestKey) > 0)) {
@@ -647,13 +635,12 @@ processors:
                 if (bestParts != null) {
                   if (bestParts.get(1).toString() != '') { ctx.project_name = bestParts.get(1).toString(); }
                   if (bestParts.get(2).toString() != '') { ctx.project_type = bestParts.get(2).toString(); }
-                  ctx.deployment_group = bestParts.get(3).toString();
                   try {
-                    double cr = Double.parseDouble(bestParts.get(7).toString());
+                    double cr = Double.parseDouble(bestParts.get(6).toString());
                     if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
                   } catch (Exception e) {}
-                  if (bestParts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(8).toString(); }
-                  if (bestParts.get(9).toString() != '') { ctx.conf_currency_symbol = bestParts.get(9).toString(); }
+                  if (bestParts.get(7).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(7).toString(); }
+                  if (bestParts.get(8).toString() != '') { ctx.conf_currency_symbol = bestParts.get(8).toString(); }
                 }
               }
             } else if (natCnt > 0L) {
@@ -700,7 +687,7 @@ processors:
                     parts.add(recKey.substring(pStart, pIdx));
                     pStart = pIdx + 1;
                   }
-                  if (parts.size() < 10) { continue; }
+                  if (parts.size() < 9) { continue; }
                   long sTs = 0L;
                   try { sTs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
                   if (bestParts == null || sTs > bestSyncTs || (sTs == bestSyncTs && recKey.compareTo(bestKey) > 0)) {
@@ -712,18 +699,17 @@ processors:
                 if (bestParts != null) {
                   if (bestParts.get(1).toString() != '') { ctx.project_name = bestParts.get(1).toString(); }
                   if (bestParts.get(2).toString() != '') { ctx.project_type = bestParts.get(2).toString(); }
-                  ctx.deployment_group = bestParts.get(3).toString();
                   if (!isProjLevel) {
-                    if (bestParts.get(4).toString() != '') { ctx.ds_type = bestParts.get(4).toString(); }
-                    if (bestParts.get(5).toString() != '') { ctx.ds_dataset = bestParts.get(5).toString(); }
-                    if (bestParts.get(6).toString() != '') { ctx.ds_namespace = bestParts.get(6).toString(); }
+                    if (bestParts.get(3).toString() != '') { ctx.ds_type = bestParts.get(3).toString(); }
+                    if (bestParts.get(4).toString() != '') { ctx.ds_dataset = bestParts.get(4).toString(); }
+                    if (bestParts.get(5).toString() != '') { ctx.ds_namespace = bestParts.get(5).toString(); }
                   }
                   try {
-                    double cr = Double.parseDouble(bestParts.get(7).toString());
+                    double cr = Double.parseDouble(bestParts.get(6).toString());
                     if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
                   } catch (Exception e) {}
-                  if (bestParts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(8).toString(); }
-                  if (bestParts.get(9).toString() != '') { ctx.conf_currency_symbol = bestParts.get(9).toString(); }
+                  if (bestParts.get(7).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(7).toString(); }
+                  if (bestParts.get(8).toString() != '') { ctx.conf_currency_symbol = bestParts.get(8).toString(); }
                   if (!isProjLevel && bestSyncTs > 0L) {
                     ctx.source_sync_ts = Instant.ofEpochMilli(bestSyncTs).toString();
                   }
@@ -820,7 +806,7 @@ processors:
                     parts.add(recKey.substring(pStart, pIdx));
                     pStart = pIdx + 1;
                   }
-                  if (parts.size() < 10) { continue; }
+                  if (parts.size() < 9) { continue; }
                   long sTs = 0L;
                   try { sTs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
                   if (bestParts == null || sTs > bestSyncTs || (sTs == bestSyncTs && recKey.compareTo(bestKey) > 0)) {
@@ -832,18 +818,17 @@ processors:
                 if (bestParts != null) {
                   if (bestParts.get(1).toString() != '') { ctx.project_name = bestParts.get(1).toString(); }
                   if (bestParts.get(2).toString() != '') { ctx.project_type = bestParts.get(2).toString(); }
-                  ctx.deployment_group = bestParts.get(3).toString();
                   if (!isProjLevel) {
-                    if (bestParts.get(4).toString() != '') { ctx.ds_type = bestParts.get(4).toString(); }
-                    if (bestParts.get(5).toString() != '') { ctx.ds_dataset = bestParts.get(5).toString(); }
-                    if (bestParts.get(6).toString() != '') { ctx.ds_namespace = bestParts.get(6).toString(); }
+                    if (bestParts.get(3).toString() != '') { ctx.ds_type = bestParts.get(3).toString(); }
+                    if (bestParts.get(4).toString() != '') { ctx.ds_dataset = bestParts.get(4).toString(); }
+                    if (bestParts.get(5).toString() != '') { ctx.ds_namespace = bestParts.get(5).toString(); }
                   }
                   try {
-                    double cr = Double.parseDouble(bestParts.get(7).toString());
+                    double cr = Double.parseDouble(bestParts.get(6).toString());
                     if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
                   } catch (Exception e) {}
-                  if (bestParts.get(8).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(8).toString(); }
-                  if (bestParts.get(9).toString() != '') { ctx.conf_currency_symbol = bestParts.get(9).toString(); }
+                  if (bestParts.get(7).toString() != '') { ctx.conf_chargeable_unit_rate_unit = bestParts.get(7).toString(); }
+                  if (bestParts.get(8).toString() != '') { ctx.conf_currency_symbol = bestParts.get(8).toString(); }
                 }
               }
               if (!isProjLevel) {
@@ -855,7 +840,7 @@ processors:
               }
             }
           } else {
-            for (String k : ['datastream_sum_indexing_time', 'datastream_sum_query_time', 'datastream_sum_data_set_store_size', 'deployment_sum_indexing_time', 'deployment_sum_query_time', 'deployment_sum_data_set_store_size', 'project_name', 'project_type', 'deployment_group', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+            for (String k : ['datastream_sum_indexing_time', 'datastream_sum_query_time', 'datastream_sum_data_set_store_size', 'deployment_sum_indexing_time', 'deployment_sum_query_time', 'deployment_sum_data_set_store_size', 'project_name', 'project_type', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
               if (r.containsKey(k) && r.get(k) != null) {
                 ctx[k] = r.get(k);
               }
@@ -967,11 +952,6 @@ processors:
           if (curr.project_type != null && curr.project_type.toString() != '' && curr.project_type.toString() != 'null') {
             ctx.project_type = curr.project_type.toString();
           }
-          if (curr.containsKey('deployment_group')) {
-            ctx.deployment_group = (curr.deployment_group != null && curr.deployment_group.toString() != 'null')
-              ? curr.deployment_group.toString()
-              : '';
-          }
           if (curr.ds_type != null && curr.ds_type.toString() != '' && curr.ds_type.toString() != 'null') {
             ctx.ds_type = curr.ds_type.toString();
           }
@@ -1019,9 +999,6 @@ processors:
           else if (ptNorm == 'es') { ptNorm = 'elasticsearch'; }
           else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
           ctx.project_type = ptNorm;
-        }
-        if (ctx.deployment_group == null || ctx.deployment_group == 'null') {
-          ctx.deployment_group = '';
         }
         if (ctx.total_duration_ms instanceof Map) {
           def v = ctx.total_duration_ms.value;

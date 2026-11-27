@@ -3,7 +3,7 @@ source:
   index:
     - serverless_billing_credits_lines-1
   runtime_mappings:
-    cb_stage1_poll_key:
+    cb_nat_poll_key:
       type: keyword
       script:
         source: |
@@ -13,6 +13,7 @@ source:
           } else if (params._source?.source_kind != null) {
             srcKind = params._source.source_kind.toString();
           }
+          if (srcKind != 'nat') { return; }
           String pollOwner = '';
           if (doc.containsKey('poll_owner') && !doc['poll_owner'].empty) {
             pollOwner = doc['poll_owner'].value.toString();
@@ -26,7 +27,32 @@ source:
             pollTs = ((Number)params._source.poll_ts).longValue();
           }
           String sep = Character.toString((char)31);
-          emit(srcKind.replace(sep, '') + sep + pollOwner.replace(sep, '') + sep + Long.toString(pollTs));
+          emit(pollOwner.replace(sep, '') + sep + Long.toString(pollTs));
+    cb_leg_poll_key:
+      type: keyword
+      script:
+        source: |
+          String srcKind = 'leg';
+          if (doc.containsKey('source_kind') && !doc['source_kind'].empty) {
+            srcKind = doc['source_kind'].value.toString();
+          } else if (params._source?.source_kind != null) {
+            srcKind = params._source.source_kind.toString();
+          }
+          if (srcKind == 'nat') { return; }
+          String pollOwner = '';
+          if (doc.containsKey('poll_owner') && !doc['poll_owner'].empty) {
+            pollOwner = doc['poll_owner'].value.toString();
+          } else if (params._source?.poll_owner != null) {
+            pollOwner = params._source.poll_owner.toString();
+          }
+          long pollTs = 0L;
+          if (doc.containsKey('poll_ts') && !doc['poll_ts'].empty) {
+            pollTs = ((Number)doc['poll_ts'].value).longValue();
+          } else if (params._source?.poll_ts instanceof Number) {
+            pollTs = ((Number)params._source.poll_ts).longValue();
+          }
+          String sep = Character.toString((char)31);
+          emit(pollOwner.replace(sep, '') + sep + Long.toString(pollTs));
 dest:
   index: serverless_billing_credits_lookup-1
   aliases:
@@ -67,9 +93,40 @@ pivot:
       terms:
         field: ecu_quantity
   aggregations:
-    credit_polls:
+    nat_credit_polls:
       terms:
-        field: cb_stage1_poll_key
+        field: cb_nat_poll_key
+        size: 500
+        order:
+          max_poll_ts: desc
+      aggs:
+        max_poll_ts:
+          max:
+            field: poll_ts
+        max_ing_ts:
+          max:
+            field: ing_ts
+        act_qty:
+          sum:
+            field: active_ecu_quantity
+        act_bal:
+          sum:
+            field: active_ecu_balance
+        act_cnt:
+          sum:
+            field: active_line_count
+        all_qty:
+          sum:
+            field: total_ecu_quantity
+        all_bal:
+          sum:
+            field: total_ecu_balance
+        all_cnt:
+          sum:
+            field: total_line_count
+    leg_credit_polls:
+      terms:
+        field: cb_leg_poll_key
         size: 500
         order:
           max_poll_ts: desc

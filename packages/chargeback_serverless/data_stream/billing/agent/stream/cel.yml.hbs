@@ -251,10 +251,7 @@ program: |-
   replay_start.format(time_layout.RFC3339).as(replay_start_str,
   (is_v1_cursor ? "" : state.?cursor.replay_completed_to.orValue("")).as(replay_completed_to,
   (is_v1_cursor ? "" : state.?cursor.replay_target_to.orValue("")).as(replay_target_to,
-  now.format("2006-01-02T15:04:05.000Z").as(now_obs_ts,
   state.?cursor.backfill_complete.orValue(false).as(was_backfill_complete,
-  state.?cursor.policy_created_at.orValue((is_v1_cursor || was_backfill_complete) ? min(initial_from, now).format("2006-01-02T15:04:05.000Z") : now_obs_ts).as(policy_created_at,
-  state.?cursor.known_groups.orValue([]).as(prev_known_groups,
   state.?cursor.recent_day_keys.orValue([]).filter(pk,
   has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
   ).as(pruned_recent_keys,
@@ -302,8 +299,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -337,8 +332,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -372,8 +365,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -504,8 +495,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   "disc_es_next": discovery.es_next,
   "disc_obs_next": discovery.obs_next,
   "disc_sec_next": discovery.sec_next,
@@ -540,8 +529,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "cached_projects": null,
@@ -613,13 +600,6 @@ program: |-
   ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : ("unassociated_" + resolved_type)).as(inst_id,
   ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != inst_id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : ((has(instance.id) && instance.id != null && string(instance.id) != "") ? inst_id : ("Unassociated (" + resolved_type + ")")))).as(resolved_name,
   ((size(matched_projs) > 0 && has(matched_projs[0].region_id) && matched_projs[0].region_id != null && string(matched_projs[0].region_id) != "") ? string(matched_projs[0].region_id) : ((has(instance.region_id) && instance.region_id != null && string(instance.region_id) != "") ? string(instance.region_id) : "")).as(resolved_region,
-  (
-  (has(instance.deployment_tags) && instance.deployment_tags != null && type(instance.deployment_tags) == list ? instance.deployment_tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-  (has(instance.tags) && instance.tags != null && type(instance.tags) == list ? instance.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-  (has(instance.metadata) && instance.metadata != null && has(instance.metadata.tags) && instance.metadata.tags != null && type(instance.metadata.tags) == list ? instance.metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-  ((size(matched_projs) > 0 && has(matched_projs[0].tags) && matched_projs[0].tags != null && type(matched_projs[0].tags) == list) ? matched_projs[0].tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-  ((size(matched_projs) > 0 && has(matched_projs[0].metadata) && matched_projs[0].metadata != null && has(matched_projs[0].metadata.tags) && matched_projs[0].metadata.tags != null && type(matched_projs[0].metadata.tags) == list) ? matched_projs[0].metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : [])
-  ).filter(t, t != "").as(resolved_tags,
   (has(instance.product_line_items) && instance.product_line_items != null) ?
   instance.product_line_items.filter(line_item,
   has(line_item.sku) && line_item.sku != null && string(line_item.sku) != "" && (
@@ -667,7 +647,7 @@ program: |-
   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
   "conf_currency_symbol": state.conf_currency_symbol,
   "ess": { "billing": { "organization_id": clean_org_id } },
-  }.with(size(resolved_tags) > 0 ? { "deployment_tags": resolved_tags } : {}).with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {}).with(line_item.unit != "" ? { "billing_unit": line_item.unit } : {}).with(line_item.type != "" ? { "billing_type": line_item.type } : {}).with(line_item.kind != "" ? { "billing_kind": line_item.kind } : {})
+  }.with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {}).with(line_item.unit != "" ? { "billing_unit": line_item.unit } : {}).with(line_item.type != "" ? { "billing_type": line_item.type } : {}).with(line_item.kind != "" ? { "billing_kind": line_item.kind } : {})
   )
   :
   [
@@ -684,7 +664,7 @@ program: |-
   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
   "conf_currency_symbol": state.conf_currency_symbol,
   "ess": { "billing": { "organization_id": clean_org_id } },
-  }.with(size(resolved_tags) > 0 ? { "deployment_tags": resolved_tags } : {}).with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {})
+  }.with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {})
   ]
   )
   :
@@ -702,9 +682,8 @@ program: |-
   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
   "conf_currency_symbol": state.conf_currency_symbol,
   "ess": { "billing": { "organization_id": clean_org_id } },
-  }.with(size(resolved_tags) > 0 ? { "deployment_tags": resolved_tags } : {}).with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {})
+  }.with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {})
   ]
-  )
   )
   )
   )
@@ -823,10 +802,6 @@ program: |-
   projects.filter(p,
   size(sls_instances.filter(inst, has(inst.id) && inst.id == p.id)) == 0
   ).map(p,
-  (
-  (has(p.tags) && p.tags != null && type(p.tags) == list ? p.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-  (has(p.metadata) && p.metadata != null && has(p.metadata.tags) && p.metadata.tags != null && type(p.metadata.tags) == list ? p.metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : [])
-  ).filter(t, t != "").as(p_tags,
   ((has(p.region_id) && p.region_id != null && string(p.region_id) != "") ? string(p.region_id) : "").as(p_region,
   {
   "doc_type": "billing_line_item",
@@ -841,8 +816,7 @@ program: |-
   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
   "conf_currency_symbol": state.conf_currency_symbol,
   "ess": { "billing": { "organization_id": clean_org_id } },
-  }.with(size(p_tags) > 0 ? { "deployment_tags": p_tags } : {}).with(p_region != "" ? { "cloud": { "region": p_region } } : {})
-  )
+  }.with(p_region != "" ? { "cloud": { "region": p_region } } : {})
   )
   )
   ).as(raw_evts,
@@ -894,8 +868,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "cached_projects": discovery.cache_ok ? projects : null,
@@ -909,14 +881,6 @@ program: |-
   ).map(pk,
   curr_evts.filter(ce, string(ce.project_id) == string(pk.project_id)).as(curr_proj_evts,
   projects.filter(p, has(p.id) && p.id != null && string(p.id) == string(pk.project_id)).as(pk_projs,
-  (size(curr_proj_evts) > 0 ?
-  ((has(curr_proj_evts[0].deployment_tags) && curr_proj_evts[0].deployment_tags != null) ? curr_proj_evts[0].deployment_tags : [])
-  : (size(pk_projs) > 0 ?
-  (
-  ((has(pk_projs[0].tags) && pk_projs[0].tags != null && type(pk_projs[0].tags) == list) ? pk_projs[0].tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : []) +
-  ((has(pk_projs[0].metadata) && pk_projs[0].metadata != null && has(pk_projs[0].metadata.tags) && pk_projs[0].metadata.tags != null && type(pk_projs[0].metadata.tags) == list) ? pk_projs[0].metadata.tags.map(t, type(t) == map ? ((has(t.key) && t.key != null && has(t.value) && t.value != null) ? (string(t.key) + ":" + string(t.value)) : "") : (t != null ? string(t) : "")) : [])
-  ).filter(t, t != "")
-  : ((has(pk.deployment_tags) && pk.deployment_tags != null) ? pk.deployment_tags : []))).as(pk_tags,
   ((size(curr_proj_evts) > 0 && has(curr_proj_evts[0].project_name) && string(curr_proj_evts[0].project_name) != "") ? string(curr_proj_evts[0].project_name) : ((size(pk_projs) > 0 && has(pk_projs[0].name) && pk_projs[0].name != null && string(pk_projs[0].name) != "") ? string(pk_projs[0].name) : string(pk.project_name))).as(pk_name,
   {
   "doc_type": "billing_line_item",
@@ -931,38 +895,8 @@ program: |-
   "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
   "conf_currency_symbol": state.conf_currency_symbol,
   "ess": { "billing": { "organization_id": clean_org_id } },
-  }.with((has(pk.region) && pk.region != null && string(pk.region) != "") ? { "cloud": { "region": string(pk.region) } } : {}).with(size(pk_tags) > 0 ? { "deployment_tags": pk_tags } : {}).with((has(pk.billing_unit) && pk.billing_unit != null && string(pk.billing_unit) != "") ? { "billing_unit": string(pk.billing_unit) } : {}).with((has(pk.billing_type) && pk.billing_type != null && string(pk.billing_type) != "") ? { "billing_type": string(pk.billing_type) } : {}).with((has(pk.billing_kind) && pk.billing_kind != null && string(pk.billing_kind) != "") ? { "billing_kind": string(pk.billing_kind) } : {})
-  )))))
-  ).as(raw_day_evts,
-  raw_day_evts.map(e,
-  (has(e.deployment_tags) && e.deployment_tags != null) ?
-  e.deployment_tags.map(t, string(t).trim_space()).filter(ts, ts.to_lower().startsWith("chargeback_group:") && size(ts.substring(17, size(ts)).trim_space()) > 0).map(ts, ts.substring(17, size(ts)).trim_space())
-  : []
-  ).flatten().filter(g, g != "" && !prev_known_groups.exists(kg, string(kg.group) == g)).as(raw_new_groups,
-  (size(raw_new_groups) > 0 ?
-  zip(raw_new_groups, raw_new_groups).keys().map(ng, {
-  "group": string(ng),
-  "first_seen": was_backfill_complete ? now_obs_ts : req.from.format(time_layout.RFC3339),
-  "backfill": !was_backfill_complete,
-  })
-  : []
-  ).as(added_groups,
-  (prev_known_groups + added_groups).as(updated_known_groups,
-  raw_day_evts.map(e,
-  ((has(e.deployment_tags) && e.deployment_tags != null) ?
-  e.deployment_tags.map(t, string(t).trim_space()).filter(ts, ts.to_lower().startsWith("chargeback_group:") && size(ts.substring(17, size(ts)).trim_space()) > 0).map(ts, ts.substring(17, size(ts)).trim_space())
-  : []
-  ).as(e_grps,
-  size(e_grps) > 0 ?
-  updated_known_groups.filter(kg, string(kg.group) == e_grps[0]).as(matched_kg,
-  size(matched_kg) > 0 ? e.with({
-  "group_first_seen_at": string(matched_kg[0].first_seen),
-  "group_initial_backfill": bool(matched_kg[0].backfill),
-  "policy_created_at": policy_created_at,
-  }).with(clean_owner_id != "" ? { "conf_owner_id": clean_owner_id } : {}) : e
-  )
-  : e
-  )
+  }.with((has(pk.region) && pk.region != null && string(pk.region) != "") ? { "cloud": { "region": string(pk.region) } } : {}).with((has(pk.billing_unit) && pk.billing_unit != null && string(pk.billing_unit) != "") ? { "billing_unit": string(pk.billing_unit) } : {}).with((has(pk.billing_type) && pk.billing_type != null && string(pk.billing_type) != "") ? { "billing_type": string(pk.billing_type) } : {}).with((has(pk.billing_kind) && pk.billing_kind != null && string(pk.billing_kind) != "") ? { "billing_kind": string(pk.billing_kind) } : {})
+  ))))
   ).as(evts,
   (
   pruned_recent_keys.filter(pk, string(pk.day) != req.from.format(time_layout.RFC3339)) +
@@ -978,7 +912,6 @@ program: |-
   "billing_unit": (has(e.billing_unit) && e.billing_unit != null) ? string(e.billing_unit) : "",
   "billing_type": (has(e.billing_type) && e.billing_type != null) ? string(e.billing_type) : "",
   "billing_kind": (has(e.billing_kind) && e.billing_kind != null) ? string(e.billing_kind) : "",
-  "deployment_tags": (has(e.deployment_tags) && e.deployment_tags != null) ? e.deployment_tags : [],
   }
   )
   : [])
@@ -997,17 +930,11 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete || req.to >= latest_ready_to || (req.to + duration("26h") > now),
-  "policy_created_at": policy_created_at,
-  "known_groups": updated_known_groups,
   },
   "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
   "cached_projects": discovery.cache_ok ? projects : null,
   "want_more": req.to + duration("26h") <= now,
   }
-  )
-  )
-  )
-  )
   )
   )
   )
@@ -1033,8 +960,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -1057,8 +982,6 @@ program: |-
   "conf_sig": conf_sig,
   "last_credit_day": cred_res.credit_day,
   "backfill_complete": was_backfill_complete,
-  "policy_created_at": policy_created_at,
-  "known_groups": prev_known_groups,
   },
   "next_from": req.from.format(time_layout.RFC3339),
   "want_more": false,
@@ -1071,7 +994,7 @@ program: |-
   )
   )
   )
-  ))))))))))))))))))))))))))))
+  )))))))))))))))))))))))))
   )
 {{#if tags.length}}
 tags:

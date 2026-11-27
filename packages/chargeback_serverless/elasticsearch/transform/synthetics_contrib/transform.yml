@@ -90,11 +90,6 @@ source:
             try { if (doc.containsKey(f) && !doc[f].empty) { v_project_type = doc[f].value.toString().trim(); if (v_project_type != '') break; } } catch (Exception e) {}
           }
           if (v_project_type == '' && params._source?.project_type != null) { v_project_type = params._source.project_type.toString().trim(); }
-          String v_deployment_group = '';
-          for (String f : ['deployment_group', 'deployment_group.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { v_deployment_group = doc[f].value.toString().trim(); if (v_deployment_group != '') break; } } catch (Exception e) {}
-          }
-          if (v_deployment_group == '' && params._source?.deployment_group != null) { v_deployment_group = params._source.deployment_group.toString().trim(); }
           String cRate = '-1';
           try {
             if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
@@ -125,7 +120,7 @@ source:
             try { if (doc.containsKey(f) && !doc[f].empty) { v_monitor_namespace = doc[f].value.toString().trim(); if (v_monitor_namespace != '') break; } } catch (Exception e) {}
           }
           if (v_monitor_namespace == '' && params._source?.monitor_namespace != null) { v_monitor_namespace = params._source.monitor_namespace.toString().trim(); }
-          emit('sy' + sep + String.valueOf(ingMs) + sep + v_project_name.replace(sep, ' ') + sep + v_project_type.replace(sep, ' ') + sep + v_deployment_group.replace(sep, ' ') + sep + cRate + sep + v_conf_chargeable_unit_rate_unit.replace(sep, ' ') + sep + v_conf_currency_symbol.replace(sep, ' ') + sep + v_monitor_name.replace(sep, ' ') + sep + v_monitor_namespace.replace(sep, ' '));
+          emit('sy' + sep + String.valueOf(ingMs) + sep + v_project_name.replace(sep, ' ') + sep + v_project_type.replace(sep, ' ') + sep + cRate + sep + v_conf_chargeable_unit_rate_unit.replace(sep, ' ') + sep + v_conf_currency_symbol.replace(sep, ' ') + sep + v_monitor_name.replace(sep, ' ') + sep + v_monitor_namespace.replace(sep, ' '));
     cb_sync_ts:
       type: date
       script:
@@ -281,7 +276,6 @@ source:
           try { if (doc.containsKey('total_duration_ms') && !doc['total_duration_ms'].empty) { totDur = ((Number)doc['total_duration_ms'].value).doubleValue(); } else if (params._source?.total_duration_ms instanceof Number) { totDur = ((Number)params._source.total_duration_ms).doubleValue(); } } catch (Exception e) {}
           String pName = '';
           String pType = '';
-          String depGrp = '';
           String monName = '';
           String monNs = '';
           String cRate = '-1';
@@ -289,7 +283,6 @@ source:
           String cSym = '';
           try { if (doc.containsKey('project_name') && !doc['project_name'].empty) { pName = doc['project_name'].value.toString().trim(); } else if (params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); } } catch (Exception e) {}
           try { if (doc.containsKey('project_type') && !doc['project_type'].empty) { pType = doc['project_type'].value.toString().trim(); } else if (params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('deployment_group') && !doc['deployment_group'].empty) { depGrp = doc['deployment_group'].value.toString().trim(); } else if (params._source?.deployment_group != null) { depGrp = params._source.deployment_group.toString().trim(); } } catch (Exception e) {}
           try { if (doc.containsKey('monitor_name') && !doc['monitor_name'].empty) { monName = doc['monitor_name'].value.toString().trim(); } else if (params._source?.monitor_name != null) { monName = params._source.monitor_name.toString().trim(); } } catch (Exception e) {}
           try { if (doc.containsKey('monitor_namespace') && !doc['monitor_namespace'].empty) { monNs = doc['monitor_namespace'].value.toString().trim(); } else if (params._source?.monitor_namespace != null) { monNs = params._source.monitor_namespace.toString().trim(); } } catch (Exception e) {}
           try {
@@ -313,7 +306,6 @@ source:
             + Double.toString(totDur) + sep
             + pName.replace(sep, ' ') + sep
             + pType.replace(sep, ' ') + sep
-            + depGrp.replace(sep, ' ') + sep
             + monName.replace(sep, ' ') + sep
             + monNs.replace(sep, ' ') + sep
             + cRate + sep

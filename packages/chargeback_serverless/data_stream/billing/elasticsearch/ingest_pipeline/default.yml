@@ -79,24 +79,6 @@ processors:
       field: period_start
       ignore_missing: true
       tag: remove_period_start
-  - date:
-      field: group_first_seen_at
-      target_field: group_first_seen_at
-      formats:
-        - ISO8601
-        - UNIX_MS
-      if: ctx.group_first_seen_at != null
-      ignore_failure: true
-      tag: parse_group_first_seen_at
-  - date:
-      field: policy_created_at
-      target_field: policy_created_at
-      formats:
-        - ISO8601
-        - UNIX_MS
-      if: ctx.policy_created_at != null
-      ignore_failure: true
-      tag: parse_policy_created_at
   - fingerprint:
       if: "(ctx.doc_type == 'billing_line_item' || (ctx.doc_type == null && ctx.sku != null)) && ctx.error?.message == null"
       fields:
@@ -108,7 +90,6 @@ processors:
         - total_ecu
         - quantity_value
         - project_name
-        - deployment_tags
         - billing_unit
         - billing_type
         - billing_kind
@@ -229,31 +210,6 @@ processors:
         }
         if (ctx.project_name == null || ctx.project_name == '') {
           ctx.project_name = ctx.project_id;
-        }
-        if (ctx.deployment_group == null || ctx.deployment_group == '') {
-          List tagLists = new ArrayList();
-          if (ctx.deployment_tags instanceof List) { tagLists.add(ctx.deployment_tags); }
-          if (ctx.ess?.billing?.deployment_tags instanceof List) { tagLists.add(ctx.ess.billing.deployment_tags); }
-          if (ctx.tags instanceof List) { tagLists.add(ctx.tags); }
-          if (ctx.metadata?.tags instanceof List) { tagLists.add(ctx.metadata.tags); }
-          for (def tl : tagLists) {
-            if (ctx.deployment_group != null && ctx.deployment_group != '') { break; }
-            for (def t : (List)tl) {
-              String ts = '';
-              if (t instanceof Map && t.key != null && t.value != null) {
-                ts = t.key.toString() + ':' + t.value.toString();
-              } else if (t != null) {
-                ts = t.toString();
-              }
-              if (ts.toLowerCase().startsWith('chargeback_group:')) {
-                String gv = ts.substring('chargeback_group:'.length()).trim();
-                if (gv != '') {
-                  ctx.deployment_group = gv;
-                  break;
-                }
-              }
-            }
-          }
         }
         if (ctx.total_ecu instanceof Number) {
           ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();

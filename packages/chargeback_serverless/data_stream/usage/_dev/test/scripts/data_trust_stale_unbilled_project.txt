@@ -45,12 +45,6 @@ stdout '^0$'
 exec jq -r '.[0].unit' monthly_rows.json
 stdout '^ZAR$'
 
-exec jq -r 'length' tag_removed_spike_rows.json
-stdout '^1$'
-
-exec jq -r '.[0].dep_group' tag_removed_spike_rows.json
-stdout '^ungrouped$'
-
 exec jq -r 'length' mixed_cur_spend_rows.json
 stdout '^1$'
 
@@ -65,15 +59,6 @@ stdout '^900(\.0)?$'
 
 exec jq -r '.[0].unit' mixed_cur_spend_rows.json
 stdout '^ZAR$'
-
-exec jq -r 'length' new_group_rows.json
-stdout '^3$'
-
-exec jq -r '[.[].deployment_group] | sort | join(",")' new_group_rows.json
-stdout '^legacy-mixed-grp,multi-pol-new-grp,replayed-new-grp$'
-
-exec jq -r '.[] | select(.deployment_group == "legacy-mixed-grp") | .first_seen_day' new_group_rows.json
-stdout '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' 
 
 exec jq -r 'map(.idx_group) | index("serverless_billing_realized_pool_lookup") != null' health_rows.json
 stdout '^true$'
@@ -132,13 +117,16 @@ stdout '^false$'
 exec jq -r '(.old_alias_cnt == 0) and (.new_alias_cnt == 1)' e2e_move_on_creation.json
 stdout '^true$'
 
-exec jq -r '([.docs[].doc._source | {day: .["@timestamp"], bf: .group_initial_backfill, cnt: (.group_observations | length)}] | sort_by(.day)) | (.[0].bf == true and .[0].cnt == 1 and .[1].bf == false and .[1].cnt == 2)' e2e_bill_multipol_out.json
-stdout '^true$'
-
 exec jq -r '.vacated_ok and .aliases_ok and .docs_ok' live_carryover_e2e.json
 stdout '^true$'
 
 exec jq -r '.older_ok and .current_ok' live_upgrade_e2e.json
+stdout '^true$'
+
+exec jq -r '.docs[0].doc._source | "\(.ess.billing.ecu_quantity)|\(.ess.billing.ecu_balance)|\(.ess.billing.active)"' e2e_credits_510_out.json
+stdout '^1000(\.0)?\|750(\.0)?\|true$'
+
+exec jq -r '.ok' esql_live_validation.json
 stdout '^true$'
 
 exec jq -r '.docs[0].doc._source | "\(.conf_chargeable_unit_rate)|\(.conf_chargeable_unit_rate_unit)|\(.conf_currency_symbol)"' e2e_conf_out.json
@@ -147,8 +135,8 @@ stdout '^0\.92\|EUR\|€$'
 exec jq -r '.docs[0].doc._source | "\(.ess.billing.ecu_quantity)|\(.ess.billing.ecu_balance)|\(.ess.billing.active)"' e2e_credits_out.json
 stdout '^120000(\.0)?\|84500\.5\|true$'
 
-exec jq -r '.docs[0].doc._source | "\(.project_name)|\(.total_ecu)|\(.group_initial_backfill)"' e2e_bill_out.json
-stdout '^Native Billing ES\|55\.5\|false$'
+exec jq -r '.docs[0].doc._source | "\(.project_name)|\(.total_ecu)"' e2e_bill_out.json
+stdout '^Native Billing ES\|55\.5$'
 
 exec jq -r '.docs[0].doc._source | "\(.datastream_sum_indexing_time)|\(.datastream_sum_query_time)|\(.datastream_sum_data_set_store_size)"' e2e_ds_out.json
 stdout '^420\|88\|2097152$'
@@ -156,20 +144,20 @@ stdout '^420\|88\|2097152$'
 exec jq -r '[.docs[].doc._source.datastream_sum_indexing_time] | add' e2e_ds_overlap_out.json
 stdout '^200$'
 
-exec jq -r '.docs[0].doc._source | "\(.deployment_sum_indexing_time)|\(.deployment_sum_query_time)|\(.deployment_sum_data_set_store_size)|\(.project_name)|\(.deployment_group)"' e2e_proj_out.json
-stdout '^200\|75\|3048\|Overlap Native ES\|finops-overlap$'
+exec jq -r '.docs[0].doc._source | "\(.deployment_sum_indexing_time)|\(.deployment_sum_query_time)|\(.deployment_sum_data_set_store_size)|\(.project_name)"' e2e_proj_out.json
+stdout '^200\|75\|3048\|Overlap Native ES$'
 
 exec jq -r '.docs[0].doc._source | "\(.ess.billing.ecu_quantity)|\(.ess.billing.ecu_balance)|\(.ess.billing.active)"' e2e_credits_250_out.json
 stdout '^250000(\.0)?\|200125(\.0)?\|true$'
 
-exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dgrp: .deployment_group, name: .project_name, opt: .optimized_for}] | sort_by(.day) | "\(.[0].dgrp)|\(.[0].name)|\(.[0].opt)|\(.[1].dgrp)|\(.[1].name)|\(.[1].opt)"' e2e_v1_ps_out.json
-stdout '^\|V1 Old Name\|general_purpose\|finops-core\|V2 New Name\|vector$'
+exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], name: .project_name, opt: .optimized_for}] | sort_by(.day) | "\(.[0].name)|\(.[0].opt)|\(.[1].name)|\(.[1].opt)"' e2e_v1_ps_out.json
+stdout '^V1 Old Name\|general_purpose\|V2 New Name\|vector$'
 
-exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dgrp: .deployment_group, cnt: .inference_count}] | sort_by(.day) | "\(.[0].dgrp)|\(.[0].cnt)|\(.[1].dgrp)|\(.[1].cnt)"' e2e_v1_ai_out.json
-stdout '^\|120\|finops-core\|340$'
+exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], cnt: .inference_count}] | sort_by(.day) | "\(.[0].cnt)|\(.[1].cnt)"' e2e_v1_ai_out.json
+stdout '^120\|340$'
 
-exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dgrp: .deployment_group, dur: .total_duration_ms}] | sort_by(.day) | "\(.[0].dgrp)|\(.[0].dur)|\(.[1].dgrp)|\(.[1].dur)"' e2e_v1_sy_out.json
-stdout '^\|300(\.0)?\|finops-core\|500(\.0)?$'
+exec jq -r '[.docs[].doc._source | {day: .["@timestamp"], dur: .total_duration_ms}] | sort_by(.day) | "\(.[0].dur)|\(.[1].dur)"' e2e_v1_sy_out.json
+stdout '^300(\.0)?\|500(\.0)?$'
 
 -- seed_v1_upgrade.sh --
 #!/bin/sh
@@ -206,12 +194,12 @@ es_curl() {
 }
 
 # Clear any leftover package transforms or lookup indices so upgrade seeding is deterministic
-for tid in $(es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*" 2>/dev/null | jq -r '.transforms[]?.id' 2>/dev/null || true); do
+for tid in $(es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*,cb-e2e-*" 2>/dev/null | jq -r '.transforms[]?.id' 2>/dev/null || true); do
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X POST "${ES_HOST}/_transform/${tid}/_stop?force=true&wait_for_completion=true" >/dev/null 2>&1 || true
   curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X DELETE "${ES_HOST}/_transform/${tid}" >/dev/null 2>&1 || true
 done
 ALL_LOOKUP_INDICES="serverless_billing_cost_lookup-1,serverless_billing_cost_lookup-2,serverless_billing_realized_pool_lookup-1,serverless_billing_realized_pool_lookup-2,serverless_project_status_lookup-1,serverless_project_status_lookup-2,serverless_datastream_contribution_lookup-1,serverless_datastream_contribution_lookup-2,serverless_project_contribution_lookup-1,serverless_project_contribution_lookup-2,serverless_ai_model_contribution_lookup-1,serverless_ai_model_contribution_lookup-2,serverless_synthetics_monitor_contribution_lookup-1,serverless_synthetics_monitor_contribution_lookup-2,serverless_billing_credits_lines-1,serverless_billing_credits_lookup-1,serverless_chargeback_conf_lookup-1"
-CB_E2E_INDICES="cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage,cb-e2e-src-bill-multipol,cb-e2e-move-dest-1,cb-e2e-move-dest-2,cb-e2e-live-v2-bill,cb-e2e-live-v2-usage,cb-e2e-live-v2-bill-stage1,cb-e2e-live-v2-ds-stage1"
+CB_E2E_INDICES="cb-e2e-src-conf,cb-e2e-src-credits,cb-e2e-src-credits-leg,cb-e2e-src-credits-250,cb-e2e-cred-stage1,cb-e2e-cred-leg-stage1,cb-e2e-cred-250-stage1,cb-e2e-cred-250-dest,cb-e2e-src-bill,cb-e2e-src-ds,cb-e2e-src-overlap,cb-e2e-ds-stage1,cb-e2e-v1-usage,cb-e2e-v2-usage,cb-e2e-cred-510-stage1,cb-e2e-cred-510-dest,cb-e2e-move-dest-1,cb-e2e-move-dest-2,cb-e2e-live-v2-bill,cb-e2e-live-v2-usage,cb-e2e-live-v2-bill-stage1,cb-e2e-live-v2-ds-stage1"
 es_curl -X DELETE "${ES_HOST}/${ALL_LOOKUP_INDICES},${CB_E2E_INDICES}?ignore_unavailable=true" >/dev/null
 if [ "$(es_curl "${ES_HOST}/serverless_*/_alias" | jq 'length')" -ne 0 ]; then
   echo "Unexpected residual serverless_* lookup indices after DELETE" >&2
@@ -569,7 +557,7 @@ jq -s '
     ),
     docs_ok: (
       (idx_doc("serverless_billing_cost_lookup-2") | . != null and .doc_type == "billing_line_item" and .total_ecu == 42.5 and .project_name == "V1 Carryover ES") and
-      (idx_doc("serverless_billing_realized_pool_lookup-2") | . != null and .total_ecu == 42.5 and .project_name == "proj-v1-carryover" and .deployment_group == "") and
+      (idx_doc("serverless_billing_realized_pool_lookup-2") | . != null and .total_ecu == 42.5 and .project_name == "proj-v1-carryover") and
       (idx_doc("serverless_project_status_lookup-2") | . != null and .index_count == 5 and .project_name == "V1 Carryover ES") and
       (idx_doc("serverless_datastream_contribution_lookup-2") | . != null and .datastream_sum_indexing_time == 150 and .project_name == "V1 Carryover ES") and
       (idx_doc("serverless_project_contribution_lookup-2") | . != null and .deployment_sum_indexing_time == 150 and .project_name == "V1 Carryover ES") and
@@ -800,77 +788,6 @@ jq '
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ]
 ' raw_monthly_resp.json > monthly_rows.json
 
-# Tag-removal spend-spike attribution fixture: project had legacy-cost-center across baseline days and at morning status harvest, then removed chargeback_group tag on spike day replay
-jq -n \
-  --arg ts "${PAST_DAY}" \
-  '{
-    "@timestamp": $ts,
-    "project_id": "proj-tag-removed-spike",
-    "sku": "es.search-vcu",
-    "has_native_billing": true,
-    "latest_snapshot": {
-      "project_name": "Tag Removed Spike ES",
-      "project_type": "elasticsearch",
-      "deployment_group": "legacy-cost-center",
-      "total_ecu": 50.0,
-      "quantity_value": 50.0,
-      "conf_chargeable_unit_rate": 1.0,
-      "conf_chargeable_unit_rate_unit": "USD",
-      "conf_currency_symbol": "$"
-    }
-  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
-  -H 'Content-Type: application/json' -d @- >/dev/null
-
-jq -n \
-  --arg ts "${BILL_DAY}" \
-  '{
-    "@timestamp": $ts,
-    "project_id": "proj-tag-removed-spike",
-    "updated_at": "2020-01-01T02:00:00Z",
-    "last_status": {"last_status": "ok"},
-    "api_key_type": {"api_key_type": "hub_key"},
-    "synthetics_status": {"synthetics_status": "ok"},
-    "latest_currency": {
-      "project_name": "Tag Removed Spike ES",
-      "project_type": "elasticsearch",
-      "deployment_group": "legacy-cost-center",
-      "conf_chargeable_unit_rate": 1.0,
-      "conf_chargeable_unit_rate_unit": "USD",
-      "conf_currency_symbol": "$"
-    }
-  }' | es_curl -X POST "${ES_HOST}/serverless_project_status_lookup-2/_doc?refresh=true&pipeline=${USAGE_PIPELINE}" \
-  -H 'Content-Type: application/json' -d @- >/dev/null
-
-jq -n \
-  --arg ts "${BILL_DAY}" \
-  --arg ing "${HEALTHY_UPDATED_AT}" \
-  '{
-    "@timestamp": $ts,
-    "project_id": "proj-tag-removed-spike",
-    "sku": "es.search-vcu",
-    "has_native_billing": true,
-    "event": {"ingested": $ing},
-    "latest_snapshot": {
-      "project_name": "Tag Removed Spike ES",
-      "project_type": "elasticsearch",
-      "deployment_group": "",
-      "total_ecu": 200.0,
-      "quantity_value": 200.0,
-      "conf_chargeable_unit_rate": 1.0,
-      "conf_chargeable_unit_rate_unit": "USD",
-      "conf_currency_symbol": "$"
-    }
-  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
-  -H 'Content-Type: application/json' -d @- >/dev/null
-
-jq '{query: .attributes.params.esqlQuery.esql}' "${SPIKE_RULE}" | \
-  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_tag_removed_spike_resp.json
-jq '
-  .columns as $cols |
-  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
-  map(select(.project_id == "proj-tag-removed-spike"))
-' raw_tag_removed_spike_resp.json > tag_removed_spike_rows.json
-
 # Mixed native (ZAR @ 18.0) + legacy-only (default USD @ 1.0) SKU currency normalisation fixture on project-spend alert (no conf coverage)
 jq -n \
   --arg ts "${BILL_DAY}" \
@@ -915,132 +832,6 @@ jq '
   [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
   map(select(.project_id == "proj-mixed-cur-spend"))
 ' raw_mixed_cur_spend_resp.json > mixed_cur_spend_rows.json
-
-# 7-day replay new-group fixture: backfill-grp (initial backfill) vs replayed-new-grp (new after backfill)
-jq -n \
-  --arg ts "${REPLAY_OLD_DAY}" \
-  '{
-    "@timestamp": $ts,
-    "project_id": "proj-grp-backfill",
-    "sku": "es.search-vcu",
-    "latest_snapshot": {
-      "project_name": "Backfill Group ES",
-      "project_type": "elasticsearch",
-      "deployment_group": "backfill-grp",
-      "total_ecu": 10.0,
-      "quantity_value": 10.0,
-      "group_first_seen_at": $ts,
-      "group_initial_backfill": true
-    }
-  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
-  -H 'Content-Type: application/json' -d @- >/dev/null
-
-jq -n \
-  --arg ts "${REPLAY_OLD_DAY}" \
-  --arg seen "${HEALTHY_UPDATED_AT}" \
-  '{
-    "@timestamp": $ts,
-    "project_id": "proj-grp-new",
-    "sku": "es.search-vcu",
-    "latest_snapshot": {
-      "project_name": "Replayed New Group ES",
-      "project_type": "elasticsearch",
-      "deployment_group": "replayed-new-grp",
-      "total_ecu": 10.0,
-      "quantity_value": 10.0,
-      "group_first_seen_at": $seen,
-      "group_initial_backfill": false
-    }
-  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
-  -H 'Content-Type: application/json' -d @- >/dev/null
-
-# Legacy historical billing row (30d old, no group_first_seen_at) + recent native observation (4711847055)
-LEGACY_MIX_OLD_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 30 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
-jq -n \
-  --arg ts "${LEGACY_MIX_OLD_DAY}" \
-  '{
-    "@timestamp": $ts,
-    "project_id": "proj-grp-legacy-mix-old",
-    "sku": "es.search-vcu",
-    "latest_snapshot": {
-      "project_name": "Legacy Mixed Group Old ES",
-      "project_type": "elasticsearch",
-      "deployment_group": "legacy-mixed-grp",
-      "total_ecu": 12.0,
-      "quantity_value": 12.0,
-      "organization_id": "org-health-test"
-    }
-  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
-  -H 'Content-Type: application/json' -d @- >/dev/null
-
-jq -n \
-  --arg ts "${BILL_DAY}" \
-  --arg seen "${HEALTHY_UPDATED_AT}" \
-  '{
-    "@timestamp": $ts,
-    "project_id": "proj-grp-legacy-mix-new",
-    "sku": "es.search-vcu",
-    "latest_snapshot": {
-      "project_name": "Legacy Mixed Group New ES",
-      "project_type": "elasticsearch",
-      "deployment_group": "legacy-mixed-grp",
-      "total_ecu": 14.0,
-      "quantity_value": 14.0,
-      "organization_id": "org-health-test",
-      "group_first_seen_at": $seen,
-      "group_initial_backfill": false
-    }
-  }' | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_doc?refresh=true&pipeline=${BILL_PIPELINE}" \
-  -H 'Content-Type: application/json' -d @- >/dev/null
-
-# Multi-policy group observation merge via billing_cost + lookup_billing (4711847113):
-# Established policy pol-1 (created 30d ago) observes multi-pol-new-grp after backfill (bf=false),
-# while newly added policy pol-2 (created today) runs initial backfill on REPLAY_OLD_DAY and BILL_DAY (bf=true).
-es_curl -X PUT "${ES_HOST}/cb-e2e-src-bill-multipol" -H 'Content-Type: application/json' -d '{
-  "mappings": {
-    "properties": {
-      "@timestamp": {"type": "date"},
-      "event": {"properties": {"ingested": {"type": "date"}}},
-      "data_stream": {"properties": {"dataset": {"type": "keyword"}, "namespace": {"type": "keyword"}}},
-      "doc_type": {"type": "keyword"},
-      "conf_policy_id": {"type": "keyword"},
-      "policy_created_at": {"type": "date"},
-      "project_id": {"type": "keyword"},
-      "project_name": {"type": "keyword"},
-      "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
-      "sku": {"type": "keyword"},
-      "total_ecu": {"type": "double"},
-      "quantity_value": {"type": "double"},
-      "group_first_seen_at": {"type": "date"},
-      "group_initial_backfill": {"type": "boolean"},
-      "ess": {"properties": {"billing": {"properties": {"organization_id": {"type": "keyword"}}}}}
-    }
-  }
-}' >/dev/null
-es_curl -X POST "${ES_HOST}/cb-e2e-src-bill-multipol/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary '
-{"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"doc_type":"billing_line_item","conf_policy_id":"pol-1","policy_created_at":"'"${LEGACY_MIX_OLD_DAY}"'","project_id":"proj-mpol","project_name":"Multi Policy ES","project_type":"elasticsearch","deployment_group":"multi-pol-new-grp","sku":"aws.es-search-vcu_us-east-1","total_ecu":20.0,"quantity_value":20.0,"group_first_seen_at":"'"${HEALTHY_UPDATED_AT}"'","group_initial_backfill":false,"ess":{"billing":{"organization_id":"org-health-test"}}}
-{"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"doc_type":"billing_line_item","conf_policy_id":"pol-2","policy_created_at":"'"${HEALTHY_UPDATED_AT}"'","project_id":"proj-mpol","project_name":"Multi Policy ES","project_type":"elasticsearch","deployment_group":"multi-pol-new-grp","sku":"aws.es-search-vcu_us-east-1","total_ecu":20.0,"quantity_value":20.0,"group_first_seen_at":"'"${REPLAY_OLD_DAY}"'","group_initial_backfill":true,"ess":{"billing":{"organization_id":"org-health-test"}}}
-{"index":{}}
-{"@timestamp":"'"${REPLAY_OLD_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing","namespace":"default"},"doc_type":"billing_line_item","conf_policy_id":"pol-2","policy_created_at":"'"${HEALTHY_UPDATED_AT}"'","project_id":"proj-mpol","project_name":"Multi Policy ES","project_type":"elasticsearch","deployment_group":"multi-pol-new-grp","sku":"aws.es-search-vcu_us-east-1","total_ecu":15.0,"quantity_value":15.0,"group_first_seen_at":"'"${REPLAY_OLD_DAY}"'","group_initial_backfill":true,"ess":{"billing":{"organization_id":"org-health-test"}}}
-' >/dev/null
-T_MP_ID="$(es_curl "${ES_HOST}/_transform/logs-chargeback_serverless.*" | jq -r '.transforms[] | select(.id | startswith("logs-chargeback_serverless.billing_cost-")) | .id')"
-es_curl "${ES_HOST}/_transform/${T_MP_ID}" | jq '.transforms[0] | {source: .source, pivot: .pivot, settings: .settings} | .source.index = ["cb-e2e-src-bill-multipol"]' > prev_tdef_mp.json
-es_curl -X POST "${ES_HOST}/_transform/_preview" -H 'Content-Type: application/json' -d @prev_tdef_mp.json > prev_mp_raw.json
-jq '{docs: [.preview[] | {"_index": "cb-e2e-preview", "_source": .}]}' prev_mp_raw.json > sim_mp_req.json
-es_curl -X POST "${ES_HOST}/_ingest/pipeline/${BILL_PIPELINE}/_simulate" -H 'Content-Type: application/json' -d @sim_mp_req.json > e2e_bill_multipol_out.json
-jq -c '.docs[].doc._source | {"index":{}}, .' e2e_bill_multipol_out.json | es_curl -X POST "${ES_HOST}/serverless_billing_cost_lookup-2/_bulk?refresh=true&pipeline=_none" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
-
-NEWGRP_RULE="${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template/chargeback_serverless-alert-new-group-detected.json"
-jq '{query: .attributes.params.esqlQuery.esql}' "${NEWGRP_RULE}" | \
-  es_curl -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d @- > raw_newgrp_resp.json
-jq '
-  .columns as $cols |
-  [ .values[] | [ range(0; ($cols | length)) as $i | { ($cols[$i].name): .[$i] } ] | add ] |
-  map(select(.deployment_group == "backfill-grp" or .deployment_group == "replayed-new-grp" or .deployment_group == "legacy-mixed-grp" or .deployment_group == "multi-pol-new-grp"))
-' raw_newgrp_resp.json > new_group_rows.json
 
 # Retained stale optional rows (credits, ai_contrib, synthetics_contrib) with no matching active/unprocessed source must NOT alert
 es_curl -X POST "${ES_HOST}/serverless_billing_credits_lookup-1/_doc?pipeline=_none&refresh=true" -H 'Content-Type: application/json' -d '{
@@ -1198,17 +989,9 @@ jq -s '
     ),
     mappings_ok: (
       prop_type("serverless_billing_cost_lookup-2"; "doc_type") == "keyword" and
-      prop_type("serverless_billing_cost_lookup-2"; "deployment_group") == "keyword" and
-      prop_type("serverless_billing_cost_lookup-2"; "group_first_seen_at") == "date" and
       $maps["serverless_billing_cost_lookup-2"].mappings.properties.ess.properties.billing.properties.sku.type == "keyword" and
-      prop_type("serverless_billing_realized_pool_lookup-2"; "deployment_group") == "keyword" and
-      prop_type("serverless_project_status_lookup-2"; "deployment_group") == "keyword" and
-      prop_type("serverless_datastream_contribution_lookup-2"; "deployment_group") == "keyword" and
       prop_type("serverless_datastream_contribution_lookup-2"; "has_native_usage") == "boolean" and
       prop_type("serverless_datastream_contribution_lookup-2"; "source_sync_ts") == "date" and
-      prop_type("serverless_project_contribution_lookup-2"; "deployment_group") == "keyword" and
-      prop_type("serverless_ai_model_contribution_lookup-2"; "deployment_group") == "keyword" and
-      prop_type("serverless_synthetics_monitor_contribution_lookup-2"; "deployment_group") == "keyword" and
       prop_type("serverless_synthetics_monitor_contribution_lookup-2"; "total_duration_ms") == "double"
     )
   }
@@ -1277,6 +1060,8 @@ run_batch_transform() {
   BT_DEST="$4"
   BT_PIPE="$5"
   BT_PAGE="$6"
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X POST "${ES_HOST}/_transform/${BT_ID}/_stop?force=true&wait_for_completion=true" >/dev/null 2>&1 || true
+  curl -s -u "${ES_USER}:${ES_PASS}" --cacert "${CA_CERT}" -X DELETE "${ES_HOST}/_transform/${BT_ID}" >/dev/null 2>&1 || true
   jq --arg tn "$BT_TMPL" --arg si "$BT_SRC" --arg di "$BT_DEST" --arg pl "$BT_PIPE" --argjson ps "$BT_PAGE" '
     (.transforms[] | select(.id | startswith("logs-chargeback_serverless." + $tn + "-"))) |
     {
@@ -1467,7 +1252,7 @@ run_batch_transform "cb-e2e-cred-250-t1" "billing_credits_lines" "cb-e2e-src-cre
 run_batch_transform "cb-e2e-cred-250-t2" "billing_credits" "cb-e2e-cred-250-stage1" "cb-e2e-cred-250-dest" "${CRED_PIPELINE}" 500
 es_curl "${ES_HOST}/cb-e2e-cred-250-dest/_search?size=10" | jq '{docs: [.hits.hits[] | {doc: .}]}' > e2e_credits_250_out.json
 
-# 3. billing_cost e2e (native overrides legacy + preserves group_first_seen_at & group_initial_backfill)
+# 3. billing_cost e2e (native overrides legacy)
 es_curl -X PUT "${ES_HOST}/cb-e2e-src-bill" -H 'Content-Type: application/json' -d '{
   "mappings": {
     "properties": {
@@ -1478,12 +1263,9 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-src-bill" -H 'Content-Type: application/json' 
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "sku": {"type": "keyword"},
       "total_ecu": {"type": "double"},
       "quantity_value": {"type": "double"},
-      "group_first_seen_at": {"type": "date"},
-      "group_initial_backfill": {"type": "boolean"},
       "ess": {"properties": {"billing": {"properties": {
         "organization_id": {"type": "keyword"},
         "deployment_id": {"type": "keyword"},
@@ -1500,7 +1282,7 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-src-bill" -H 'Content-Type: application/json' 
 }' >/dev/null
 es_curl -X POST "${ES_HOST}/cb-e2e-src-bill/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing"},"project_id":"proj-e2e-bill","project_name":"Native Billing ES","project_type":"elasticsearch","deployment_group":"e2e-grp","sku":"aws.es-ingest-vcu_us-east-1","total_ecu":55.5,"quantity_value":55.5,"group_first_seen_at":"'"${HEALTHY_UPDATED_AT}"'","group_initial_backfill":false}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing"},"project_id":"proj-e2e-bill","project_name":"Native Billing ES","project_type":"elasticsearch","sku":"aws.es-ingest-vcu_us-east-1","total_ecu":55.5,"quantity_value":55.5}
 {"index":{}}
 {"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"ess_billing.billing"},"ess":{"billing":{"organization_id":"org-e2e","deployment_id":"proj-e2e-bill","deployment_name":"Legacy Shadow","deployment_type":"elasticsearch","sku":"aws.es-ingest-vcu_us-east-1","total_ecu":999.0,"quantity":{"value":999.0},"from":"'"${BILL_DAY}"'","to":"'"${BILL_DAY}"'"}}}
 ' >/dev/null
@@ -1560,7 +1342,6 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-src-overlap" -H 'Content-Type: application/jso
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "datastream": {"type": "keyword"},
       "ds_type": {"type": "keyword"},
       "ds_dataset": {"type": "keyword"},
@@ -1593,7 +1374,7 @@ SLOT1_TS="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime
 SLOT2_TS="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 86400) | strftime("%Y-%m-%dT00:25:00Z")')"
 es_curl -X POST "${ES_HOST}/cb-e2e-src-overlap/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"datastream","project_id":"proj-e2e-overlap","project_name":"Overlap Native ES","project_type":"elasticsearch","deployment_group":"finops-overlap","datastream":"logs-native-prod","ds_type":"logs","ds_dataset":"native","ds_namespace":"prod","datastream_sum_indexing_time":100,"datastream_sum_query_time":25,"datastream_sum_data_set_store_size":1048}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"datastream","project_id":"proj-e2e-overlap","project_name":"Overlap Native ES","project_type":"elasticsearch","datastream":"logs-native-prod","ds_type":"logs","ds_dataset":"native","ds_namespace":"prod","datastream_sum_indexing_time":100,"datastream_sum_query_time":25,"datastream_sum_data_set_store_size":1048}
 {"index":{}}
 {"@timestamp":"'"${SLOT1_TS}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"monitoring-indices"},"elasticsearch":{"cluster":{"name":"proj-e2e-overlap"},"index":{"name":".ds-logs-native-prod-000001","total":{"indexing":{"index_time_in_millis_delta":9999},"search":{"query_time_in_millis_delta":9999},"store":{"size_in_bytes":9999999}}}}}
 {"index":{}}
@@ -1616,7 +1397,6 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-ds-stage1" -H 'Content-Type: application/json'
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "datastream": {"type": "keyword"},
       "datastream_sum_indexing_time": {"type": "long"},
       "datastream_sum_query_time": {"type": "long"},
@@ -1630,7 +1410,7 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-ds-stage1" -H 'Content-Type: application/json'
 jq -c '.docs[].doc._source | {"index":{}}, .' e2e_ds_overlap_out.json |   es_curl -X POST "${ES_HOST}/cb-e2e-ds-stage1/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
 run_preview_and_sim "proj_contrib" "cb-e2e-ds-stage1" "${USAGE_PIPELINE}" "e2e_proj_out.json"
 
-# 6. Mixed 0.1.0 (unmapped deployment_group / total_duration_ms with dynamic: false) + 0.2.0 usage shards
+# 6. Mixed 0.1.0 (unmapped total_duration_ms with dynamic: false) + 0.2.0 usage shards
 OLDER_DAY="$(jq -nr '(((now - 21600) / 86400 | floor) * 86400 - 2 * 86400) | strftime("%Y-%m-%dT00:00:00Z")')"
 es_curl -X PUT "${ES_HOST}/cb-e2e-v1-usage" -H 'Content-Type: application/json' -d '{
   "mappings": {
@@ -1682,7 +1462,6 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-v2-usage" -H 'Content-Type: application/json' 
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "optimized_for": {"type": "keyword"},
       "es_url": {"type": "keyword"},
       "last_status": {"type": "keyword"},
@@ -1724,11 +1503,11 @@ es_curl -X POST "${ES_HOST}/cb-e2e-v1-usage/_bulk?refresh=true" -H 'Content-Type
 ' >/dev/null
 es_curl -X POST "${ES_HOST}/cb-e2e-v2-usage/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary '
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"project_status","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","deployment_group":"finops-core","optimized_for":"vector","es_url":"https://v2.example","last_status":"ok","api_key_type":"cloud_key","synthetics_status":"ok","index_count":6,"datastream_count":2,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${HEALTHY_UPDATED_AT}"'","conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"project_status","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","optimized_for":"vector","es_url":"https://v2.example","last_status":"ok","api_key_type":"cloud_key","synthetics_status":"ok","index_count":6,"datastream_count":2,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${HEALTHY_UPDATED_AT}"'","conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"ai_model","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","deployment_group":"finops-core","model_id":"elser","task_type":"query_inference","inference_count":340,"average_inference_time_ms":10.0,"total_inference_time_ms":3400,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"ai_model","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","model_id":"elser","task_type":"query_inference","inference_count":340,"average_inference_time_ms":10.0,"total_inference_time_ms":3400,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"synthetics_monitor","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","deployment_group":"finops-core","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":5,"up_count":5,"down_count":0,"locations_count":1,"average_duration_ms":100.0,"total_duration_ms":500.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"doc_type":"synthetics_monitor","project_id":"proj-v1-upg","project_name":"V2 New Name","project_type":"elasticsearch","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":5,"up_count":5,"down_count":0,"locations_count":1,"average_duration_ms":100.0,"total_duration_ms":500.0,"conf_chargeable_unit_rate":1.0,"conf_chargeable_unit_rate_unit":"USD","conf_currency_symbol":"$"}
 ' >/dev/null
 run_preview_and_sim "project_status" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_ps_out.json"
 run_preview_and_sim "ai_contrib" "cb-e2e-v1-usage,cb-e2e-v2-usage" "${USAGE_PIPELINE}" "e2e_v1_ai_out.json"
@@ -1809,7 +1588,6 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-bill" -H 'Content-Type: application/js
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "sku": {"type": "keyword"},
       "total_ecu": {"type": "double"},
       "quantity_value": {"type": "double"}
@@ -1818,7 +1596,7 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-bill" -H 'Content-Type: application/js
 }' >/dev/null
 es_curl -X POST "${ES_HOST}/cb-e2e-live-v2-bill/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing"},"project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","sku":"es.search-vcu","total_ecu":77.0,"quantity_value":77.0}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.billing"},"project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","sku":"es.search-vcu","total_ecu":77.0,"quantity_value":77.0}
 ' >/dev/null
 
 es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-usage" -H 'Content-Type: application/json' -d '{
@@ -1831,7 +1609,6 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-usage" -H 'Content-Type: application/j
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "optimized_for": {"type": "keyword"},
       "es_url": {"type": "keyword"},
       "last_status": {"type": "keyword"},
@@ -1869,13 +1646,13 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-usage" -H 'Content-Type: application/j
 }' >/dev/null
 es_curl -X POST "${ES_HOST}/cb-e2e-live-v2-usage/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' -d '
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"project_status","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","optimized_for":"vector","es_url":"https://v2-live.example","last_status":"ok","api_key_type":"cloud_key","synthetics_status":"ok","index_count":8,"datastream_count":3,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${HEALTHY_UPDATED_AT}"'"}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"project_status","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","optimized_for":"vector","es_url":"https://v2-live.example","last_status":"ok","api_key_type":"cloud_key","synthetics_status":"ok","index_count":8,"datastream_count":3,"ai_model_count":1,"synthetics_monitor_count":1,"updated_at":"'"${HEALTHY_UPDATED_AT}"'"}
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"datastream","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","datastream":"logs-v1-pb","ds_type":"logs","ds_dataset":"v1","ds_namespace":"pb","datastream_sum_indexing_time":222,"datastream_sum_query_time":33,"datastream_sum_data_set_store_size":2048}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"datastream","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","datastream":"logs-v1-pb","ds_type":"logs","ds_dataset":"v1","ds_namespace":"pb","datastream_sum_indexing_time":222,"datastream_sum_query_time":33,"datastream_sum_data_set_store_size":2048}
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"ai_model","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","model_id":"elser","task_type":"query_inference","inference_count":70,"average_inference_time_ms":10.0,"total_inference_time_ms":700}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"ai_model","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","model_id":"elser","task_type":"query_inference","inference_count":70,"average_inference_time_ms":10.0,"total_inference_time_ms":700}
 {"index":{}}
-{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"synthetics_monitor","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","deployment_group":"finops-v2","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":5,"up_count":5,"down_count":0,"locations_count":1,"average_duration_ms":50.0,"total_duration_ms":250.0}
+{"@timestamp":"'"${BILL_DAY}"'","event":{"ingested":"'"${HEALTHY_UPDATED_AT}"'"},"data_stream":{"dataset":"chargeback_serverless.usage"},"doc_type":"synthetics_monitor","project_id":"proj-v1-phaseb","project_name":"V2 Live Raw","project_type":"elasticsearch","monitor_id":"mon-v1","monitor_name":"V1 Ping","monitor_namespace":"default","monitor_type":"http","check_count":5,"up_count":5,"down_count":0,"locations_count":1,"average_duration_ms":50.0,"total_duration_ms":250.0}
 ' >/dev/null
 
 POOL_PIPELINE="logs-chargeback_serverless.lookup-${CURRENT_VERSION}-lookup_realized_pool"
@@ -1889,7 +1666,6 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-bill-stage1" -H 'Content-Type: applica
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "sku": {"type": "keyword"},
       "total_ecu": {"type": "double"},
       "quantity_value": {"type": "double"},
@@ -1914,7 +1690,6 @@ es_curl -X PUT "${ES_HOST}/cb-e2e-live-v2-ds-stage1" -H 'Content-Type: applicati
       "project_id": {"type": "keyword"},
       "project_name": {"type": "keyword"},
       "project_type": {"type": "keyword"},
-      "deployment_group": {"type": "keyword"},
       "datastream": {"type": "keyword"},
       "datastream_sum_indexing_time": {"type": "long"},
       "datastream_sum_query_time": {"type": "long"},
@@ -1944,13 +1719,91 @@ jq -s --arg old "${OLDER_DAY}" --arg cur "${BILL_DAY}" '
       (by_day(.[6].docs; $old) | . != null and .check_count == 2 and .total_duration_ms == 160.0 and .project_name == "V1 Carryover")
     ),
     current_ok: (
-      (by_day(.[0].docs; $cur) | . != null and .doc_type == "billing_line_item" and .total_ecu == 77.0 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
-      (by_day(.[1].docs; $cur) | . != null and .total_ecu == 77.0 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
-      (by_day(.[2].docs; $cur) | . != null and .index_count == 8 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
-      (by_day(.[3].docs; $cur) | . != null and .datastream_sum_indexing_time == 222 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
-      (by_day(.[4].docs; $cur) | . != null and .deployment_sum_indexing_time == 222 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
-      (by_day(.[5].docs; $cur) | . != null and .inference_count == 70 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw") and
-      (by_day(.[6].docs; $cur) | . != null and .check_count == 5 and .total_duration_ms == 250.0 and .deployment_group == "finops-v2" and .project_name == "V2 Live Raw")
+      (by_day(.[0].docs; $cur) | . != null and .doc_type == "billing_line_item" and .total_ecu == 77.0 and .project_name == "V2 Live Raw") and
+      (by_day(.[1].docs; $cur) | . != null and .total_ecu == 77.0 and .project_name == "V2 Live Raw") and
+      (by_day(.[2].docs; $cur) | . != null and .index_count == 8 and .project_name == "V2 Live Raw") and
+      (by_day(.[3].docs; $cur) | . != null and .datastream_sum_indexing_time == 222 and .project_name == "V2 Live Raw") and
+      (by_day(.[4].docs; $cur) | . != null and .deployment_sum_indexing_time == 222 and .project_name == "V2 Live Raw") and
+      (by_day(.[5].docs; $cur) | . != null and .inference_count == 70 and .project_name == "V2 Live Raw") and
+      (by_day(.[6].docs; $cur) | . != null and .check_count == 5 and .total_duration_ms == 250.0 and .project_name == "V2 Live Raw")
     )
   }
 ' e2e_pb_bill_out.json e2e_pb_pool_out.json e2e_pb_ps_out.json e2e_pb_ds_out.json e2e_pb_proj_out.json e2e_pb_ai_out.json e2e_pb_sy_out.json > live_upgrade_e2e.json
+# 8. billing_credits poll-split regression test: 510 distinct unkeyed legacy polls newer than 1 native credit snapshot must not evict native snapshot
+es_curl -X PUT "${ES_HOST}/cb-e2e-cred-510-stage1" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "@timestamp": {"type": "date"},
+      "snapshot_day": {"type": "date"},
+      "event": {"properties": {"ingested": {"type": "date"}}},
+      "organization_id": {"type": "keyword"},
+      "credit_start": {"type": "date"},
+      "credit_end": {"type": "date"},
+      "credit_type": {"type": "keyword"},
+      "ecu_quantity": {"type": "long"},
+      "credit_entry_key": {"type": "keyword"},
+      "source_kind": {"type": "keyword"},
+      "poll_owner": {"type": "keyword"},
+      "poll_ts": {"type": "long"},
+      "ing_ts": {"type": "long"},
+      "active_ecu_quantity": {"type": "double"},
+      "active_ecu_balance": {"type": "double"},
+      "active_line_count": {"type": "long"},
+      "total_ecu_quantity": {"type": "double"},
+      "total_ecu_balance": {"type": "double"},
+      "total_line_count": {"type": "long"}
+    }
+  }
+}' >/dev/null
+NAT_CRED_MS=1773700000000
+LEG_CRED_BASE_MS=1773705000000
+jq -nc --arg day "${BILL_DAY}" --arg ing "${HEALTHY_UPDATED_AT}" --argjson nat_ms "${NAT_CRED_MS}" --argjson leg_base "${LEG_CRED_BASE_MS}" '
+  [
+    {
+      "@timestamp": $day, "snapshot_day": $day, "event": {"ingested": $ing},
+      "organization_id": "org-e2e-510", "credit_start": "2026-01-01T00:00:00Z", "credit_end": "2026-12-31T23:59:59Z",
+      "credit_type": "prepaid", "ecu_quantity": 1000, "credit_entry_key": "line-nat-1",
+      "source_kind": "nat", "poll_owner": "pol-nat", "poll_ts": $nat_ms, "ing_ts": $nat_ms,
+      "active_ecu_quantity": 1000.0, "active_ecu_balance": 750.0, "active_line_count": 1,
+      "total_ecu_quantity": 1000.0, "total_ecu_balance": 750.0, "total_line_count": 1
+    }
+  ] + [
+    range(1; 511) | {
+      "@timestamp": $day, "snapshot_day": $day, "event": {"ingested": $ing},
+      "organization_id": "org-e2e-510", "credit_start": "2026-01-01T00:00:00Z", "credit_end": "2026-12-31T23:59:59Z",
+      "credit_type": "prepaid", "ecu_quantity": 1000, "credit_entry_key": ("legacy_row_" + tostring),
+      "source_kind": "leg", "poll_owner": ("leg-" + tostring), "poll_ts": ($leg_base + .), "ing_ts": ($leg_base + .),
+      "active_ecu_quantity": 9999.0, "active_ecu_balance": 9999.0, "active_line_count": 1,
+      "total_ecu_quantity": 9999.0, "total_ecu_balance": 9999.0, "total_line_count": 1
+    }
+  ] | .[] | {"index":{}}, .' | es_curl -X POST "${ES_HOST}/cb-e2e-cred-510-stage1/_bulk?refresh=true" -H 'Content-Type: application/x-ndjson' --data-binary @- >/dev/null
+run_batch_transform "cb-e2e-cred-510-t2" "billing_credits" "cb-e2e-cred-510-stage1" "cb-e2e-cred-510-dest" "${CRED_PIPELINE}" 500
+es_curl "${ES_HOST}/cb-e2e-cred-510-dest/_search?size=10" | jq '{docs: [.hits.hits[] | {doc: .}]}' > e2e_credits_510_out.json
+
+# 9. Validate every packaged dashboard panel & alerting rule template ES|QL query against live Elasticsearch /_query
+es_total=0
+es_failed=0
+for df in "${DATA_STREAM_ROOT}/../../kibana/dashboard"/*.json; do
+  for q in $(jq -r '.attributes.panelsJSON[].embeddableConfig.esql_query[]? | @base64' "${df}"); do
+    es_total=$((es_total + 1))
+    raw_q="$(printf '%s' "${q}" | base64 -d)"
+    req_json="$(jq -nc --arg q "${raw_q}" --arg ts "2020-01-01T00:00:00Z" --arg te "2030-01-01T00:00:00Z" '{query: $q, params: [{_tstart: $ts}, {_tend: $te}]}')"
+    code="$(curl -sS --cacert "${CA_CERT}" -o esql_err.json -w '%{http_code}' -u "${ES_USER}:${ES_PASS}" -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d "${req_json}")"
+    if [ "${code}" -ge 300 ]; then
+      es_failed=$((es_failed + 1))
+      echo "FAILED ES|QL in ${df}: $(cat esql_err.json)" >&2
+    fi
+  done
+done
+for af in "${DATA_STREAM_ROOT}/../../kibana/alerting_rule_template"/*.json; do
+  es_total=$((es_total + 1))
+  raw_q="$(jq -r '.attributes.params.esqlQuery.esql' "${af}")"
+  req_json="$(jq -nc --arg q "${raw_q}" '{query: $q}')"
+  code="$(curl -sS --cacert "${CA_CERT}" -o esql_err.json -w '%{http_code}' -u "${ES_USER}:${ES_PASS}" -X POST "${ES_HOST}/_query?format=json" -H 'Content-Type: application/json' -d "${req_json}")"
+  if [ "${code}" -ge 300 ]; then
+    es_failed=$((es_failed + 1))
+    echo "FAILED ES|QL in ${af}: $(cat esql_err.json)" >&2
+  fi
+done
+jq -n --argjson total "${es_total}" --argjson failed "${es_failed}" '{ok: ($total > 0 and $failed == 0), total: $total, failed: $failed}' > esql_live_validation.json

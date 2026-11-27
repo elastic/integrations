@@ -147,7 +147,7 @@ processors:
               parts.add(recKey.substring(ps, pi));
               ps = pi + 1;
             }
-            if (parts.size() < 7) { continue; }
+            if (parts.size() < 6) { continue; }
             long iMs = 0L;
             try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
             if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
@@ -155,8 +155,8 @@ processors:
             } else if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Map && ((Map)((Map)valObj).get('max_ing')).get('value') instanceof Number) {
               iMs = Math.round(((Number)((Map)((Map)valObj).get('max_ing')).get('value')).doubleValue());
             }
-            int posFlag = (parts.size() >= 8 && '1'.equals(parts.get(7).toString())) ? 1 : 0;
-            if (parts.size() >= 9 && '1'.equals(parts.get(8).toString())) { anyNatBill = true; }
+            int posFlag = (parts.size() >= 7 && '1'.equals(parts.get(6).toString())) ? 1 : 0;
+            if (parts.size() >= 8 && '1'.equals(parts.get(7).toString())) { anyNatBill = true; }
             if (bestParts == null || iMs > bestIng || (iMs == bestIng && (posFlag > bestPosFlag || (posFlag == bestPosFlag && recKey.compareTo(bestKey) > 0)))) {
               bestIng = iMs;
               bestPosFlag = posFlag;
@@ -169,13 +169,11 @@ processors:
             if (ctx.has_native_billing == null) { ctx.has_native_billing = anyNatBill; }
             String pName = bestParts.get(1).toString();
             String pType = bestParts.get(2).toString();
-            String dGrp = bestParts.get(3).toString();
-            String pRate = bestParts.get(4).toString();
-            String pUnit = bestParts.get(5).toString();
-            String pSym = bestParts.get(6).toString();
+            String pRate = bestParts.get(3).toString();
+            String pUnit = bestParts.get(4).toString();
+            String pSym = bestParts.get(5).toString();
             if (pName != '' && pName != 'null') { ctx.project_name = pName; }
             if (pType != '' && pType != 'null') { ctx.project_type = pType; }
-            ctx.deployment_group = (dGrp == 'null') ? '' : dGrp;
             try {
               double cr = Double.parseDouble(pRate);
               if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
@@ -196,11 +194,6 @@ processors:
           }
           if (curr.project_type != null && curr.project_type.toString() != '' && curr.project_type.toString() != 'null') {
             ctx.project_type = curr.project_type.toString();
-          }
-          if (curr.containsKey('deployment_group')) {
-            ctx.deployment_group = (curr.deployment_group != null && curr.deployment_group.toString() != 'null')
-              ? curr.deployment_group.toString()
-              : '';
           }
           if (curr.conf_chargeable_unit_rate instanceof Number) {
             ctx.conf_chargeable_unit_rate = ((Number)curr.conf_chargeable_unit_rate).doubleValue();
@@ -246,7 +239,7 @@ processors:
                 parts.add(recKey.substring(ps, pi));
                 ps = pi + 1;
               }
-              if (parts.size() < 15) { continue; }
+              if (parts.size() < 14) { continue; }
               long iMs = 0L;
               try { iMs = Long.parseLong(parts.get(0).toString()); } catch (Exception e) {}
               if (valObj instanceof Map && ((Map)valObj).get('max_ing') instanceof Number) {
@@ -284,13 +277,11 @@ processors:
               ctx.all_sku_ecu = all_ecu;
               String pName = bestParts.get(9).toString();
               String pType = bestParts.get(10).toString();
-              String dGrp = bestParts.get(11).toString();
-              String pRate = bestParts.get(12).toString();
-              String pUnit = bestParts.get(13).toString();
-              String pSym = bestParts.get(14).toString();
+              String pRate = bestParts.get(11).toString();
+              String pUnit = bestParts.get(12).toString();
+              String pSym = bestParts.get(13).toString();
               if (pName != '' && pName != 'null') { ctx.project_name = pName; }
               if (pType != '' && pType != 'null') { ctx.project_type = pType; }
-              ctx.deployment_group = (dGrp == 'null') ? '' : dGrp;
               try {
                 double cr = Double.parseDouble(pRate);
                 if (cr >= 0.0) { ctx.conf_chargeable_unit_rate = cr; }
@@ -306,9 +297,6 @@ processors:
         }
         if (ctx.project_type == null || ctx.project_type == '' || ctx.project_type == 'null') {
           ctx.project_type = 'elasticsearch';
-        }
-        if (ctx.deployment_group == null || ctx.deployment_group == 'null') {
-          ctx.deployment_group = '';
         }
         if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
           def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
