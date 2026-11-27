@@ -59,6 +59,8 @@ If multiple input types are supported, add instructions for each in a subsection
 1. In Kibana, go to **Management** > **Integrations** and search for **Red Hat OpenShift Logging**.
 2. Open the integration, go to the **Settings** tab, and click **Install Red Hat OpenShift Logging assets**.
 
+Install the assets before you create the `ClusterLogForwarder`. Records that arrive before the assets are installed are stored in `logs-openshift-default` without being processed or routed.
+
 Then create a user for the collector. The collector needs to create documents in the OpenShift data streams. For example, create a role with these privileges and assign it to a user:
 
 ```json
@@ -161,7 +163,7 @@ IMPORTANT: Use plain text for issue descriptions, NOT bold. Example:
 - TCP framing issues: Check that both sides use the same framing method
 Do NOT use **bold** for issue names like "**No data is being collected**:".
 */}}
-- Records stay in the `logs-openshift-default` data stream: The routing rules only forward records whose `log_type` is `application`, `infrastructure`, or `audit`. Check the `log_type` field of these records.
+- Records stay in the `logs-openshift-default` data stream: The routing rules only forward records whose `log_type` is `application`, `infrastructure`, or `audit`. Check the `log_type` field of these records. Records without an `ecs.version` field arrived before the integration assets were installed and were not processed.
 - The collector logs `security_exception` or `action [indices:data/write/bulk[s]] is unauthorized`: The Elasticsearch user lacks `create_doc` or `auto_configure` on `logs-openshift*-*`. The routing rules write to `logs-openshift.<log type>-<namespace>`, so the privileges must cover these data streams as well.
 - The collector logs `index_not_found_exception` or writes to an index named `app-write`: The output still uses the defaults of OpenShift Logging 5. Set `index: logs-openshift-default` in the output.
 - Application logs have no `message` field: The `parse` filter removes `message` when it parses a log line as JSON. The integration copies the `message` or `msg` key of the parsed line back into `message`; other keys are available under `openshift.structured`.
