@@ -13,7 +13,9 @@ The Red Hat OpenShift Logging integration for Elastic processes the logs that th
 
 ### Compatibility
 {{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
-This integration is compatible with Red Hat OpenShift Logging 6.x, which configures log forwarding with the `ClusterLogForwarder` resource of the `observability.openshift.io/v1` API. It was tested with the Vector collector image of Red Hat OpenShift Logging 6 (Vector 0.54).
+This integration is compatible with Red Hat OpenShift Logging 6.0 and later, which configures log forwarding with the `ClusterLogForwarder` resource of the `observability.openshift.io/v1` API. Authentication with an Elasticsearch API key needs Red Hat OpenShift Logging 6.4 or later (see below).
+
+The integration was tested with the Vector collector image of the Cluster Logging Operator project (`quay.io/openshift-logging/vector:v0.54.0`), running the collector configuration that the operator generates against a local Kubernetes cluster. The OpenShift API server, OAuth server, and OVN-Kubernetes test events come from the operator's sample logs and the OpenShift documentation.
 
 Red Hat OpenShift Logging 5.x is not supported. Its Elasticsearch output writes to the fixed `app-write`, `infra-write`, and `audit-write` indices, which this integration doesn't provide.
 
@@ -61,11 +63,12 @@ If multiple input types are supported, add instructions for each in a subsection
 
 Install the assets before you create the `ClusterLogForwarder`. Records that arrive before the assets are installed are stored in `logs-openshift-default` without being processed or routed.
 
-Then create a user for the collector. The collector needs to create documents in the OpenShift data streams. For example, create a role with these privileges and assign it to a user:
+Then create a user for the collector. The collector needs to create documents in the OpenShift data streams, and the `monitor` cluster privilege for the health check it runs at startup. For example, create a role with these privileges and assign it to a user:
 
 ```json
 POST _security/role/openshift_logging_writer
 {
+  "cluster": ["monitor"],
   "indices": [
     {
       "names": ["logs-openshift*-*"],
@@ -138,7 +141,7 @@ This should be specific to the steps needed to set up the 3rd party system to se
    - `version: 8` is required for Elasticsearch 8.0 and later. With an older value the collector sends the `_type` field, which Elasticsearch 8 rejects.
    - The `parse` filter is optional. It parses JSON container log lines into `openshift.structured`.
    - Add a `tls` section with a CA bundle when the certificate of Elasticsearch isn't signed by a CA that the cluster trusts.
-   - The collector can't take an Elasticsearch API key from a secret. To use an API key anyway, set it as a header of the output instead of `authentication`: `headers: {Authorization: "ApiKey <base64 encoded id:api_key>"}`. The key is then stored in plain text in the `ClusterLogForwarder` resource.
+   - The collector can't take an Elasticsearch API key from a secret. From Red Hat OpenShift Logging 6.4, you can set the API key as a header of the output instead of `authentication`: `headers: {Authorization: "ApiKey <base64 encoded id:api_key>"}`. The key is then stored in plain text in the `ClusterLogForwarder` resource.
 
 #### Vendor resources
 {{/* Add vendor documentation links that are specific to the steps needed to set up the vendor system to send data to Elastic. Exclude this section if no vendor setup links are available. */}}
@@ -165,6 +168,7 @@ Do NOT use **bold** for issue names like "**No data is being collected**:".
 */}}
 - Records stay in the `logs-openshift-default` data stream: The routing rules only forward records whose `log_type` is `application`, `infrastructure`, or `audit`. Check the `log_type` field of these records. Records without an `ecs.version` field arrived before the integration assets were installed and were not processed.
 - The collector logs `security_exception` or `action [indices:data/write/bulk[s]] is unauthorized`: The Elasticsearch user lacks `create_doc` or `auto_configure` on `logs-openshift*-*`. The routing rules write to `logs-openshift.<log type>-<namespace>`, so the privileges must cover these data streams as well.
+- The collector logs `Healthcheck failed` with `403 Forbidden` at startup, but data arrives: The Elasticsearch user lacks the `monitor` cluster privilege. Add it to the role.
 - The collector logs `index_not_found_exception` or writes to an index named `app-write`: The output still uses the defaults of OpenShift Logging 5. Set `index: logs-openshift-default` in the output.
 - Application logs have no `message` field: The `parse` filter removes `message` when it parses a log line as JSON. The integration copies the `message` or `msg` key of the parsed line back into `message`; other keys are available under `openshift.structured`.
 
