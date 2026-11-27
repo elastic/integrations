@@ -1,6 +1,6 @@
 module github.com/elastic/integrations
 
-go 1.26.7
+go 1.26.10
 
 require (
 	github.com/Masterminds/semver/v3 v3.5.0
@@ -235,9 +235,9 @@ require (
 	golang.org/x/term v0.48.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
-	google.golang.org/adk v1.9.0 // indirect
+	google.golang.org/adk v1.10.0 // indirect
 	google.golang.org/api v0.314.0 // indirect
-	google.golang.org/genai v1.77.0 // indirect
+	google.golang.org/genai v1.79.1 // indirect
 	google.golang.org/genproto v0.0.0-20261012220534-4341edf3f941 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20261012220534-4341edf3f941 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261104224025-d1e00e9f33ab // indirect
@@ -271,3 +271,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.2 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/elastic/elastic-package => github.com/srednoff888-art/elastic-package v0.128.1-0.20261125202940-81b1fecf9e57
