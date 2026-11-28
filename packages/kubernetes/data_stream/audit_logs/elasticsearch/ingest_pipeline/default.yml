@@ -156,6 +156,17 @@ processors:
         }
         ctx['kubernetes']['audit']['annotations'] = updatedAnnotation
   - set:
+      tag: set_event_outcome_from_failed_response
+      if: >-
+        ctx.kubernetes?.audit?.stage == 'ResponseComplete' &&
+        ctx.kubernetes.audit.responseStatus instanceof Map &&
+        (ctx.kubernetes.audit.responseStatus.code instanceof Integer ||
+         ctx.kubernetes.audit.responseStatus.code instanceof Long) &&
+        ctx.kubernetes.audit.responseStatus.code >= 400 &&
+        ctx.kubernetes.audit.responseStatus.code <= 599
+      field: event.outcome
+      value: failure
+  - set:
       if: ctx.kubernetes?.audit?.user?.username != null
       field: user.name
       copy_from: kubernetes.audit.user.username
