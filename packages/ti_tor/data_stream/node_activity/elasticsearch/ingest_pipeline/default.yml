@@ -1,0 +1,479 @@
+---
+description: Pipeline for parsing TOR relay details from the Onionoo API.
+processors:
+  - terminate:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 9.4.0
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: enrichment
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [threat]
+  - set:
+      tag: set_event_type
+      field: event.type
+      value: [indicator]
+  - set:
+      tag: set_threat_feed_name
+      field: threat.feed.name
+      value: TOR Node Activity
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      tag: json_event_original
+      field: event.original
+      target_field: json.relay
+  - script:
+      tag: script_map_relay_fields
+      description: Map Onionoo relay fields onto ti_tor.node_activity.*.
+      lang: painless
+      params:
+        map:
+          advertised_bandwidth: bandwidth.advertised
+          bandwidth_burst: bandwidth.burst
+          bandwidth_rate: bandwidth.rate
+          observed_bandwidth: bandwidth.observed
+          as_name: as.organization.name
+          consensus_weight: consensus.weight
+          consensus_weight_fraction: consensus.weight_fraction
+          contact: contact.original
+          alleged_family: family.alleged
+          effective_family: family.effective
+          indirect_family: family.indirect
+          exit_addresses: exit.ip
+          exit_policy: exit_policy
+          exit_probability: exit.probability
+          fingerprint: fingerprint
+          first_seen: first_seen
+          flags: description
+          guard_probability: guard.probability
+          hibernating: hibernating
+          last_changed_address_or_port: last_changed
+          last_restarted: last_restarted
+          last_seen: last_seen
+          measured: measured
+          middle_probability: middle.probability
+          nickname: name
+          or_addresses: routing.addresses
+          overload_general_timestamp: overload
+          platform: platform
+          recommended_version: recommended_version
+          running: running
+          unverified_host_names: hostname.unverified
+          verified_host_names: hostname.verified
+          version: version
+          version_status: version_status
+        policies:
+          exit_policy_summary: ipv4
+          exit_policy_v6_summary: ipv6
+      source: |-
+        Map relay = ctx.json.relay;
+        if (!(ctx.ti_tor instanceof Map)) {
+          ctx.ti_tor = new HashMap();
+        }
+        if (!(ctx.ti_tor.node_activity instanceof Map)) {
+          ctx.ti_tor.node_activity = new HashMap();
+        }
+        Map root = ctx.ti_tor.node_activity;
+        for (def e : params.map.entrySet()) {
+          def v = relay.get(e.getKey());
+          if (v == null) {
+            continue;
+          }
+          Map cur = root;
+          String[] parts = e.getValue().splitOnToken('.');
+          for (int i = 0; i < parts.length - 1; i++) {
+            if (!(cur.get(parts[i]) instanceof Map)) {
+              cur.put(parts[i], new HashMap());
+            }
+            cur = cur.get(parts[i]);
+          }
+          cur.put(parts[parts.length - 1], v);
+        }
+        def asn = relay.get('as');
+        if (asn != null) {
+          String a = asn.toString();
+          if (a.startsWith('AS')) {
+            a = a.substring(2);
+          }
+          try {
+            if (!(root.as instanceof Map)) {
+              root.as = new HashMap();
+            }
+            root.as.number = Long.parseLong(a);
+          } catch (Exception ex) {}
+        }
+        for (def p : params.policies.entrySet()) {
+          def s = relay.get(p.getKey());
+          if (!(s instanceof Map)) {
+            continue;
+          }
+          if (!(root.exit instanceof Map)) {
+            root.exit = new HashMap();
+          }
+          if (!(root.exit.policy instanceof Map)) {
+            root.exit.policy = new HashMap();
+          }
+          Map m = new HashMap();
+          if (s.accept != null) {
+            m.accept = s.accept;
+          }
+          if (s.reject != null) {
+            m.reject = s.reject;
+          }
+          root.exit.policy[p.getValue()] = m;
+        }
+  - remove:
+      tag: remove_json
+      field: json
+      ignore_missing: true
+  - date:
+      tag: date_first_seen
+      field: ti_tor.node_activity.first_seen
+      target_field: ti_tor.node_activity.first_seen
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+        - ISO8601
+      timezone: UTC
+      if: ctx.ti_tor?.node_activity?.first_seen != null
+      on_failure:
+        - remove:
+            tag: remove_first_seen_on_failure
+            field: ti_tor.node_activity.first_seen
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_first_seen
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_last_seen
+      field: ti_tor.node_activity.last_seen
+      target_field: ti_tor.node_activity.last_seen
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+        - ISO8601
+      timezone: UTC
+      if: ctx.ti_tor?.node_activity?.last_seen != null
+      on_failure:
+        - remove:
+            tag: remove_last_seen_on_failure
+            field: ti_tor.node_activity.last_seen
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_last_seen
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_last_changed
+      field: ti_tor.node_activity.last_changed
+      target_field: ti_tor.node_activity.last_changed
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+        - ISO8601
+      timezone: UTC
+      if: ctx.ti_tor?.node_activity?.last_changed != null
+      on_failure:
+        - remove:
+            tag: remove_last_changed_on_failure
+            field: ti_tor.node_activity.last_changed
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_last_changed
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_last_restarted
+      field: ti_tor.node_activity.last_restarted
+      target_field: ti_tor.node_activity.last_restarted
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+        - ISO8601
+      timezone: UTC
+      if: ctx.ti_tor?.node_activity?.last_restarted != null
+      on_failure:
+        - remove:
+            tag: remove_last_restarted_on_failure
+            field: ti_tor.node_activity.last_restarted
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_last_restarted
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_overload
+      field: ti_tor.node_activity.overload
+      target_field: ti_tor.node_activity.overload
+      formats:
+        - UNIX_MS
+        - yyyy-MM-dd HH:mm:ss
+        - ISO8601
+      timezone: UTC
+      if: ctx.ti_tor?.node_activity?.overload != null
+      on_failure:
+        - remove:
+            tag: remove_overload_on_failure
+            field: ti_tor.node_activity.overload
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_overload
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - geoip:
+      tag: geoip_exit_ip
+      field: ti_tor.node_activity.exit.ip
+      target_field: ti_tor.node_activity.exit.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      tag: geoip_exit_ip_asn
+      field: ti_tor.node_activity.exit.ip
+      target_field: ti_tor.node_activity.exit.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+        - network
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_exit_as_asn
+      field: ti_tor.node_activity.exit.as.asn
+      target_field: ti_tor.node_activity.exit.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_exit_as_organization_name
+      field: ti_tor.node_activity.exit.as.organization_name
+      target_field: ti_tor.node_activity.exit.as.organization.name
+      ignore_missing: true
+  - script:
+      tag: script_split_or_addresses
+      description: Split the first IPv4 and IPv6 OR address into ip/port.
+      lang: painless
+      if: ctx.ti_tor?.node_activity?.routing?.addresses != null
+      source: |-
+        Map routing = ctx.ti_tor.node_activity.routing;
+        def addrs = routing.addresses;
+        if (!(addrs instanceof List)) {
+          addrs = [addrs];
+        }
+        for (def a : addrs) {
+          if (!(a instanceof String)) {
+            continue;
+          }
+          String fam;
+          String ip;
+          String port;
+          if (a.startsWith('[')) {
+            int close = a.indexOf(']');
+            if (close < 0) {
+              continue;
+            }
+            fam = 'ipv6';
+            ip = a.substring(1, close);
+            port = close + 2 <= a.length() ? a.substring(close + 2) : null;
+          } else {
+            int colon = a.lastIndexOf(':');
+            fam = 'ipv4';
+            ip = colon < 0 ? a : a.substring(0, colon);
+            port = colon < 0 ? null : a.substring(colon + 1);
+          }
+          if (routing[fam] != null) {
+            continue;
+          }
+          Map m = ['ip': ip];
+          if (port != null && port != '') {
+            try {
+              m.port = Long.parseLong(port);
+            } catch (Exception ex) {}
+          }
+          routing[fam] = m;
+        }
+  - geoip:
+      tag: geoip_routing_ipv4
+      field: ti_tor.node_activity.routing.ipv4.ip
+      target_field: ti_tor.node_activity.routing.ipv4.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      tag: geoip_routing_ipv6
+      field: ti_tor.node_activity.routing.ipv6.ip
+      target_field: ti_tor.node_activity.routing.ipv6.geo
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      tag: script_set_fingerprint_day
+      description: >-
+        Day (UTC) of the relay's last_seen, included in the fingerprint so that every
+        relay still in the consensus gets at least one document per day.
+      lang: painless
+      if: ctx.ti_tor?.node_activity?.last_seen instanceof String && ctx.ti_tor.node_activity.last_seen.length() >= 10
+      source: |-
+        if (!(ctx._tmp instanceof Map)) {
+          ctx._tmp = new HashMap();
+        }
+        ctx._tmp.fingerprint_day = ctx.ti_tor.node_activity.last_seen.substring(0, 10);
+  - fingerprint:
+      tag: fingerprint_relay_state
+      description: >-
+        Hash of the relay attributes that indicate a state change, plus the day the
+        relay was last seen, written to _id. Measured values that vary on every Onionoo
+        refresh (observed and advertised bandwidth) are excluded, so an unchanged relay
+        is indexed at most once per day.
+      fields:
+        - _tmp.fingerprint_day
+        - ti_tor.node_activity.fingerprint
+        - ti_tor.node_activity.name
+        - ti_tor.node_activity.description
+        - ti_tor.node_activity.running
+        - ti_tor.node_activity.hibernating
+        - ti_tor.node_activity.exit.ip
+        - ti_tor.node_activity.routing.addresses
+        - ti_tor.node_activity.as.number
+        - ti_tor.node_activity.bandwidth.burst
+        - ti_tor.node_activity.bandwidth.rate
+        - ti_tor.node_activity.contact.original
+        - ti_tor.node_activity.platform
+        - ti_tor.node_activity.version
+        - ti_tor.node_activity.version_status
+        - ti_tor.node_activity.recommended_version
+      target_field: _id
+      method: MD5
+      ignore_missing: true
+  - remove:
+      tag: remove_routing_addresses_and_tmp
+      field:
+        - ti_tor.node_activity.routing.addresses
+        - _tmp
+      ignore_missing: true
+  - script:
+      tag: script_flag_details
+      description: Describe each relay flag under ti_tor.node_activity.detail.*.
+      lang: painless
+      if: ctx.ti_tor?.node_activity?.description instanceof List
+      params:
+        Authority: Relay is a directory authority.
+        BadExit: Exit node that is not recommended (for example, due to abuse reports or misconfiguration).
+        Exit: Relay allows traffic to exit the Tor network.
+        Fast: Relay has high bandwidth, based on observed performance.
+        Guard: Relay is suitable for use as an entry node.
+        HSDir: Relay stores hidden service descriptors (used in onion services).
+        NoEdConsensus: Relay was excluded from the consensus for some reason (for example, misbehavior).
+        Running: Relay is currently running.
+        Stable: Relay has been up for a long time consistently.
+        Valid: Relay is considered "valid" by directory authorities.
+        Unnamed: Relay does not have a configured nickname.
+      source: |-
+        Map d = new HashMap();
+        for (def f : ctx.ti_tor.node_activity.description) {
+          if (params.containsKey(f)) {
+            d.put(f, params.get(f));
+          }
+        }
+        if (!d.isEmpty()) {
+          ctx.ti_tor.node_activity.detail = d;
+        }
+  - set:
+      tag: set_threat_indicator_ip
+      field: threat.indicator.ip
+      copy_from: ti_tor.node_activity.exit.ip
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_name
+      field: threat.indicator.name
+      copy_from: ti_tor.node_activity.routing.ipv4.ip
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_as_number
+      field: threat.indicator.as.number
+      copy_from: ti_tor.node_activity.exit.as.number
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_as_organization_name
+      field: threat.indicator.as.organization.name
+      copy_from: ti_tor.node_activity.exit.as.organization.name
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_geo
+      field: threat.indicator.geo
+      copy_from: ti_tor.node_activity.exit.geo
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_first_seen
+      field: threat.indicator.first_seen
+      copy_from: ti_tor.node_activity.first_seen
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_last_seen
+      field: threat.indicator.last_seen
+      copy_from: ti_tor.node_activity.last_seen
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_type
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: ctx.threat?.indicator?.name != null
+  - script:
+      tag: script_drop_null_empty_values
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - set:
+      tag: set_pipeline_error_into_event_kind
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_error_message_on_failure
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.on_failure_pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
