@@ -2,40 +2,53 @@
 description: Pipeline for processing Weblogic Domain logs
 processors:
 - set:
+    tag: set_event_ingested_bee62da7
     field: event.ingested
     value: "{{_ingest.timestamp}}"
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_ecs_version_da2960f1
     field: ecs.version
     value: 8.11.0
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_module_c96117e9
     field: event.module
     value: oracle_weblogic
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_kind_3057935b
     field: event.kind
     value: event
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_type_7707ce65
     field: event.type
     value: ["info"]
     ignore_empty_value: true
     ignore_failure: true
 - append:
+    tag: append_event_category_534116b1
     field: event.category
     value: ["network"]
     ignore_failure: true
 - rename:
+    tag: rename_message_10917fec
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
+- remove:
+    tag: remove_message_08230a26
+    field: message
+    ignore_missing: true
+    if: 'ctx.event?.original != null'
 - dissect:
+    tag: dissect_event_original_addbbf5a
     field: event.original
     pattern: "####<%{@timestamp}> <%{log.level}> <%{oracle_weblogic.domain.subsystem}> <%{oracle_weblogic.domain.machine_name}>
       <%{oracle_weblogic.domain.server_name}> <%{oracle_weblogic.domain.thread_id}> <%{}> <%{user.id}>
@@ -44,6 +57,7 @@ processors:
     ignore_missing: true
     ignore_failure: true
 - date:
+    tag: date_timestamp_99866825
     field: "@timestamp"
     formats:
     - dd-MMM-yyyy, h:mm:ss,SSS a zzzz
@@ -52,6 +66,7 @@ processors:
     - MMM d, yyyy h:mm:ss,SSS a zzz
     ignore_failure: true
 - script:
+    tag: script_cc798376
     description: Drops null/empty values recursively
     lang: painless
     source: |
@@ -69,6 +84,15 @@ processors:
         }
         drop(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_cd750b5e
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_cf8df5f6
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

@@ -2,40 +2,53 @@
 description: Pipeline for processing Weblogic HTTP Access logs
 processors:
 - set:
+    tag: set_event_ingested_5c4816a3
     field: event.ingested
     value: "{{_ingest.timestamp}}"
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_ecs_version_524d6c9d
     field: ecs.version
     value: 8.11.0
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_module_db5b7a31
     field: event.module
     value: oracle_weblogic
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_kind_3880e942
     field: event.kind
     value: event
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_type_1a7d2cd5
     field: event.type
     value: ["access"]
     ignore_empty_value: true
     ignore_failure: true
 - append:
+    tag: append_event_category_6c5f6ba2
     field: event.category
     value: ["network"]
     ignore_failure: true
 - rename:
+    tag: rename_message_00a49ba4
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
+- remove:
+    tag: remove_message_f4ed0c84
+    field: message
+    ignore_missing: true
+    if: 'ctx.event?.original != null'
 - dissect:
+    tag: dissect_event_original_31dbd131
     field: event.original
     pattern: '%{oracle_weblogic.access.host_address} %{} %{oracle_weblogic.access.authuser} [%{@timestamp}] "%{http.request.method}
       %{http.request.referrer} HTTP/%{http.version}" %{http.response.status_code}
@@ -43,38 +56,45 @@ processors:
     ignore_missing: true
     ignore_failure: true
 - date:
+    tag: date_timestamp_a28147e7
     field: "@timestamp"
     formats:
     - dd/MMM/yyyy:HH:mm:ss Z
     ignore_failure: true
 - convert:
+    tag: convert_oracle_weblogic_access_host_address_9b5f3cc7
     field: oracle_weblogic.access.host_address
     type: ip
     target_field: host.ip
     ignore_missing: true
     ignore_failure: true
 - set:
+    tag: set_host_ip_1b652a40
     field: host.ip
     value: ["{{{host.ip}}}"]
     ignore_empty_value: true
     ignore_failure: true
 - convert:
+    tag: convert_http_response_status_code_a31bcf27
     field: http.response.status_code
     type: long
     target_field: http.response.status_code
     ignore_missing: true
     ignore_failure: true
 - trim:
+    tag: trim_http_response_bytes_2d432a41
     field: http.response.bytes
     target_field: http.response.bytes
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_http_response_bytes_787e34a1
     field: http.response.bytes
     type: long
     ignore_missing: true
     ignore_failure: true
 - script:
+    tag: script_e5f348a4
     description: Drops null/empty values recursively
     lang: painless
     source: |
@@ -92,6 +112,15 @@ processors:
         }
         drop(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_9cb66951
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_87410c35
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

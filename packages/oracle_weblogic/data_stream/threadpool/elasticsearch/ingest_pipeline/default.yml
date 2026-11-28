@@ -2,53 +2,78 @@
 description: Pipeline for parsing Oracle WebLogic ThreadPool metrics.
 processors:
   - set:
+      tag: set_ecs_version_e20bdffe
       field: ecs.version
       value: "8.11.0"
       ignore_failure: true
   - rename:
+      tag: rename_message_93ac1fda
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_11cf19a2
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - rename:
+      tag: rename_jolokia_metrics_bbe66462
       field: jolokia.metrics
       target_field: oracle_weblogic
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_oracle_weblogic_mbean_714c2c20
       field: oracle_weblogic.mbean
       target_field: oracle_weblogic.threadpool.mbean
       ignore_missing: true
   - rename:
+      tag: rename_oracle_weblogic_threadpool_temp_objectName_75a3cff5
       field: oracle_weblogic.threadpool.temp.objectName
       target_field: oracle_weblogic.threadpool.mbean
       ignore_missing: true
   - set:
+      tag: set_event_type_fa147663
       field: event.type
       value: [info]
       ignore_failure: true
   - set:
+      tag: set_event_kind_28e1e272
       field: event.kind
       value: metric
       ignore_failure: true
   - set:
+      tag: set_event_category_56ca5bec
       field: event.category
       value: [web]
       ignore_failure: true
   - set:
+      tag: set_event_module_84281cf0
       field: event.module
       value: oracle_weblogic
       ignore_failure: true
   - set:
+      tag: set_event_dataset_71085af5
       field: event.dataset
       value: oracle_weblogic.threadpool
       ignore_failure: true
   - remove:
+      tag: remove_jolokia_273c9d7d
       field:
         - jolokia
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_05f27cc0
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_e2b7ae3f
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
