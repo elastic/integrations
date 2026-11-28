@@ -4,18 +4,6 @@ source:
     - metrics-chargeback.billing-*
     - metrics-chargeback.usage-*
     - metrics-chargeback.node_stats-*
-    - metrics-ess_billing.billing-*
-    - monitoring-indices*
-    - "*:monitoring-indices*"
-    - metrics-elasticsearch.stack_monitoring.node_stats*
-    - .monitoring-es-*
-    - chargeback_conf_lookup*
-    - -partial-*
-    - -metrics-ess_billing.billing-chargeback*
-    - -monitoring-indices-chargeback*
-    - "*:-monitoring-indices-chargeback*"
-    - -chargeback_lookup.*
-    - "*:-chargeback_lookup.*"
   query:
     term:
       doc_type: config_snapshot
@@ -70,7 +58,7 @@ dest:
     - alias: chargeback_lookup.chargeback_currency
       move_on_creation: true
   pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "chargeback_currency" }}'
-frequency: 5m
+frequency: 1m
 sync:
   time:
     field: cb_sync_ts
@@ -465,4 +453,4 @@ _meta:
   managed: true
   order: 1
   run_as_kibana_system: false
-  fleet_transform_version: 0.7.0
+  fleet_transform_version: 0.7.1
