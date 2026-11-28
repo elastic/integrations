@@ -2,26 +2,40 @@
 description: Pipeline for parsing azure openai metrics.
 processors:
   - rename:
+      tag: rename_azure_metrics_11dcc3b1
       field: azure.metrics
       target_field: azure.open_ai
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_azure_openairequests_total_ea613a47
       field: azure.open_ai.azure_openairequests.total
       target_field: azure.open_ai.requests.total
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_azure_openaiprovisioned_managed_utilization_v2_avg_69d20751
       field: azure.open_ai.azure_openaiprovisioned_managed_utilization_v2.avg
       target_field: azure.open_ai.provisioned_managed_utilization_v2.avg
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_azure_openaitime_toresponse_avg_0587e057
       field: azure.open_ai.azure_openaitime_toresponse.avg
       target_field: azure.open_ai.time_to_response.avg
       ignore_missing: true
   - rename:
+      tag: rename_azure_open_ai_azure_openaicontext_tokens_cache_match_rate_avg_0457d866
       field: azure.open_ai.azure_openaicontext_tokens_cache_match_rate.avg
       target_field: azure.open_ai.context_tokens_cache_match_rate.avg
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_cec5a0a4
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_e5484d83
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
