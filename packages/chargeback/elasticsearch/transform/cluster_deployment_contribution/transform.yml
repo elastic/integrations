@@ -13,7 +13,6 @@ source:
     - -chargeback_lookup.dest_cluster_*
     - -chargeback_lookup.dest_usage_*
     - -chargeback_lookup.dest_chargeback_*
-    - -chargeback_lookup.dest_billing_enrichment*
     - -chargeback_lookup.dest_billing_realized_pool*
     - -chargeback_lookup.dest_billing_credits*
     - "*:-chargeback_lookup.*"
@@ -329,7 +328,7 @@ source:
           } catch (Exception e) {}
           emit('unknown');
 dest:
-  index: chargeback_lookup.dest_cluster_deployment_contribution-1
+  index: chargeback_lookup.dest_cluster_deployment_contribution-2
   aliases:
     - alias: chargeback_lookup.cluster_deployment_contribution
       move_on_creation: true
@@ -365,6 +364,13 @@ pivot:
           state.leg_cnt_by_tier = new HashMap();
           state.nat_cnt = 0L;
           state.leg_cnt = 0L;
+          state.dep_name = '';
+          state.dep_name_ts = -1L;
+          state.dep_name_ing = -1L;
+          state.dep_group = '';
+          state.dep_group_ts = -1L;
+          state.dep_group_ing = -1L;
+          state.has_dep_group = false;
         map_script: |
           if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
           long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
@@ -376,6 +382,48 @@ pivot:
               ingTs = ZonedDateTime.parse(params._source.event.ingested.toString().trim()).toInstant().toEpochMilli();
             }
           } catch (Exception e) {}
+          String dn = '';
+          for (String dnf : ['deployment_name.keyword', 'deployment_name']) {
+            try {
+              if (doc.containsKey(dnf) && !doc[dnf].empty) {
+                dn = doc[dnf].value.toString();
+                if (dn != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (dn == '') {
+            try {
+              def sdn = params._source?.deployment_name;
+              if (sdn != null && sdn.toString() != '') { dn = sdn.toString(); }
+            } catch (Exception e) {}
+          }
+          if (dn != '' && (ts > state.dep_name_ts || (ts == state.dep_name_ts && ingTs >= state.dep_name_ing))) {
+            state.dep_name_ts = ts;
+            state.dep_name_ing = ingTs;
+            state.dep_name = dn;
+          }
+          boolean hasDg = false;
+          String dg = '';
+          if (params._source != null && params._source.containsKey('deployment_group') && params._source.get('deployment_group') != null) {
+            hasDg = true;
+            dg = params._source.get('deployment_group').toString();
+          } else {
+            for (String dgf : ['deployment_group.keyword', 'deployment_group']) {
+              try {
+                if (doc.containsKey(dgf) && !doc[dgf].empty) {
+                  hasDg = true;
+                  dg = doc[dgf].value.toString();
+                  break;
+                }
+              } catch (Exception e) {}
+            }
+          }
+          if (hasDg && (ts > state.dep_group_ts || (ts == state.dep_group_ts && ingTs >= state.dep_group_ing))) {
+            state.has_dep_group = true;
+            state.dep_group_ts = ts;
+            state.dep_group_ing = ingTs;
+            state.dep_group = dg;
+          }
           long rem = ts % 86400000L;
           if (rem < 0L) { rem += 86400000L; }
           long dayStartMs = ts - rem;
@@ -741,8 +789,32 @@ pivot:
           Map legCntByTier = new HashMap();
           long natCnt = 0L;
           long legCnt = 0L;
+          String bestDepName = '';
+          long bestNameTs = -1L;
+          long bestNameIng = -1L;
+          String bestDepGroup = '';
+          long bestGroupTs = -1L;
+          long bestGroupIng = -1L;
+          boolean hasGroup = false;
           for (def st : states) {
             if (st == null) { continue; }
+            long stNameTs = (st.dep_name_ts instanceof Number) ? ((Number)st.dep_name_ts).longValue() : -1L;
+            long stNameIng = (st.dep_name_ing instanceof Number) ? ((Number)st.dep_name_ing).longValue() : -1L;
+            String sdn = st.dep_name != null ? st.dep_name.toString() : '';
+            if (sdn != '' && stNameTs >= 0L && (stNameTs > bestNameTs || (stNameTs == bestNameTs && stNameIng >= bestNameIng))) {
+              bestNameTs = stNameTs;
+              bestNameIng = stNameIng;
+              bestDepName = sdn;
+            }
+            boolean stHasGrp = Boolean.TRUE.equals(st.has_dep_group);
+            long stGroupTs = (st.dep_group_ts instanceof Number) ? ((Number)st.dep_group_ts).longValue() : -1L;
+            long stGroupIng = (st.dep_group_ing instanceof Number) ? ((Number)st.dep_group_ing).longValue() : -1L;
+            if (stHasGrp && stGroupTs >= 0L && (stGroupTs > bestGroupTs || (stGroupTs == bestGroupTs && stGroupIng >= bestGroupIng))) {
+              hasGroup = true;
+              bestGroupTs = stGroupTs;
+              bestGroupIng = stGroupIng;
+              bestDepGroup = st.dep_group != null ? st.dep_group.toString() : '';
+            }
             if (st.nat_cnt instanceof Number) { natCnt += ((Number)st.nat_cnt).longValue(); }
             if (st.leg_cnt instanceof Number) { legCnt += ((Number)st.leg_cnt).longValue(); }
             if (st.raw_nat instanceof List) {
@@ -1345,6 +1417,8 @@ pivot:
           res.put('legacy_sum_query_time', rawLeg.get(1));
           res.put('legacy_sum_store_size', rawLeg.get(2));
           res.put('legacy_sum_data_set_store_size', rawLeg.get(3));
+          if (bestDepName != '') { res.put('deployment_name', bestDepName); }
+          if (hasGroup) { res.put('deployment_group', bestDepGroup); }
           return res;
 settings:
   align_checkpoints: false
@@ -1354,4 +1428,4 @@ _meta:
   managed: true
   order: 6
   run_as_kibana_system: false
-  fleet_transform_version: 0.7.0
+  fleet_transform_version: 0.8.0

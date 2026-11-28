@@ -23,6 +23,16 @@ processors:
             if (uTrim == '') { ctx.remove('conf_chargeable_unit_rate_unit'); }
             else { ctx.conf_chargeable_unit_rate_unit = uTrim.toUpperCase(Locale.ROOT); }
           }
+          if (ctx.conf_currency_unit != null) {
+            String cuTrim = ctx.conf_currency_unit.toString().trim();
+            if (cuTrim == '') { ctx.remove('conf_currency_unit'); }
+            else { ctx.conf_currency_unit = cuTrim.toUpperCase(Locale.ROOT); }
+          }
+          if (ctx.conf_currency_symbol != null) {
+            String csTrim = ctx.conf_currency_symbol.toString().trim();
+            if (csTrim == '') { ctx.remove('conf_currency_symbol'); }
+            else { ctx.conf_currency_symbol = csTrim; }
+          }
           return;
         }
         ctx._from_transform = true;
@@ -176,6 +186,13 @@ processors:
           boolean srcWasOnprem = 'chargeback_config_onprem'.equalsIgnoreCase(lcJoinKey) || (lcJoinKey == '' && 'config_onprem'.equalsIgnoreCase(lcRowId));
           ctx.conf_chargeable_unit_rate = (isLegacyOnpremKey && !srcWasOnprem) ? lOnpremRate : lRate;
           ctx.conf_chargeable_unit_rate_unit = lUnit;
+          String lCurrUnit = (lc.get('conf_currency_unit') != null && lc.get('conf_currency_unit').toString().trim() != '')
+            ? lc.get('conf_currency_unit').toString().trim().toUpperCase(Locale.ROOT)
+            : lUnit;
+          String rawLSym = lc.get('conf_currency_symbol') != null ? lc.get('conf_currency_symbol').toString().trim() : '';
+          boolean useDefLSym = (rawLSym == '') || ('€'.equals(rawLSym) && ('USD'.equals(lCurrUnit) || 'GBP'.equals(lCurrUnit) || 'ZAR'.equals(lCurrUnit)));
+          ctx.conf_currency_unit = lCurrUnit;
+          ctx.conf_currency_symbol = !useDefLSym ? rawLSym : (lCurrUnit == 'USD' ? '$' : (lCurrUnit == 'GBP' ? '£' : (lCurrUnit == 'ZAR' ? 'R' : '€')));
           ctx.conf_indexing_weight = lIdxW;
           ctx.conf_query_weight = lQryW;
           ctx.conf_storage_weight = lStoW;
@@ -320,6 +337,16 @@ processors:
         boolean isOnpremKey = 'chargeback_config_onprem'.equals(ctx.config_join_key);
         ctx.conf_chargeable_unit_rate = isOnpremKey ? onpremRate : rate;
         ctx.conf_chargeable_unit_rate_unit = (m.conf_chargeable_unit_rate_unit != null && m.conf_chargeable_unit_rate_unit.toString().trim() != '') ? m.conf_chargeable_unit_rate_unit.toString().trim().toUpperCase(Locale.ROOT) : 'EUR';
+        String rawCurrUnit = m.get('conf_currency_unit') != null ? m.get('conf_currency_unit').toString().trim() : '';
+        if (rawCurrUnit == '' && m.get('conf_chargeable_unit_rate_unit') != null) {
+          rawCurrUnit = m.get('conf_chargeable_unit_rate_unit').toString().trim();
+        }
+        String resolvedCurrUnit = (rawCurrUnit != '') ? rawCurrUnit.toUpperCase(Locale.ROOT) : 'EUR';
+        String rawCurrSym = m.get('conf_currency_symbol') != null ? m.get('conf_currency_symbol').toString().trim() : '';
+        boolean useDefSym = (rawCurrSym == '') || ('€'.equals(rawCurrSym) && ('USD'.equals(resolvedCurrUnit) || 'GBP'.equals(resolvedCurrUnit) || 'ZAR'.equals(resolvedCurrUnit)));
+        String resolvedCurrSym = !useDefSym ? rawCurrSym : (resolvedCurrUnit == 'USD' ? '$' : (resolvedCurrUnit == 'GBP' ? '£' : (resolvedCurrUnit == 'ZAR' ? 'R' : '€')));
+        ctx.conf_currency_unit = resolvedCurrUnit;
+        ctx.conf_currency_symbol = resolvedCurrSym;
         ctx.conf_indexing_weight = idxW;
         ctx.conf_query_weight = qryW;
         ctx.conf_storage_weight = stoW;

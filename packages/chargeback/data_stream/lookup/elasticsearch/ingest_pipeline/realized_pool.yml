@@ -8,6 +8,10 @@ processors:
         try {
           if (ctx.by_sku instanceof Map) {
             double sumEcu = 0.0;
+            double sumAi = 0.0;
+            double sumSyn = 0.0;
+            double sumSynPing = 0.0;
+            double sumSynExec = 0.0;
             Double maxHours = null;
             Long maxRam = null;
             boolean hasNativeSku = false;
@@ -20,6 +24,11 @@ processors:
             String legacyName = '';
             long legacyNameTs = -1L;
             boolean anyOnprem = false;
+            long minBucketIng = 0L;
+            Map nativeGrpMin = [:];
+            Map legacyGrpMin = [:];
+            Map nativeGrpExplicitGfs = [:];
+            Map legacyGrpExplicitGfs = [:];
             if (ctx.by_sku.buckets instanceof List) {
               for (def bObj : (List)ctx.by_sku.buckets) {
                 if (bObj instanceof Map && 'onprem_node'.equals(bObj.get('key'))) {
@@ -51,8 +60,69 @@ processors:
                     hasNativeSku = true;
                   }
                   long skuIngTs = (chosenSku.ing_ts instanceof Number) ? ((Number)chosenSku.ing_ts).longValue() : -1L;
+                  if (chosenSku.min_bucket_ing instanceof Number) {
+                    long mbi = ((Number)chosenSku.min_bucket_ing).longValue();
+                    if (mbi > 0L && (minBucketIng <= 0L || mbi < minBucketIng)) {
+                      minBucketIng = mbi;
+                    }
+                  }
+                  Map targetGrpMin = skuIsNative ? nativeGrpMin : legacyGrpMin;
+                  Map targetGrpExpGfs = skuIsNative ? nativeGrpExplicitGfs : legacyGrpExplicitGfs;
+                  if (chosenSku.grp_min_ing instanceof Map) {
+                    for (def ge : ((Map)chosenSku.grp_min_ing).entrySet()) {
+                      String gk = ge.getKey() != null ? ge.getKey().toString() : '';
+                      long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                      if (gk != '' && gv > 0L) {
+                        long cur = targetGrpMin.get(gk) instanceof Number ? ((Number)targetGrpMin.get(gk)).longValue() : 0L;
+                        if (cur <= 0L || gv < cur) { targetGrpMin[gk] = gv; }
+                      }
+                    }
+                  }
+                  if (chosenSku.grp_min_gfs instanceof Map) {
+                    for (def gf : ((Map)chosenSku.grp_min_gfs).entrySet()) {
+                      String gk = gf.getKey() != null ? gf.getKey().toString() : '';
+                      long gv = 0L;
+                      if (gf.getValue() instanceof Number) {
+                        gv = ((Number)gf.getValue()).longValue();
+                      } else if (gf.getValue() != null) {
+                        String gs = gf.getValue().toString().trim();
+                        if (gs != '') {
+                          try { gv = ZonedDateTime.parse(gs).toInstant().toEpochMilli(); } catch (Exception e) {}
+                        }
+                      }
+                      if (gk != '' && gv > 0L) {
+                        long cur = targetGrpExpGfs.get(gk) instanceof Number ? ((Number)targetGrpExpGfs.get(gk)).longValue() : 0L;
+                        if (cur <= 0L || gv < cur) { targetGrpExpGfs[gk] = gv; }
+                      }
+                    }
+                  }
                   if (Boolean.TRUE.equals(chosenSku.get('is_onprem'))) {
                     anyOnprem = true;
+                  }
+                  if (chosenSku.ai_chargeable_units instanceof Number) {
+                    double aiVal = ((Number)chosenSku.ai_chargeable_units).doubleValue();
+                    if (!Double.isNaN(aiVal) && !Double.isInfinite(aiVal)) { sumAi += aiVal; }
+                  }
+                  if (chosenSku.synthetics_chargeable_units instanceof Number) {
+                    double synVal = ((Number)chosenSku.synthetics_chargeable_units).doubleValue();
+                    if (!Double.isNaN(synVal) && !Double.isInfinite(synVal)) { sumSyn += synVal; }
+                  }
+                  if (chosenSku.synthetics_pings_units instanceof Number) {
+                    double spVal = ((Number)chosenSku.synthetics_pings_units).doubleValue();
+                    if (!Double.isNaN(spVal) && !Double.isInfinite(spVal)) { sumSynPing += spVal; }
+                  }
+                  if (chosenSku.synthetics_executions_units instanceof Number) {
+                    double seVal = ((Number)chosenSku.synthetics_executions_units).doubleValue();
+                    if (!Double.isNaN(seVal) && !Double.isInfinite(seVal)) { sumSynExec += seVal; }
+                  }
+                  long skuGfs = 0L;
+                  if (chosenSku.group_first_seen instanceof Number) {
+                    skuGfs = ((Number)chosenSku.group_first_seen).longValue();
+                  } else if (chosenSku.group_first_seen != null) {
+                    String sg = chosenSku.group_first_seen.toString().trim();
+                    if (sg != '') {
+                      try { skuGfs = ZonedDateTime.parse(sg).toInstant().toEpochMilli(); } catch (Exception e) {}
+                    }
                   }
                   if (chosenSku.data_tier_capacity_ecu instanceof Number) {
                     double ecuVal = ((Number)chosenSku.data_tier_capacity_ecu).doubleValue();
@@ -91,6 +161,10 @@ processors:
                       extracted = rawV.toString();
                     }
                     if (fn == 'deployment_group') {
+                      if (extracted != '' && skuGfs > 0L) {
+                        long curExp = targetGrpExpGfs.get(extracted) instanceof Number ? ((Number)targetGrpExpGfs.get(extracted)).longValue() : 0L;
+                        if (curExp <= 0L || skuGfs < curExp) { targetGrpExpGfs[extracted] = skuGfs; }
+                      }
                       if (skuIsNative) {
                         if (skuIngTs >= 0L) {
                           if (skuIngTs > nativeGroupTs || (skuIngTs == nativeGroupTs && extracted != '')) {
@@ -130,6 +204,12 @@ processors:
             String bestGroup = hasNativeSku ? nativeGroup : legacyGroup;
             String bestName = nativeName != '' ? nativeName : legacyName;
             ctx.data_tier_capacity_ecu = sumEcu;
+            if (sumAi > 0.0) { ctx.ai_chargeable_units = sumAi; }
+            if (sumSyn > 0.0) {
+              ctx.synthetics_chargeable_units = sumSyn;
+              ctx.synthetics_pings_units = sumSynPing;
+              ctx.synthetics_executions_units = sumSynExec;
+            }
             ctx.is_onprem = anyOnprem;
             if (maxHours != null) {
               ctx.data_tier_capacity_hours = maxHours.doubleValue();
@@ -138,6 +218,20 @@ processors:
               ctx.data_tier_ram_per_zone_mb = maxRam.longValue();
             }
             ctx.deployment_group = bestGroup != null ? bestGroup : '';
+            long resolvedGfs = 0L;
+            if (ctx.deployment_group != '') {
+              Map chosenGrpMin = hasNativeSku ? nativeGrpMin : legacyGrpMin;
+              Map chosenGrpExp = hasNativeSku ? nativeGrpExplicitGfs : legacyGrpExplicitGfs;
+              long gm = chosenGrpMin.get(ctx.deployment_group) instanceof Number ? ((Number)chosenGrpMin.get(ctx.deployment_group)).longValue() : 0L;
+              long ge = chosenGrpExp.get(ctx.deployment_group) instanceof Number ? ((Number)chosenGrpExp.get(ctx.deployment_group)).longValue() : 0L;
+              long bestReplayIng = (gm > 0L && minBucketIng > 0L && gm > minBucketIng) ? gm : 0L;
+              resolvedGfs = bestReplayIng > ge ? bestReplayIng : ge;
+            }
+            if (resolvedGfs > 0L) {
+              ctx.group_first_seen = Instant.ofEpochMilli(resolvedGfs).toString();
+            } else {
+              ctx.remove('group_first_seen');
+            }
             String fallbackName = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
             if (fallbackName.startsWith('unassociated_')) {
               fallbackName = 'Unassociated (' + fallbackName.substring('unassociated_'.length()) + ')';

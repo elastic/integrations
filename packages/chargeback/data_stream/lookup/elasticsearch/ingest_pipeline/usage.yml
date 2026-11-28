@@ -145,6 +145,18 @@ processors:
                   || (r.has_native_usage != null && r.has_native_usage.toString().equalsIgnoreCase('true'));
                 ctx.has_legacy_usage = Boolean.TRUE.equals(r.has_legacy_usage)
                   || (r.has_legacy_usage != null && r.has_legacy_usage.toString().equalsIgnoreCase('true'));
+              } else {
+                if (r.get('deployment_name') != null && r.get('deployment_name').toString() != '') {
+                  ctx.deployment_name = r.get('deployment_name').toString();
+                }
+                if (r.containsKey('deployment_group')) {
+                  def dg = r.get('deployment_group');
+                  if (dg != null && dg.toString() != '') {
+                    ctx.deployment_group = dg.toString();
+                  } else {
+                    ctx.remove('deployment_group');
+                  }
+                }
               }
             }
           } else {

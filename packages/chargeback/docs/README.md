@@ -56,12 +56,12 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Data flow:**
 
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside On-Premises Billing or any existing monitoring streams).
-2. Chargeback continuous transforms (`5m` configuration and additive `0.7.0` lookup sync, and `60m` billing, credit commitment, core usage, and utilization rollups) aggregate and enrich this telemetry into fourteen `lookup`-mode indices.
+2. Chargeback continuous transforms (`5m` configuration and realized-pool sync, and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into eleven `lookup`-mode indices.
 3. Chargeback dashboards (and optional stock dashboards) query the lookup indices via ES|QL and Lens.
 
 ## Configuration
 
-Credentials, currency settings, optional credit commitments, and cost/utilization weights are configured in Kibana under **Management -> Fleet -> Agent Policies -> Chargeback** and synced into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` for Elastic Cloud ECU and `_id: config_onprem` for On-Premises `mERU`) by the `chargeback_conf_lookup` continuous transform when `sync_fleet_config` is enabled.
+Credentials, currency settings, optional credit commitments, and cost/utilization weights are configured in Kibana under **Management -> Fleet -> Agent Policies -> Chargeback** and synced into `chargeback_lookup.dest_chargeback_conf-2` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` for Elastic Cloud ECU and `_id: config_onprem` for On-Premises `mERU`) by the `chargeback_conf_lookup` continuous transform when `sync_fleet_config` is enabled.
 
 ### Shared Connection Settings (`Elastic Cloud & Cluster Access`)
 
@@ -70,7 +70,7 @@ Credentials, currency settings, optional credit commitments, and cost/utilizatio
 - **Local / Hub Elasticsearch URL (`hub_es_url`)** and **Local / Hub Elasticsearch API Key (`hub_es_api_key`)**: Optional direct endpoint and API key for harvesting the local or self-managed Hub cluster.
 - **Target Deployment Elasticsearch API Keys (`deployment_api_keys`)**: Optional comma-separated `<deployment_id_or_name>:<encoded_api_key>` entries for direct harvesting of remote ECH deployments or Serverless projects.
 - **Configuration Owner ID (Multi-Policy) (`config_owner_id`)**: Optional identifier designating the single Chargeback policy authorized to write global rate and weight settings to `chargeback_lookup.chargeback_conf` when multiple Chargeback policies write to the same cluster (default: `""`). Leave empty in single-policy deployments; when multiple policies share a cluster, enable `sync_fleet_config` on only one policy and assign it a `config_owner_id` so overlapping policies do not overwrite or mix global rate and weight settings.
-- **Sync Fleet Rate & Weight Settings to Configuration Lookup (`sync_fleet_config`)**: Emits daily `config_snapshot` events into `chargeback_lookup.chargeback_conf` across whichever streams are enabled (default: `true`). Set to `false` to preserve manual edits or custom multi-period rows in `chargeback_lookup.chargeback_conf`. On assets-only installations without a Chargeback Agent policy, `chargeback_lookup.chargeback_conf` (`chargeback_lookup.dest_chargeback_conf-1`) is created automatically as an empty lookup index once any Chargeback or billing source index exists (or populated from any existing pre-0.6.0 `chargeback_conf_lookup` index) so dashboards apply configured or default rates and weights automatically. To create or update `_id: config` manually via `POST chargeback_lookup.chargeback_conf/_update/config` with `"doc_as_upsert": true`, place `config_join_key: "chargeback_config"`, `conf_start_date`, and `conf_end_date` directly inside `"doc"` using inclusive UTC millisecond bounds (`00:00:00.000Z` to `23:59:59.999Z` so adjacent historical rate periods do not overlap; use `_id: config_onprem` with `config_join_key: "chargeback_config_onprem"` for a separate On-Premises `mERU` rate, or, after installing the Chargeback integration assets so the managed `lookup`-mode index template for `chargeback_lookup.dest_chargeback_conf-1` is in place, run `PUT chargeback_lookup.dest_chargeback_conf-1` and alias it as `chargeback_lookup.chargeback_conf` on an empty cluster before source indices arrive):
+- **Sync Fleet Rate & Weight Settings to Configuration Lookup (`sync_fleet_config`)**: Emits daily `config_snapshot` events into `chargeback_lookup.chargeback_conf` across whichever streams are enabled (default: `true`). Set to `false` to preserve manual edits or custom multi-period rows in `chargeback_lookup.chargeback_conf`. On assets-only installations without a Chargeback Agent policy, `chargeback_lookup.chargeback_conf` (`chargeback_lookup.dest_chargeback_conf-2`) is created automatically as an empty lookup index once any Chargeback or billing source index exists (or populated from any existing pre-0.6.0 `chargeback_conf_lookup` index) so dashboards apply configured or default rates and weights automatically. To create or update `_id: config` manually via `POST chargeback_lookup.chargeback_conf/_update/config` with `"doc_as_upsert": true`, place `config_join_key: "chargeback_config"`, `conf_start_date`, and `conf_end_date` directly inside `"doc"` using inclusive UTC millisecond bounds (`00:00:00.000Z` to `23:59:59.999Z` so adjacent historical rate periods do not overlap; use `_id: config_onprem` with `config_join_key: "chargeback_config_onprem"` for a separate On-Premises `mERU` rate, or, after installing the Chargeback integration assets so the managed `lookup`-mode index template for `chargeback_lookup.dest_chargeback_conf-2` is in place, run `PUT chargeback_lookup.dest_chargeback_conf-2` and alias it as `chargeback_lookup.chargeback_conf` on an empty cluster before source indices arrive):
 
   ```json
   POST chargeback_lookup.chargeback_conf/_update/config
@@ -98,7 +98,7 @@ Credentials, currency settings, optional credit commitments, and cost/utilizatio
 
 - **Billing Lookbehind Days (`lookbehind`)**: Historical days backfilled on initial install (default: `60`).
 - **Currency Unit (`currency_unit`)**: Target display currency code, for example `"EUR"`, `"USD"`, `"GBP"`, `"ZAR"` (default: `"EUR"`).
-- **Currency Symbol (`currency_symbol`)**: Target display currency symbol, for example `"€"`, `"$"`, `"£"`, `"R"` (default: `""`, derived from `currency_unit` as `€`, `$`, `£`, or `R`), stored in `chargeback_lookup.chargeback_currency` (and optionally customizable manually via `POST chargeback_lookup.chargeback_currency/_update/config` when `sync_fleet_config` is `false`).
+- **Currency Symbol (`currency_symbol`)**: Target display currency symbol, for example `"€"`, `"$"`, `"£"`, `"R"` (default: `""`, derived from `currency_unit` as `€`, `$`, `£`, or `R`), stored in `chargeback_lookup.chargeback_conf` (and optionally customizable manually via `POST chargeback_lookup.chargeback_conf/_update/config` when `sync_fleet_config` is `false`).
 - **Chargeable Unit Rate (Elastic Cloud ECU) (`unit_rate`)**: Monetary value per Elastic Cloud Consumption Unit (ECU) (default: `0.85`).
 - **On-Premises Unit Rate (per mERU) (`onprem_unit_rate`)**: Optional monetary value per On-Premises milli-ERU (`mERU`) applied to `onprem_node` billing records alongside Elastic Cloud ECU billing (default: `0.00085`, equivalent to `0.85` per full ERU). Leave empty to derive `unit_rate / 1000` per `mERU`.
 - **Configuration Effective Start Date (Optional) (`config_effective_from`)**: Optional UTC day-boundary start date (`YYYY-MM-DD` or `YYYY-MM-DDT00:00:00Z`) applied to `_id: config` and `_id: config_onprem` when preserving earlier non-overlapping historical rate windows in `chargeback_lookup.chargeback_conf`.
@@ -143,30 +143,27 @@ Where:
 
 ## Data and Transforms
 
-The integration creates fourteen transforms to aggregate cost and usage data (all twelve time-series transforms enforce a 365-day `retention_policy` on `@timestamp`):
+The integration creates eleven transforms to aggregate cost and usage data (all nine time-series transforms enforce a 365-day `retention_policy` on `@timestamp`):
 
 **Billing transforms:**
 
 1. **`billing_cluster_cost`**: aggregates daily chargeable units (ECU/ERU) per deployment and SKU into `chargeback_lookup.dest_billing_cluster_cost-1` (aliased as `chargeback_lookup.billing_cluster_cost`), adding `cost_type`, `cost_category`, `is_allocatable`, and ESS Billing compatibility fields.
-2. **`billing_enrichment`**: materializes daily AI/ML and Synthetics chargeable pools (`ai_chargeable_units`, `synthetics_chargeable_units`, `synthetics_pings_units`, `synthetics_executions_units`) alongside chargeback group replay `group_first_seen` timestamps into `chargeback_lookup.dest_billing_enrichment-1` (aliased as `chargeback_lookup.billing_enrichment`).
-3. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment across ECH data tiers, Serverless workload and retained storage SKUs, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-1` (aliased as `chargeback_lookup.billing_realized_pool`).
-4. **`billing_credits`**: aggregates daily organization credit commitment snapshots into `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`) for the opt-in stock **[Metrics ESS Billing] Credits dashboard** compatibility alias.
-5. **`chargeback_conf_lookup`**: syncs `config_snapshot` events into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` and `_id: config_onprem`) while preserving manual configuration rows when Fleet sync is inactive.
-6. **`chargeback_currency_lookup`**: syncs display `conf_currency_symbol` and `conf_currency_unit` settings from Fleet configuration snapshots into `chargeback_lookup.dest_chargeback_currency-1` (aliased as `chargeback_lookup.chargeback_currency`) while preserving manual overrides when Fleet sync is inactive.
+2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity, AI/ML and Synthetics chargeable pools (`ai_chargeable_units`, `synthetics_chargeable_units`, `synthetics_pings_units`, `synthetics_executions_units`), and chargeback group replay `group_first_seen` timestamps per deployment across ECH, Serverless, and On-Premises nodes into `chargeback_lookup.dest_billing_realized_pool-2` (aliased as `chargeback_lookup.billing_realized_pool`).
+3. **`billing_credits`**: aggregates daily organization credit commitment snapshots into `chargeback_lookup.dest_billing_credits-1` (aliased as `chargeback_lookup.billing_credits`) for the opt-in stock **[Metrics ESS Billing] Credits dashboard** compatibility alias.
+4. **`chargeback_conf_lookup`**: syncs `config_snapshot` events (including `conf_currency_symbol` and `conf_currency_unit`) into `chargeback_lookup.dest_chargeback_conf-2` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` and `_id: config_onprem`) while preserving manual configuration rows when Fleet sync is inactive.
 
 **Utilization transforms:**
 
-7. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats` using equal-weighted 15-minute node slots.
+5. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats` using equal-weighted 15-minute node slots.
 
 **Usage transforms** (from `metrics-chargeback.usage-*` and `monitoring-indices*`):
 
-8. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day into `chargeback_lookup.dest_cluster_deployment_contribution-1` (aliased as `chargeback_lookup.cluster_deployment_contribution`).
-9. **`cluster_datastream_contribution`**: same metrics split by data stream into `chargeback_lookup.dest_cluster_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_datastream_contribution`). The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (third and subsequent `-` segments) from the data stream name, or `other` when the name is non-conforming.
-10. **`cluster_tier_contribution`**: same metrics split by data tier into `chargeback_lookup.dest_cluster_tier_contribution-1` (aliased as `chargeback_lookup.cluster_tier_contribution`).
-11. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream into `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution`), including `ds_type` and `ds_namespace`.
-12. **`usage_deployment_metadata`**: materializes daily `deployment_name` and `deployment_group` labels from native usage telemetry into `chargeback_lookup.dest_usage_deployment_metadata-1` (aliased as `chargeback_lookup.usage_deployment_metadata`).
-13. **`cluster_ai_contrib`**: aggregates daily AI/ML trained model and Inference API endpoint metrics (`doc_type: "ai_model"`) per deployment and model into `chargeback_lookup.dest_cluster_ai_model_contribution-1` (aliased as `chargeback_lookup.cluster_ai_model_contribution`).
-14. **`cluster_synthetics_contrib`**: aggregates daily Synthetics monitor check executions, availability, observer locations, and duration (`doc_type: "synthetics_monitor"`) per deployment and monitor into `chargeback_lookup.dest_cluster_synthetics_monitor_contribution-1` (aliased as `chargeback_lookup.cluster_synthetics_monitor_contribution`).
+6. **`cluster_deployment_contribution`**: indexing, querying, storage metrics, and deployment metadata (`deployment_name`, `deployment_group`) per deployment/day into `chargeback_lookup.dest_cluster_deployment_contribution-2` (aliased as `chargeback_lookup.cluster_deployment_contribution`).
+7. **`cluster_datastream_contribution`**: same metrics split by data stream into `chargeback_lookup.dest_cluster_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_datastream_contribution`). The usage ingest pipeline also sets `ds_type` (first `-` segment) and `ds_namespace` (third and subsequent `-` segments) from the data stream name, or `other` when the name is non-conforming.
+8. **`cluster_tier_contribution`**: same metrics split by data tier into `chargeback_lookup.dest_cluster_tier_contribution-1` (aliased as `chargeback_lookup.cluster_tier_contribution`).
+9. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream into `chargeback_lookup.dest_cluster_tier_and_datastream_contribution-1` (aliased as `chargeback_lookup.cluster_tier_and_datastream_contribution`), including `ds_type` and `ds_namespace`.
+10. **`cluster_ai_contrib`**: aggregates daily AI/ML trained model and Inference API endpoint metrics (`doc_type: "ai_model"`) per deployment and model into `chargeback_lookup.dest_cluster_ai_model_contribution-1` (aliased as `chargeback_lookup.cluster_ai_model_contribution`).
+11. **`cluster_synthetics_contrib`**: aggregates daily Synthetics monitor check executions, availability, observer locations, and duration (`doc_type: "synthetics_monitor"`) per deployment and monitor into `chargeback_lookup.dest_cluster_synthetics_monitor_contribution-1` (aliased as `chargeback_lookup.cluster_synthetics_monitor_contribution`).
 
 All transform destination documents include ECS `event.ingested` (when the lookup row was written).
 
@@ -288,6 +285,206 @@ All four FinOps spend alert templates aggregate strictly per currency (`unit`) w
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 ## Upgrade Notes
+
+### Upgrading to 0.8.0
+
+1. Upgrade the Fleet package to **0.8.0**. Kibana requirement remains `^9.2.0`.
+2. **Consolidated transforms (14 → 11):** To reduce synchronous Fleet package installation work and prevent reverse-proxy timeouts on Elastic Cloud Hosted, the three additive `0.7.0` transforms are merged into their matching primary transforms with versioned `dest_*-2` destination indices (`move_on_creation: true`):
+   - `billing_enrichment` → `billing_realized_pool` (`chargeback_lookup.dest_billing_realized_pool-2`, aliased as `chargeback_lookup.billing_realized_pool`)
+   - `chargeback_currency_lookup` → `chargeback_conf_lookup` (`chargeback_lookup.dest_chargeback_conf-2`, aliased as `chargeback_lookup.chargeback_conf`)
+   - `usage_deployment_metadata` → `cluster_deployment_contribution` (`chargeback_lookup.dest_cluster_deployment_contribution-2`, aliased as `chargeback_lookup.cluster_deployment_contribution`)
+3. **Preserve manual configuration and historical rate periods (`dest_chargeback_conf-1` → `dest_chargeback_conf-2`):** Moving the `chargeback_lookup.chargeback_conf` alias to `chargeback_lookup.dest_chargeback_conf-2` does not copy existing documents from `chargeback_lookup.dest_chargeback_conf-1`. If you manage rates or weights manually (`sync_fleet_config: false`) or maintain historical rate period documents (for example, prior-year rows with custom `conf_start_date` and `conf_end_date` bounds), reindex those rows into `chargeback_lookup.dest_chargeback_conf-2` immediately after upgrade (preserving all document `_id`s and date bounds; if `sync_fleet_config: false` prevented the transform from materializing the `-2` index yet, run `PUT chargeback_lookup.dest_chargeback_conf-2` and move the `chargeback_lookup.chargeback_conf` alias from `chargeback_lookup.dest_chargeback_conf-1` to `chargeback_lookup.dest_chargeback_conf-2` via `POST _aliases` first):
+
+   ```json
+   POST _reindex?refresh=true
+   {
+     "source": {
+       "index": "chargeback_lookup.dest_chargeback_conf-1"
+     },
+     "dest": {
+       "index": "chargeback_lookup.dest_chargeback_conf-2",
+       "op_type": "create"
+     },
+     "conflicts": "proceed"
+   }
+   ```
+
+   If `sync_fleet_config` is `false` and you want your manual `_id: config` / `_id: config_onprem` rows from `-1` to take precedence over any default document written to `-2`, omit `"op_type": "create"` and `"conflicts": "proceed"`. If you also customized `chargeback_lookup.dest_chargeback_currency-1` manually with `sync_fleet_config: false`, re-apply your `conf_currency_unit` and `conf_currency_symbol` values on `chargeback_lookup.chargeback_conf` (`POST chargeback_lookup.chargeback_conf/_update/config` or `_update/config_onprem`).
+4. **Carry forward historical usage and realized-pool rows older than raw ILM retention:** The `cluster_deployment_contribution` and `billing_realized_pool` transforms automatically backfill retained history from `metrics-chargeback.*`, `monitoring-indices*`, and `metrics-ess_billing.*` into their `-2` destination indices. If your raw monitoring or billing streams use shorter ILM retention than your lookup indices (including historical rows previously imported during a `0.6.0` upgrade), reindex older daily rows (earlier than the oldest retained raw source timestamp) from `-1` into `-2` so historical cost attribution is preserved:
+
+   ```json
+   POST _reindex?refresh=true
+   {
+     "source": {
+       "index": "chargeback_lookup.dest_cluster_deployment_contribution-1",
+       "query": {
+         "range": {
+           "@timestamp": {
+             "lt": "<earliest-retained-raw-usage-timestamp>"
+           }
+         }
+       }
+     },
+     "dest": {
+       "index": "chargeback_lookup.dest_cluster_deployment_contribution-2",
+       "op_type": "create"
+     },
+     "conflicts": "proceed"
+   }
+   ```
+
+   Run the same range-filtered `_reindex` from `chargeback_lookup.dest_billing_realized_pool-1` to `chargeback_lookup.dest_billing_realized_pool-2` (filtering `@timestamp` earlier than your earliest retained raw billing timestamp) if raw billing retention is shorter than your lookup history.
+
+   If you are upgrading from **0.7.0** with raw history older than your ILM retention, merge the historical `0.7.0` enrichment fields (`ai_chargeable_units`, `synthetics_chargeable_units`, `synthetics_pings_units`, `synthetics_executions_units`, `group_first_seen`) from `chargeback_lookup.dest_billing_enrichment-1` into `chargeback_lookup.dest_billing_realized_pool-2` and the historical usage deployment labels (`deployment_name`, `deployment_group`) from `chargeback_lookup.dest_usage_deployment_metadata-1` into `chargeback_lookup.dest_cluster_deployment_contribution-2` by `composite_key` before deleting the `-1` indices:
+
+   ```json
+   PUT /_enrich/policy/cb-migrate-billing-enrichment
+   {
+     "match": {
+       "indices": "chargeback_lookup.dest_billing_enrichment-1",
+       "match_field": "composite_key",
+       "enrich_fields": [
+         "ai_chargeable_units",
+         "synthetics_chargeable_units",
+         "synthetics_pings_units",
+         "synthetics_executions_units",
+         "group_first_seen"
+       ]
+     }
+   }
+
+   POST /_enrich/policy/cb-migrate-billing-enrichment/_execute
+
+   PUT /_ingest/pipeline/cb-migrate-billing-enrichment
+   {
+     "processors": [
+       {
+         "enrich": {
+           "policy_name": "cb-migrate-billing-enrichment",
+           "field": "composite_key",
+           "target_field": "_enr",
+           "ignore_missing": true
+         }
+       },
+       {
+         "script": {
+           "lang": "painless",
+           "source": "if (ctx._enr instanceof Map) { for (String k : ['ai_chargeable_units', 'synthetics_chargeable_units', 'synthetics_pings_units', 'synthetics_executions_units', 'group_first_seen']) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove('_enr'); }"
+         }
+       }
+     ]
+   }
+
+   POST /chargeback_lookup.dest_billing_realized_pool-2/_update_by_query?pipeline=cb-migrate-billing-enrichment&refresh=true
+   {
+     "query": {
+       "range": {
+         "@timestamp": {
+           "lt": "<earliest-retained-raw-billing-timestamp>"
+         }
+       }
+     }
+   }
+
+   PUT /_enrich/policy/cb-migrate-existing-realized-pool
+   {
+     "match": {
+       "indices": "chargeback_lookup.dest_billing_realized_pool-2",
+       "match_field": "composite_key",
+       "enrich_fields": ["composite_key"]
+     }
+   }
+
+   POST /_enrich/policy/cb-migrate-existing-realized-pool/_execute
+
+   PUT /_ingest/pipeline/cb-migrate-enrichment-only-rows
+   {
+     "processors": [
+       {
+         "enrich": {
+           "policy_name": "cb-migrate-existing-realized-pool",
+           "field": "composite_key",
+           "target_field": "_existing",
+           "ignore_missing": true
+         }
+       },
+       {
+         "drop": {
+           "if": "ctx._existing != null"
+         }
+       },
+       {
+         "script": {
+           "lang": "painless",
+           "source": "if (ctx.data_tier_capacity_ecu == null) { ctx.data_tier_capacity_ecu = 0.0; } if (ctx.realized_chargeable_units == null) { ctx.realized_chargeable_units = 0.0; } if (ctx.total_chargeable_units == null) { ctx.total_chargeable_units = 0.0; } if (ctx.is_onprem == null) { ctx.is_onprem = false; }"
+         }
+       }
+     ]
+   }
+
+   POST _reindex?refresh=true
+   {
+     "source": {
+       "index": "chargeback_lookup.dest_billing_enrichment-1",
+       "query": {
+         "range": {
+           "@timestamp": {
+             "lt": "<earliest-retained-raw-billing-timestamp>"
+           }
+         }
+       }
+     },
+     "dest": {
+       "index": "chargeback_lookup.dest_billing_realized_pool-2",
+       "pipeline": "cb-migrate-enrichment-only-rows"
+     }
+   }
+
+   PUT /_enrich/policy/cb-migrate-usage-metadata
+   {
+     "match": {
+       "indices": "chargeback_lookup.dest_usage_deployment_metadata-1",
+       "match_field": "composite_key",
+       "enrich_fields": ["deployment_name", "deployment_group"]
+     }
+   }
+
+   POST /_enrich/policy/cb-migrate-usage-metadata/_execute
+
+   PUT /_ingest/pipeline/cb-migrate-usage-metadata
+   {
+     "processors": [
+       {
+         "enrich": {
+           "policy_name": "cb-migrate-usage-metadata",
+           "field": "composite_key",
+           "target_field": "_enr",
+           "ignore_missing": true
+         }
+       },
+       {
+         "script": {
+           "lang": "painless",
+           "source": "if (ctx._enr instanceof Map) { for (String k : ['deployment_name', 'deployment_group']) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove('_enr'); }"
+         }
+       }
+     ]
+   }
+
+   POST /chargeback_lookup.dest_cluster_deployment_contribution-2/_update_by_query?pipeline=cb-migrate-usage-metadata&refresh=true
+   {
+     "query": {
+       "range": {
+         "@timestamp": {
+           "lt": "<earliest-retained-raw-usage-timestamp>"
+         }
+       }
+     }
+   }
+   ```
+
+   After verifying the merged and backfilled rows in `-2` (including any historical AI/Synthetics-only days that had no `0.7.0` data-tier realized-pool row), remove the temporary migration pipelines and enrich policies (`DELETE /_ingest/pipeline/cb-migrate-billing-enrichment`, `DELETE /_enrich/policy/cb-migrate-billing-enrichment`, `DELETE /_ingest/pipeline/cb-migrate-enrichment-only-rows`, `DELETE /_enrich/policy/cb-migrate-existing-realized-pool`, `DELETE /_ingest/pipeline/cb-migrate-usage-metadata`, `DELETE /_enrich/policy/cb-migrate-usage-metadata`).
+5. **Post-upgrade cleanup:** After verifying that `chargeback_lookup.chargeback_conf`, `chargeback_lookup.billing_realized_pool`, and `chargeback_lookup.cluster_deployment_contribution` point to their `-2` indices and contain your expected configuration and historical rows, delete the retired `-1` indices (`chargeback_lookup.dest_chargeback_conf-1`, `chargeback_lookup.dest_billing_realized_pool-1`, `chargeback_lookup.dest_cluster_deployment_contribution-1`, and if upgrading from `0.7.0`, `chargeback_lookup.dest_chargeback_currency-1`, `chargeback_lookup.dest_billing_enrichment-1`, and `chargeback_lookup.dest_usage_deployment_metadata-1`) to reclaim cluster shards.
 
 ### Upgrading to 0.7.0
 
