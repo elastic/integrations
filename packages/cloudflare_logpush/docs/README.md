@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zaraz Events, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, WebSocket Analytics, Zaraz Events, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -66,6 +66,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `page_shield_events`: Page Shield events reporting changes to scripts and connections observed on protected zones. See [Page Shield Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
 - `sinkhole_http`: HTTP traffic captured by Cloudflare sinkholes. See [Sinkhole HTTP logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 - `spectrum_event`: Cloudflare Spectrum events for TCP/UDP applications proxied through Cloudflare. See [Spectrum Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
+- `websocket_analytics`: WebSocket connections proxied by the Cloudflare edge, including the bytes exchanged with the client and the origin, the connection duration, and why and where the connection closed. Available to Enterprise customers as both an account-scoped and a zone-scoped dataset. See [WebSocket Analytics schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/zone/websocket_analytics/).
 - `workers_trace`: Cloudflare Workers Trace Events with execution logs and exceptions for Workers scripts. See [Workers Trace Events schema](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
 - `zaraz_events`: Cloudflare Zaraz events for third-party tools loaded through Zaraz, including the incoming request URL, client IP, headers and body, and the Zaraz event type and details. See [Zaraz Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/zone/zaraz_events/).
 
@@ -73,7 +74,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 
 Integrating Cloudflare Logpush with Elastic provides centralized visibility across Cloudflare's edge, Zero Trust, and network-layer products. Common use cases include:
 
-- Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
+- Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`, `websocket_analytics`).
 - Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`, `ssh_logs`, `warp_config_changes`, `warp_toggle_changes`).
 - Monitoring Cloudflare DEX digital experience, synthetic test results, and device health (`dex_application_tests`, `dex_device_state_events`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
@@ -97,6 +98,7 @@ Creating and managing Logpush jobs requires an API token or user role with the `
 
 - **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`, `zaraz_events`) require a **zone-scoped token**.
 - **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `ssh_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
+- `websocket_analytics` is available at both scopes. Use a zone-scoped job and token to collect one zone's WebSocket connections, or an account-scoped job and token to collect them for the whole account.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
 **Destination-specific credentials**
@@ -153,6 +155,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | SSH Logs                   | ssh_logs                |
   | WARP Config Changes        | warp_config_changes     |
   | WARP Toggle Changes        | warp_toggle_changes     |
+  | WebSocket Analytics        | websocket_analytics     |
   | Workers Trace Events       | workers_trace           |
   | Zaraz Events               | zaraz_events            |
 
@@ -5948,6 +5951,168 @@ An example event for `warp_toggle_changes` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### websocket_analytics
+
+This is the `websocket_analytics` dataset.
+
+##### Example
+
+An example event for `websocket_analytics` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-10T12:02:05.500Z",
+    "agent": {
+        "ephemeral_id": "1508dab1-d443-4a0e-babf-09809d922cba",
+        "id": "e4b45e75-8233-4299-bf64-e0662687593b",
+        "name": "elastic-agent-57013",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloudflare_logpush": {
+        "websocket_analytics": {
+            "colo": {
+                "code": "FRA"
+            },
+            "connection": {
+                "close": {
+                    "reason": "peerReset",
+                    "source": "downstream"
+                },
+                "id": "c0ffee00deadbeef",
+                "transport_close_code": 40
+            },
+            "origin": {
+                "bytes_received": 4096,
+                "bytes_sent": 10240
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.websocket_analytics",
+        "namespace": "17030",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 4096
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "e4b45e75-8233-4299-bf64-e0662687593b",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "cloudflare_logpush.websocket_analytics",
+        "duration": 5500000000,
+        "end": "2025-03-10T12:02:05.500Z",
+        "ingested": "2026-11-25T09:57:24Z",
+        "kind": "event",
+        "original": "{\"BytesReceivedClient\":10240,\"BytesReceivedOrigin\":4096,\"BytesSentClient\":4096,\"BytesSentOrigin\":10240,\"ClientASN\":0,\"ClientIP\":\"2a02:cf40::1\",\"ClientRequestHost\":\"ws.example.org\",\"ClientRequestPath\":\"/graphql\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15\",\"ColoCode\":\"FRA\",\"ConnectionCloseReason\":\"peerReset\",\"ConnectionCloseSource\":\"downstream\",\"ConnectionID\":\"c0ffee00deadbeef\",\"ConnectionTransportCloseCode\":40,\"EdgeEndTimestamp\":1741608125500000000,\"EdgeStartTimestamp\":1741608120000000000,\"RayID\":\"8f1d2c3b4a5e6f72\"}",
+        "outcome": "failure",
+        "start": "2025-03-10T12:02:00.000Z",
+        "type": [
+            "connection",
+            "end"
+        ]
+    },
+    "http": {
+        "request": {
+            "id": "8f1d2c3b4a5e6f72"
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "network": {
+        "bytes": 14336,
+        "protocol": "websocket",
+        "transport": "tcp"
+    },
+    "related": {
+        "hosts": [
+            "ws.example.org"
+        ],
+        "ip": [
+            "2a02:cf40::1"
+        ]
+    },
+    "source": {
+        "bytes": 10240,
+        "geo": {
+            "continent_name": "Europe",
+            "country_iso_code": "NO",
+            "country_name": "Norway",
+            "location": {
+                "lat": 62,
+                "lon": 10
+            }
+        },
+        "ip": "2a02:cf40::1"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-websocket_analytics"
+    ],
+    "url": {
+        "domain": "ws.example.org",
+        "path": "/graphql"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Safari",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+        "os": {
+            "full": "Mac OS X 14.5",
+            "name": "Mac OS X",
+            "version": "14.5"
+        },
+        "version": "17.5"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |  |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |  |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |  |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |  |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |  |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |  |
+| cloudflare_logpush.websocket_analytics.colo.code | IATA airport code of the data center that handled the connection. | keyword |  |
+| cloudflare_logpush.websocket_analytics.connection.close.reason | The edge proxy classification for why the WebSocket connection ended. `none` means the proxy observed no classified error or timeout. Possible values are `none`, `unspecifiedError`, `timedOut`, `peerReset`, `upstreamReset`, `protocolViolation` and `peerNoError`. | keyword |  |
+| cloudflare_logpush.websocket_analytics.connection.close.source | The side where the edge proxy observed the connection close. This field does not necessarily identify which side initiated the close. `both` means the proxy observed closure in both directions and does not identify which direction closed first. Possible values are `upstream`, `downstream`, `me` and `both`. Unrecognized classifications can appear as raw internal values. | keyword |  |
+| cloudflare_logpush.websocket_analytics.connection.id | Unique identifier of the WebSocket connection, hex-encoded. | keyword |  |
+| cloudflare_logpush.websocket_analytics.connection.transport_close_code | A reportable transport-level close code observed. For Transport Layer Security (TLS) connections, the low byte contains the TLS alert description. A TLS `close_notify` alert is not reported. A value of 0 means no reportable code was observed or the connection used plain TCP. The most significant bit indicates the source (0 is proxy-initiated, 1 is peer-initiated). | long |  |
+| cloudflare_logpush.websocket_analytics.origin.bytes_received | Number of bytes received from the origin. | long | byte |
+| cloudflare_logpush.websocket_analytics.origin.bytes_sent | Number of bytes sent to the origin. | long | byte |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |  |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |  |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |  |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |  |
+| input.type | Input type | keyword |  |
+| log.offset | Log offset | long |  |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |  |
 
 
 #### workers_trace
