@@ -4,36 +4,45 @@ description: Pipeline for Google Cloud Vertex AI Prompt Response logs
 processors:
   # Rename fields from gcp.metrics.vertexai_logs.* to gcp.vertexai.prompt_response_logs.*
   - rename:
+      tag: rename_gcp_vertexai_logs_525aa8cb
       field: gcp.vertexai_logs
       target_field: gcp.vertexai.prompt_response_logs
       ignore_missing: true
   - set:
+      tag: set_ecs_version_6737ca3d
       field: ecs.version
       value: '8.17.0'
   - set:
+      tag: set_event_kind_cc9a8b17
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_4f58ec27
       field: event.type
       value: [info]
   - set:
+      tag: set_cloud_provider_a896e3b9
       field: cloud.provider
       value: gcp
   - set:
+      tag: set_cloud_service_name_3e9ce5a0
       field: cloud.service.name
       value: vertex-ai
       
   # Set service information
   - set:
+      tag: set_service_name_20b5935f
       field: service.name
       value: vertex-ai
       
   - set:
+      tag: set_service_type_43a4e929
       field: service.type
       value: ai-platform
 
   # Process API method for better categorization
   - set:
+      tag: set_event_action_16eb7b95
       field: event.action
       copy_from: gcp.vertexai.prompt_response_logs.api_method
       if: ctx.gcp?.vertexai?.prompt_response_logs?.api_method != null
@@ -41,6 +50,7 @@ processors:
   # Rename camelCase fields to snake_case
 
   - script:
+      tag: script_33f86904
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -96,13 +106,20 @@ processors:
 
   # Remove the original gcp.metrics field after processing
   - remove:
+      tag: remove_gcp_vertexai_logs_4ba252f8
       field: gcp.vertexai_logs
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_c9856022
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_eec2a6d1
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

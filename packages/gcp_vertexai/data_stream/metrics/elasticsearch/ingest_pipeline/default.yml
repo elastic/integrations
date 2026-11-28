@@ -2,77 +2,100 @@
 description: Pipeline for parsing GCP Vertex AI metrics.
 processors:
   - rename:
+      tag: rename_gcp_metrics_publisher_online_serving_token_count_value_331ffb66
       field: gcp.metrics.publisher.online_serving.token_count.value
       target_field: gcp.vertexai.publisher.online_serving.token_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_publisher_online_serving_model_invocation_count_value_d2a2a8e0
       field: gcp.metrics.publisher.online_serving.model_invocation_count.value
       target_field: gcp.vertexai.publisher.online_serving.model_invocation_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_publisher_online_serving_character_count_value_9181a707
       field: gcp.metrics.publisher.online_serving.character_count.value
       target_field: gcp.vertexai.publisher.online_serving.character_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_publisher_online_serving_model_invocation_latencies_value_histogram_78a4093e
       field: gcp.metrics.publisher.online_serving.model_invocation_latencies.value.histogram
       target_field: gcp.vertexai.publisher.online_serving.model_invocation_latencies
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_publisher_online_serving_consumed_throughput_value_c6f878b7
       field: gcp.metrics.publisher.online_serving.consumed_throughput.value
       target_field: gcp.vertexai.publisher.online_serving.consumed_throughput
       ignore_missing: true  
   - rename:
+      tag: rename_gcp_metrics_publisher_online_serving_first_token_latencies_value_histogram_010d6e74
       field: gcp.metrics.publisher.online_serving.first_token_latencies.value.histogram
       target_field: gcp.vertexai.publisher.online_serving.first_token_latencies
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_error_count_value_3be3f6b7
       field: gcp.metrics.prediction.online.error_count.value
       target_field: gcp.vertexai.prediction.online.error_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_response_count_value_fd0ebc71
       field: gcp.metrics.prediction.online.response_count.value
       target_field: gcp.vertexai.prediction.online.response_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_prediction_count_value_a67ffaac
       field: gcp.metrics.prediction.online.prediction_count.value
       target_field: gcp.vertexai.prediction.online.prediction_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_cpu_utilization_value_8803a1ff
       field: gcp.metrics.prediction.online.cpu.utilization.value
       target_field: gcp.vertexai.prediction.online.cpu.utilization
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_memory_bytes_used_value_75e06e21
       field: gcp.metrics.prediction.online.memory.bytes_used.value
       target_field: gcp.vertexai.prediction.online.memory.bytes_used
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_network_received_bytes_count_value_48783bdc
       field: gcp.metrics.prediction.online.network.received_bytes_count.value
       target_field: gcp.vertexai.prediction.online.network.received_bytes_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_network_sent_bytes_count_value_dd777fb6
       field: gcp.metrics.prediction.online.network.sent_bytes_count.value
       target_field: gcp.vertexai.prediction.online.network.sent_bytes_count
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_replicas_value_8fdf28fe
       field: gcp.metrics.prediction.online.replicas.value
       target_field: gcp.vertexai.prediction.online.replicas
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_target_replicas_value_ea336968
       field: gcp.metrics.prediction.online.target_replicas.value
       target_field: gcp.vertexai.prediction.online.target_replicas
       ignore_missing: true
   - rename:
+      tag: rename_gcp_metrics_prediction_online_prediction_latencies_value_histogram_a0d06cbd
       field: gcp.metrics.prediction.online.prediction_latencies.value.histogram
       target_field: gcp.vertexai.prediction.online.prediction_latencies
       ignore_missing: true
   - remove:
+      tag: remove_gcp_metrics_ece3c12d
       field:
         - gcp.metrics
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_98477f36
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_d5790ffb
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
