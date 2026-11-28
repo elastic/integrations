@@ -2,22 +2,27 @@
 description: Pipeline for parsing apache error logs
 processors:
   - set:
+      tag: set_event_ingested_6c73e016
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_c4d82192
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_b2822684
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - remove:
+      tag: remove_message_b601d233
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
+      tag: grok_event_original_362389f3
       field: event.original
       patterns:
       - \[%{APACHE_TIME:apache.error.timestamp}\] \[%{LOGLEVEL:log.level}\]( \[client
@@ -31,6 +36,7 @@ processors:
         APACHE_TIME: '((%{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{YEAR})|(%{YEAR}\-%{MONTHNUM}\-%{MONTHDAY} %{TIME} %{ISO8601_TIMEZONE}))'
       ignore_missing: true
   - grok:
+      tag: grok_message_de1be52b
       field: message
       patterns:
       - 'File does not exist: %{URIPATH:file.path}, referer: %{URI:http.request.referrer}'
@@ -38,6 +44,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - date:
+      tag: date_apache_error_timestamp_e5826313
       if: ctx.event.timezone == null && ctx.apache?.error?.timestamp != null
       field: apache.error.timestamp
       target_field: '@timestamp'
@@ -47,9 +54,11 @@ processors:
       - EEE MMM dd H:m:s.SSSSSS yyyy
       on_failure:
       - append:
+          tag: append_error_message_3227afce
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - date:
+      tag: date_apache_error_timestamp_28b2b996
       if: ctx.event.timezone != null && ctx.apache?.error?.timestamp != null
       field: apache.error.timestamp
       target_field: '@timestamp'
@@ -60,18 +69,23 @@ processors:
       timezone: '{{ event.timezone }}'
       on_failure:
       - append:
+          tag: append_error_message_a3eac40c
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - remove:
+      tag: remove_apache_error_timestamp_0ca56a22
       field: apache.error.timestamp
       ignore_failure: true
   - set:
+      tag: set_event_kind_d1cae80e
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_ff56f11e
       field: event.category
       value: web
   - script:
+      tag: script_ff6a1c42
       if: "ctx?.log?.level != null"
       lang: painless
       source: >-
@@ -83,15 +97,18 @@ processors:
         }
 
   - grok:
+      tag: grok_source_address_1d86cf7f
       field: source.address
       ignore_missing: true
       patterns:
       - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
   - geoip:
+      tag: geoip_source_ip_ffc1673d
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_799912be
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -100,18 +117,22 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_11b1311a
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_70736e35
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - convert:
+      tag: convert_source_port_c489bb4b
       field: source.port
       type: long
       ignore_missing: true
   - script:
+      tag: script_846047d5
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.
       source: |
@@ -137,5 +158,14 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_c616fc54
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_1688b307
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
