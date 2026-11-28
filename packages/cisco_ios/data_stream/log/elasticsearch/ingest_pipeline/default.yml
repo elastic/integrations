@@ -54,19 +54,19 @@ processors:
       tag: grok_header
       patterns:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{TIMESTAMP_ISO8601:_temp_.cisco_timestamp} %{CISCO_HOSTNAME:log.syslog.hostname} %{GREEDYDATA:_temp_.message}$'
-        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} (?:%{CISCO_HOSTNAME:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
-        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP:log.syslog.hostname} (?:%{CISCO_HOSTNAME}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{CISCO_TIMESTAMP:_temp_.timestamp}: %{GREEDYDATA:_temp_.message}$'
-        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:%{SYSLOGTIMESTAMP} )?(%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{DATA}:%{CISCO_TIMESTAMP}%{GREEDYDATA}%%{GREEDYDATA:message}$'
-        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname})(?:: \*%{DATA}:|:?)? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP:_temp_.timestamp}): %{GREEDYDATA:_temp_.message}$'
-        - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(?:(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): )?%{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:%{SYSLOGTIMESTAMP} )?(%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{DATA}:%{CISCO_TIMESTAMP}%{GREEDYDATA}%%{GREEDYDATA:message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname})(?:: \*%{DATA}:|:?)? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP:_temp_.timestamp}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(?:(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): )?%{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}%{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
         ISO8601_TIMEZONE: "(?:Z|[+-]%{HOUR}(?::?%{MINUTE}))"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?"
         CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
-        CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP_EX:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
+        CISCO_TIMESTAMP: '[\.]?%{CISCOTIMESTAMP_EX:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
         CISCOTIMESTAMP_EX: '(%{CISCOTIMESTAMP})|(%{YEAR} %{MONTH} %{MONTHDAY} %{TIME})'
         CISCO_UPTIME: '(?:\d{1,4}:\d{2}:\d{2}|(?:(\d+)y)?(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?)'
         CISCO_HOSTNAME: '[0-9a-zA-Z][.0-9a-zA-Z_-]{0,253}[0-9a-zA-Z]?'
