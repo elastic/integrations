@@ -33,6 +33,8 @@
     - name: output.output_body_json
       type: flattened
       ignore_above: 8191
+    - name: output.output_body_json_massive_hash
+      type: keyword
     - name: output.output_content_type
       type: keyword
     - name: output.output_token_count
@@ -83,30 +85,122 @@
       type: match_only_text
     - name: task_type
       type: keyword
+    - name: max_tokens
+      type: long
+      description: Maximum number of tokens to generate, from the root of an S3 data-prefix request body object that was ingested without its invocation log record.
+    - name: usage.cache_read_input_tokens
+      type: long
+      description: Input tokens read from the prompt cache (Converse cacheReadInputTokens, Anthropic cache_read_input_tokens, OpenAI prompt_tokens_details.cached_tokens). Included in gen_ai.usage.input_tokens.
+    - name: usage.cache_write_input_tokens
+      type: long
+      description: Input tokens written to the prompt cache (Converse cacheWriteInputTokens, Anthropic cache_creation_input_tokens). Included in gen_ai.usage.input_tokens.
+    - name: usage.reasoning_tokens
+      type: long
+      description: Reasoning tokens reported separately by OpenAI-format responses (completion_tokens_details.reasoning_tokens). Included in gen_ai.usage.output_tokens.
+    - name: first_byte_latency
+      type: long
+      description: Time to the first byte of a streamed response, in milliseconds (amazon-bedrock-invocationMetrics.firstByteLatency).
+    - name: request.reasoning_type
+      type: keyword
+      description: Requested reasoning mode (Anthropic thinking.type, Nova reasoningConfig.type).
+    - name: request.reasoning_budget_tokens
+      type: long
+      description: Token budget for extended thinking (Anthropic thinking.budget_tokens).
+    - name: request.reasoning_display
+      type: keyword
+      description: Requested display of the thinking content (Anthropic thinking.display).
+    - name: request.reasoning_effort
+      type: keyword
+      description: Requested reasoning effort (Anthropic output_config.effort, Nova reasoningConfig.maxReasoningEffort, OpenAI reasoning_effort).
+    - name: requestMetadata.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Caller request tags (envelope requestMetadata), as they arrive. A copy is in aws_bedrock.invocation.request_metadata.
+    - name: request_metadata
+      type: flattened
+      ignore_above: 8191
+      description: Caller request tags (envelope requestMetadata).
+    - name: service_tier
+      type: keyword
+      description: Service tier of the request (Converse serviceTier.type).
+    - name: performance_config.latency
+      type: keyword
+      description: Latency mode of the request (Converse performanceConfig.latency).
+    - name: output.stop_details.category
+      type: keyword
+      description: Category of a refusal stop (Anthropic stop_details.category).
+    - name: guardrail
+      type: group
+      description: Guardrail results. Same values as the legacy gen_ai.guardrail_id, gen_ai.policy.* and gen_ai.compliance.* fields.
+      fields:
+        - name: id
+          type: keyword
+          description: Guardrail IDs that assessed the invocation.
+        - name: version
+          type: keyword
+          description: Guardrail versions, from the request guardrailConfig or the trace appliedGuardrailDetails.
+        - name: arn
+          type: keyword
+          description: Guardrail ARNs, from the request guardrailConfig or the trace appliedGuardrailDetails.
+        - name: policy.name
+          type: keyword
+          description: Name of the specific policy that was triggered.
+        - name: policy.action
+          type: keyword
+          description: Action taken due to a policy violation, such as blocking, alerting, or modifying the content.
+        - name: policy.match_detail
+          type: group
+          description: Details about what specifically triggered the policy, including matched words, phrases, or patterns.
+        - name: policy.match_detail.score
+          type: float
+        - name: policy.match_detail.threshold
+          type: float
+        - name: policy.match_detail.*
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+        - name: policy.confidence
+          type: keyword
+          description: Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria.
+        - name: compliance.violation_detected
+          type: boolean
+          description: Indicates if any compliance violation was detected during the interaction.
+        - name: compliance.violation_code
+          type: keyword
+          description: Code identifying the specific compliance rule that was violated.
+- name: gen_ai.request.stop_sequences
+  type: keyword
+  description: >-
+    List of sequences that the model will use to stop generating further tokens. Defined locally as keyword because ECS types it as nested without properties (elastic/ecs#2560).
+- name: gen_ai.request.encoding_formats
+  type: keyword
+  description: >-
+    Encoding formats requested in an embeddings operation. Defined locally as keyword because ECS types it as nested without properties (elastic/ecs#2560).
 - name: gen_ai.response.finish_reasons
   type: keyword
   description: Reason the LLM response stopped.
 - name: gen_ai.guardrail_id
   type: keyword
-  description: Guardrail ID if a guardrail was executed.
+  description: Deprecated, use `aws_bedrock.invocation.guardrail.id` instead. Guardrail ID if a guardrail was executed.
 - name: gen_ai.prompt
   type: text
   description: The full text of the user's request to the gen_ai.
 - name: gen_ai.usage.prompt_tokens
   type: integer
-  description: Number of tokens in the user's request.
+  description: Deprecated, use `gen_ai.usage.input_tokens` instead. Number of tokens in the user's request.
 - name: gen_ai.completion
   type: text
   description: The full text of the LLM's response.
 - name: gen_ai.usage.completion_tokens
   type: integer
-  description: Number of tokens in the LLM's response.
+  description: Deprecated, use `gen_ai.usage.output_tokens` instead. Number of tokens in the LLM's response.
 - name: gen_ai.system
   type: keyword
-  description: Name of the LLM foundation model vendor.
+  description: Deprecated, use `gen_ai.provider.name` instead. Name of the LLM foundation model vendor.
 - name: gen_ai.user.id
   type: keyword
-  description: Unique identifier for the user.
+  description: Deprecated, use `user.id` instead. Unique identifier for the user.
 - name: gen_ai.user.rn
   type: keyword
   description: Unique resource name for the user.
@@ -115,7 +209,7 @@
   description: Unique identifier for the LLM request.
 - name: gen_ai.response.error_code
   type: keyword
-  description: Error code returned in the LLM response.
+  description: Deprecated, use `error.code` instead. Error code returned in the LLM response.
 - name: gen_ai.request.timestamp
   type: date
   description: Timestamp when the request was made.
@@ -127,7 +221,7 @@
   description: Version of the LLM model used to generate the response.
 - name: gen_ai.request.model.id
   type: keyword
-  description: Unique identifier for the LLM model.
+  description: Deprecated, use `aws_bedrock.invocation.model_id` instead. Unique identifier for the LLM model.
 - name: gen_ai.request.model.role
   type: keyword
   description: Role of the LLM model in the interaction.
@@ -166,16 +260,16 @@
   description: Measures similarity to known LLM refusal responses.
 - name: gen_ai.policy.name
   type: keyword
-  description: Name of the specific policy that was triggered.
+  description: Deprecated, use `aws_bedrock.invocation.guardrail.policy.name` instead. Name of the specific policy that was triggered.
 - name: gen_ai.policy.violation
   type: boolean
-  description: Specifies if a security policy was violated.
+  description: Deprecated, with no replacement. Specifies if a security policy was violated.
 - name: gen_ai.policy.action
   type: keyword
-  description: Action taken due to a policy violation, such as blocking, alerting, or modifying the content.
+  description: Deprecated, use `aws_bedrock.invocation.guardrail.policy.action` instead. Action taken due to a policy violation, such as blocking, alerting, or modifying the content.
 - name: gen_ai.policy.match_detail
   type: group
-  description: Details about what specifically triggered the policy, including matched words, phrases, or patterns.
+  description: Deprecated, use `aws_bedrock.invocation.guardrail.policy.match_detail` instead. Details about what specifically triggered the policy, including matched words, phrases, or patterns.
 - name: gen_ai.policy.match_detail.score
   type: float
 - name: gen_ai.policy.match_detail.threshold
@@ -186,7 +280,7 @@
   object_type_mapping_type: "*"
 - name: gen_ai.policy.confidence
   type: keyword
-  description: Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria.
+  description: Deprecated, use `aws_bedrock.invocation.guardrail.policy.confidence` instead. Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria.
 - name: gen_ai.threat.risk_score
   type: float
   description: Numerical score indicating the potential risk associated with the response.
@@ -216,16 +310,16 @@
   description: Stores results from YARA scans including rule matches and categories.
 - name: gen_ai.compliance.violation_detected
   type: boolean
-  description: Indicates if any compliance violation was detected during the interaction.
+  description: Deprecated, use `aws_bedrock.invocation.guardrail.compliance.violation_detected` instead. Indicates if any compliance violation was detected during the interaction.
 - name: gen_ai.compliance.violation_code
   type: keyword
-  description: Code identifying the specific compliance rule that was violated.
+  description: Deprecated, use `aws_bedrock.invocation.guardrail.compliance.violation_code` instead. Code identifying the specific compliance rule that was violated.
 - name: gen_ai.compliance.response_triggered
   type: keyword
-  description: Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks.
+  description: Deprecated, with no replacement. Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks.
 - name: gen_ai.compliance.request_triggered
   type: keyword
-  description: Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks.
+  description: Deprecated, with no replacement. Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks.
 - name: gen_ai.owasp.id
   type: keyword
   description: Identifier for the OWASP risk addressed.
@@ -258,10 +352,10 @@
   description: Categories of content identified as sensitive or requiring moderation.
 - name: gen_ai.performance.response_time
   type: long
-  description: Time taken by the LLM to generate a response in milliseconds.
+  description: Deprecated, use `event.duration` (nanoseconds) instead. Time taken by the LLM to generate a response in milliseconds.
 - name: gen_ai.performance.start_response_time
   type: long
-  description: Time taken by the LLM to send first response byte in milliseconds.
+  description: Deprecated, use `aws_bedrock.invocation.first_byte_latency` instead. Time taken by the LLM to send first response byte in milliseconds.
 - name: gen_ai.performance.request_size
   type: long
   description: Size of the request payload in bytes.

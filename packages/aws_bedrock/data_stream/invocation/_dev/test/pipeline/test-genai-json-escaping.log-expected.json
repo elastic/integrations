@@ -81,6 +81,7 @@
             },
             "event": {
                 "action": "Converse",
+                "duration": 812000000,
                 "original": "{\"schemaType\": \"ModelInvocationLog\", \"schemaVersion\": \"1.0\", \"timestamp\": \"2025-06-02T10:00:00Z\", \"accountId\": \"123456789012\", \"identity\": {\"arn\": \"arn:aws:iam::123456789012:user/test-user\"}, \"region\": \"us-east-1\", \"requestId\": \"0b1d2c3e-0000-4000-8000-000000000001\", \"operation\": \"Converse\", \"modelId\": \"anthropic.claude-3-5-sonnet-20240620-v1:0\", \"input\": {\"inputContentType\": \"application/json\", \"inputBodyJson\": {\"messages\": [{\"role\": \"user\", \"content\": [{\"text\": \"Say \\\"hi\\\" to C:\\\\Users\\\\test\\tthen\\nstop.\\u0001 Naïve café ✓ 🚀\"}]}], \"system\": [{\"text\": \"Reply with \\\"OK\\\"\\nthen a newline and a \\\\ backslash.\"}], \"inferenceConfig\": {\"maxTokens\": 512, \"temperature\": 0.5, \"stopSequences\": [\"\\n\\nHuman:\"]}}, \"inputTokenCount\": 42}, \"output\": {\"outputContentType\": \"application/json\", \"outputBodyJson\": {\"output\": {\"message\": {\"role\": \"assistant\", \"content\": [{\"text\": \"Sure: \\\"hi\\\" from C:\\\\Users\\\\test\\n\\tDone ✓\"}]}}, \"stopReason\": \"end_turn\", \"metrics\": {\"latencyMs\": 812}, \"usage\": {\"inputTokens\": 42, \"outputTokens\": 17, \"totalTokens\": 59}}, \"outputTokenCount\": 17}}",
                 "outcome": "success"
             },
@@ -97,6 +98,9 @@
                             "role": "user"
                         }
                     ]
+                },
+                "operation": {
+                    "name": "chat"
                 },
                 "output": {
                     "messages": [
@@ -115,13 +119,20 @@
                     "response_size": 224
                 },
                 "prompt": "{\"inferenceConfig\":{\"maxTokens\":512,\"stopSequences\":[\"\\n\\nHuman:\"],\"temperature\":0.5},\"messages\":[{\"content\":[{\"text\":\"Say \\\"hi\\\" to C:\\\\Users\\\\test\\tthen\\nstop.\\u0001 Naïve café ✓ 🚀\"}],\"role\":\"user\"}],\"system\":[{\"text\":\"Reply with \\\"OK\\\"\\nthen a newline and a \\\\ backslash.\"}]}",
+                "provider": {
+                    "name": "aws.bedrock"
+                },
                 "request": {
                     "id": "0b1d2c3e-0000-4000-8000-000000000001",
+                    "max_tokens": 512,
                     "model": {
                         "id": "anthropic.claude-3-5-sonnet-20240620-v1:0",
                         "role": "assistant",
                         "type": "anthropic"
                     },
+                    "stop_sequences": [
+                        "\n\nHuman:"
+                    ],
                     "temperature": 0.5
                 },
                 "response": {
@@ -129,20 +140,34 @@
                     "timestamp": "2025-06-02T10:00:00.000Z"
                 },
                 "system": "aws",
+                "system_instructions": [
+                    {
+                        "content": "Reply with \"OK\"\nthen a newline and a \\ backslash.",
+                        "type": "text"
+                    }
+                ],
                 "usage": {
                     "completion_tokens": 17,
+                    "input_tokens": 42,
+                    "output_tokens": 17,
                     "prompt_tokens": 42
                 },
                 "user": {
                     "id": "arn:aws:iam::123456789012:user/test-user"
                 }
             },
+            "related": {
+                "user": [
+                    "test-user"
+                ]
+            },
             "tags": [
                 "preserve_original_event",
                 "preserve_duplicate_custom_fields"
             ],
             "user": {
-                "id": "arn:aws:iam::123456789012:user/test-user"
+                "id": "arn:aws:iam::123456789012:user/test-user",
+                "name": "test-user"
             }
         },
         {
@@ -254,11 +279,17 @@
                         }
                     ]
                 },
+                "operation": {
+                    "name": "chat"
+                },
                 "performance": {
                     "request_size": 498,
                     "response_size": 306
                 },
                 "prompt": "{\"anthropic_version\":\"bedrock-2023-05-31\",\"max_tokens\":1024,\"messages\":[{\"content\":[{\"text\":\"Read \\\"C:\\\\temp\\\\a.txt\\\"\\nand summarise.\\u0001\",\"type\":\"text\"}],\"role\":\"user\"}],\"stop_sequences\":[\"\\n\\nHuman:\",\"</answer>\"],\"system\":\"You are a \\\"careful\\\" assistant.\\nAnswer in JSON.\",\"tools\":[{\"description\":\"Read a file such as \\\"C:\\\\temp\\\\a.txt\\\".\",\"input_schema\":{\"properties\":{\"path\":{\"description\":\"The \\\"absolute\\\" path.\",\"type\":\"string\"}},\"required\":[\"path\"],\"type\":\"object\"},\"name\":\"read_file\"}]}",
+                "provider": {
+                    "name": "aws.bedrock"
+                },
                 "request": {
                     "id": "0b1d2c3e-0000-4000-8000-000000000002",
                     "max_tokens": 1024,
@@ -266,28 +297,68 @@
                         "id": "anthropic.claude-3-sonnet-20240229-v1:0",
                         "type": "anthropic",
                         "version": "bedrock-2023-05-31"
-                    }
+                    },
+                    "stop_sequences": [
+                        "\n\nHuman:",
+                        "</answer>"
+                    ]
                 },
                 "response": {
                     "finish_reasons": "end_turn",
                     "id": "msg_bdrk_escaping01",
+                    "model": "claude-3-sonnet-20240229",
                     "timestamp": "2025-06-02T10:01:00.000Z"
                 },
                 "system": "aws",
+                "system_instructions": [
+                    {
+                        "content": "You are a \"careful\" assistant.\nAnswer in JSON.",
+                        "type": "text"
+                    }
+                ],
+                "tool": {
+                    "definitions": [
+                        {
+                            "description": "Read a file such as \"C:\\temp\\a.txt\".",
+                            "name": "read_file",
+                            "parameters": {
+                                "properties": {
+                                    "path": {
+                                        "description": "The \"absolute\" path.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "path"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "function"
+                        }
+                    ]
+                },
                 "usage": {
                     "completion_tokens": 30,
+                    "input_tokens": 120,
+                    "output_tokens": 30,
                     "prompt_tokens": 120
                 },
                 "user": {
                     "id": "arn:aws:iam::123456789012:user/test-user"
                 }
             },
+            "related": {
+                "user": [
+                    "test-user"
+                ]
+            },
             "tags": [
                 "preserve_original_event",
                 "preserve_duplicate_custom_fields"
             ],
             "user": {
-                "id": "arn:aws:iam::123456789012:user/test-user"
+                "id": "arn:aws:iam::123456789012:user/test-user",
+                "name": "test-user"
             }
         }
     ]

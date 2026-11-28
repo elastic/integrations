@@ -81,6 +81,37 @@ processors:
 
         inv.output.outputBodyJson = chunks;
         ctx.aws_bedrock.invocation = inv;
+  - script:
+      tag: wrap_e_record_list_or_string_body_c3f8a1d6
+      description: >-
+        An S3 data-prefix body object without its invocation log record (no schemaType and no
+        operation) whose input or output is not an object, such as an OpenAI Responses body,
+        would clash with the input and output objects of an invocation record. Move the whole
+        body under input.inputBodyJson or output.outputBodyJson, where an invocation log record
+        keeps it. The _input or _output suffix of the S3 object key gives the direction.
+      if: >-
+        ctx.aws_bedrock?.invocation instanceof Map && ctx.aws_bedrock.invocation.schemaType == null &&
+        ctx.aws_bedrock.invocation.operation == null &&
+        ((ctx.aws_bedrock.invocation.input != null && !(ctx.aws_bedrock.invocation.input instanceof Map)) ||
+        (ctx.aws_bedrock.invocation.output != null && !(ctx.aws_bedrock.invocation.output instanceof Map)))
+      lang: painless
+      source: |
+        def body = ctx.aws_bedrock.invocation;
+        def key = ctx.aws?.s3?.object?.key;
+        String name = key instanceof String ? key.substring(key.lastIndexOf('/') + 1) : '';
+        boolean isOutput;
+        if (name.contains('_output.')) {
+          isOutput = true;
+        } else if (name.contains('_input.')) {
+          isOutput = false;
+        } else {
+          isOutput = body.output != null && !(body.output instanceof Map);
+        }
+        if (isOutput) {
+          ctx.aws_bedrock.invocation = ['output': ['outputBodyJson': body]];
+        } else {
+          ctx.aws_bedrock.invocation = ['input': ['inputBodyJson': body]];
+        }
   - set:
       tag: set_ecs_version_0f7334bb
       field: ecs.version
@@ -109,6 +140,62 @@ processors:
       tag: rename_aws_bedrock_invocation_identity_arn_to_user_id_f827bc21
       field: aws_bedrock.invocation.identity.arn
       target_field: user.id
+      ignore_missing: true
+  # Parse the caller ARN the way the aws.cloudtrail pipeline does: user.name is the IAM user
+  # name (without its path), the federated user name, or the role name of an assumed role.
+  # The session name of an assumed role is an actor label: it goes to related.user, and to
+  # user.email when it is an email address (with its local part also in related.user).
+  # Root and other principals leave user.name unset. user.id keeps the full ARN.
+  - grok:
+      tag: grok_user_name_from_identity_arn_eb0f5887
+      field: user.id
+      patterns:
+        - '^arn:[^:]+:iam::[^:]*:user/(?:[^/]+/)*%{NOT_SLASH:user.name}$'
+        - '^arn:[^:]+:sts::[^:]*:assumed-role/%{NOT_SLASH:user.name}/%{NOT_SLASH:_temp.user.session_name}$'
+        - '^arn:[^:]+:sts::[^:]*:federated-user/%{NOT_SLASH:user.name}$'
+      pattern_definitions:
+        NOT_SLASH: '[^/]+'
+      if: >-
+        ctx.user?.id instanceof String && ctx.user.id.startsWith('arn:') &&
+        (ctx.user.id.contains(':user/') || ctx.user.id.contains(':assumed-role/') || ctx.user.id.contains(':federated-user/'))
+      ignore_failure: true
+  - dissect:
+      tag: dissect_session_name_email_prefix_9b4326ff
+      field: _temp.user.session_name
+      pattern: '%{_temp.user.session_name_prefix}@%{}'
+      if: ctx._temp?.user?.session_name instanceof String && ctx._temp.user.session_name.contains('@')
+      ignore_failure: true
+  - set:
+      tag: set_user_email_from_session_name_b2030161
+      field: user.email
+      copy_from: _temp.user.session_name
+      if: ctx.user?.email == null && ctx._temp?.user?.session_name_prefix != null
+  - set:
+      tag: set_user_email_from_user_name_d4c792c9
+      field: user.email
+      copy_from: user.name
+      if: ctx.user?.email == null && ctx.user?.name instanceof String && ctx.user.name.indexOf('@') > 0
+  - append:
+      tag: append_related_user_user_name_0997b8d3
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      tag: append_related_user_session_name_d5ec7bdc
+      field: related.user
+      value: '{{{_temp.user.session_name}}}'
+      allow_duplicates: false
+      if: ctx._temp?.user?.session_name != null
+  - append:
+      tag: append_related_user_session_name_prefix_2830735b
+      field: related.user
+      value: '{{{_temp.user.session_name_prefix}}}'
+      allow_duplicates: false
+      if: ctx._temp?.user?.session_name_prefix != null
+  - remove:
+      tag: remove_temp_user_9a09e4ec
+      field: _temp
       ignore_missing: true
   - rename:
       tag: rename_aws_bedrock_invocation_accountId_to_cloud_account_id_fa2d7c2d
@@ -256,6 +343,12 @@ processors:
           for (def entry: src.entrySet()) {
             def key = entry.getKey();
             def value = entry.getValue();
+            // Tool definitions hold caller-defined parameter schemas. Renaming a property
+            // there (modelId to model_id) would no longer match its required list.
+            if (key == 'tools' || key == 'toolConfig') {
+              dst[key] = value;
+              continue;
+            }
             if (value instanceof Map) {
               if (keyMap.containsKey(key)) {
                 dst[keyMap[key]] = renameKeys(value, keyMap);
@@ -565,7 +658,7 @@ processors:
       ignore_empty_value: true
   - script:
       tag: set_gen_ai_output_messages_from_output_message_8e1b6a3f
-      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message != null'
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output instanceof Map && ctx.aws_bedrock.invocation.output.output_body_json.output.message != null'
       lang: painless
       source: |
         ctx.gen_ai = ctx.gen_ai ?: [:];
@@ -648,7 +741,7 @@ processors:
         }
   - set:
       tag: get_response_role_from_object_85b4884b
-      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message?.role != null'
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output instanceof Map && ctx.aws_bedrock.invocation.output.output_body_json.output.message?.role != null'
       field: gen_ai.request.model.role
       copy_from: aws_bedrock.invocation.output.output_body_json.output.message.role
   - set:
@@ -783,11 +876,19 @@ processors:
       field: event.outcome
       value: success
       override: false
+  - pipeline:
+      tag: pipeline_genai_8e5a7b73
+      description: >-
+        Map the ECS gen_ai fields and the vendor fields without an ECS equivalent. Runs before
+        the massive input and output bodies are removed, so it reads bodies of any size.
+      name: '{{ IngestPipeline "genai" }}'
 
   # Remove massive fields only after the fields have been used.
   - script:
       tag: script_remove_massive_input_bodies_keep_9c28ef10
-      description: Remove massive input bodies and keep request perf stats.
+      description: >-
+        Remove massive input bodies and keep request perf stats. A removed gen_ai.prompt is
+        marked with the gen_ai_prompt_removed tag.
       if: ctx.gen_ai?.prompt instanceof String
       lang: painless
       source: |
@@ -798,11 +899,19 @@ processors:
           ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.prompt.sha1();
           ctx.aws_bedrock.invocation.input.remove("input_body_json");
           ctx.gen_ai.remove("prompt");
+          if (!(ctx.tags instanceof List)) {
+            ctx.tags = new ArrayList();
+          }
+          if (!ctx.tags.contains('gen_ai_prompt_removed')) {
+            ctx.tags.add('gen_ai_prompt_removed');
+          }
         }
 
   - script:
       tag: script_convert_chat_completion_response_map_c45c8ed2
-      description: Convert chat completion response in map or list format to user friendly format
+      description: >-
+        Convert chat completion response in map or list format to user friendly format. A
+        completion_text cut to 32766 characters is marked with the completion_text_truncated tag.
       lang: painless
       source: |
         try {
@@ -867,6 +976,12 @@ processors:
           // Trim completionText if it exceeds 32766 characters
           if (completionText.length() > 32766) {
             completionText.setLength(32766);
+            if (!(ctx.tags instanceof List)) {
+              ctx.tags = new ArrayList();
+            }
+            if (!ctx.tags.contains('completion_text_truncated')) {
+              ctx.tags.add('completion_text_truncated');
+            }
           }
           ctx.aws_bedrock.invocation.output.completion_text = completionText.toString();
         }
@@ -878,7 +993,9 @@ processors:
 
   - script:
       tag: script_remove_massive_output_bodies_keep_d7d75f45
-      description: Remove massive output bodies and keep response perf stats.
+      description: >-
+        Remove massive output bodies and keep response perf stats. A removed gen_ai.completion
+        is marked with the gen_ai_completion_removed tag.
       if: ctx.gen_ai?.completion instanceof String
       lang: painless
       source: |
@@ -889,11 +1006,20 @@ processors:
           ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.completion.sha1();
           ctx.aws_bedrock.invocation.output.remove("output_body_json");
           ctx.gen_ai.remove("completion");
+          if (!(ctx.tags instanceof List)) {
+            ctx.tags = new ArrayList();
+          }
+          if (!ctx.tags.contains('gen_ai_completion_removed')) {
+            ctx.tags.add('gen_ai_completion_removed');
+          }
         }
 
   - script:
       tag: script_drops_null_empty_values_recursively_7e38081f
-      description: Drops null/empty values recursively
+      description: >-
+        Drops null/empty values recursively. gen_ai.tool.definitions is left out, because empty
+        and null values in a tool's parameter schema (an enum value, a default, an empty
+        property schema) are part of the tool interface.
       lang: painless
       source: |
         boolean drop(Object o) {
@@ -908,7 +1034,91 @@ processors:
           }
           return false;
         }
+        def toolDefs = null;
+        if (ctx.gen_ai?.tool instanceof Map && ctx.gen_ai.tool.definitions != null) {
+          toolDefs = ctx.gen_ai.tool.remove('definitions');
+        }
         drop(ctx);
+        if (toolDefs != null) {
+          if (!(ctx.gen_ai instanceof Map)) {
+            ctx.gen_ai = new HashMap();
+          }
+          if (!(ctx.gen_ai.tool instanceof Map)) {
+            ctx.gen_ai.tool = new HashMap();
+          }
+          ctx.gen_ai.tool.definitions = toolDefs;
+        }
+  - script:
+      tag: script_cap_flattened_field_depth_5e2b9c47
+      description: >-
+        A flattened field rejects the whole document when an object is nested more than 20
+        levels deep, which a deep tool parameter schema, tool input or tool result can reach.
+        Store any object of gen_ai.input.messages and gen_ai.output.messages, and, when the
+        bodies are kept, of input.input_body_json and output.output_body_json (or of the stream
+        chunks of a list body), that sits deeper than max_depth levels as a JSON string. Values
+        within the limit are not changed.
+      lang: painless
+      params:
+        max_depth: 20
+      source: |
+        int depth(def v) {
+          int d = 0;
+          if (v instanceof Map) {
+            for (def x : v.values()) {
+              int c = depth(x);
+              if (c > d) {
+                d = c;
+              }
+            }
+            return d + 1;
+          }
+          if (v instanceof List) {
+            for (def x : v) {
+              int c = depth(x);
+              if (c > d) {
+                d = c;
+              }
+            }
+          }
+          return d;
+        }
+        def cap(def v, int level, int maxDepth) {
+          if (v instanceof Map) {
+            if (level > maxDepth) {
+              return Json.dump(v);
+            }
+            Map out = new HashMap();
+            for (def e : v.entrySet()) {
+              out.put(e.getKey(), cap(e.getValue(), level + 1, maxDepth));
+            }
+            return out;
+          }
+          if (v instanceof List) {
+            List out = new ArrayList();
+            for (def x : v) {
+              out.add(cap(x, level, maxDepth));
+            }
+            return out;
+          }
+          return v;
+        }
+        int maxDepth = params.max_depth;
+        if (ctx.gen_ai instanceof Map) {
+          for (String f : ['input', 'output']) {
+            if (ctx.gen_ai[f] instanceof Map && depth(ctx.gen_ai[f].messages) > maxDepth) {
+              ctx.gen_ai[f].messages = cap(ctx.gen_ai[f].messages, 1, maxDepth);
+            }
+          }
+        }
+        if (ctx.tags instanceof List && ctx.tags.contains('preserve_duplicate_custom_fields') && ctx.aws_bedrock?.invocation instanceof Map) {
+          Map inv = ctx.aws_bedrock.invocation;
+          if (inv.input instanceof Map && depth(inv.input.input_body_json) > maxDepth) {
+            inv.input.input_body_json = cap(inv.input.input_body_json, 1, maxDepth);
+          }
+          if (inv.output instanceof Map && depth(inv.output.output_body_json) > maxDepth) {
+            inv.output.output_body_json = cap(inv.output.output_body_json, 1, maxDepth);
+          }
+        }
   - remove:
       field:
         - aws_bedrock.invocation.input.input_body_json
