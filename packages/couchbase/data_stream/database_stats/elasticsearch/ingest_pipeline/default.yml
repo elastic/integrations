@@ -2,72 +2,86 @@
 description: Pipeline for parsing Couchbase Sync Gateway Database Stats metrics.
 processors:
   - set:
+      tag: set_ecs_version_6790953d
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_bcd90c06
       field: event.type
       value: [info]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_c9f47b78
       field: event.kind
       value: metric
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_65658fc7
       field: event.category
       value: [database]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_96826fa2
       field: event.module
       value: couchbase
       override: true
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_prometheus_labels_database_d5f3e6f8
       field: prometheus.labels.database
       target_field: couchbase.database_stats.database.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_labels_instance_94dd626e
       field: prometheus.labels.instance
       target_field: server.address
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_database_num_replications_active_029cd23d
       field: prometheus.metrics.sgw_database_num_replications_active
       target_field: couchbase.database_stats.replications.active
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_database_num_replications_total_03b9bd03
       field: prometheus.metrics.sgw_database_num_replications_total
       target_field: couchbase.database_stats.replications.total
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_database_num_doc_writes_a48e8628
       field: prometheus.metrics.sgw_database_num_doc_writes
       target_field: couchbase.database_stats.document.writes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_database_num_doc_reads_blip_b462bd3f
       field: prometheus.metrics.sgw_database_num_doc_reads_blip
       target_field: couchbase.database_stats.document.reads.blip
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_database_num_doc_reads_rest_fa3b1f4f
       field: prometheus.metrics.sgw_database_num_doc_reads_rest
       target_field: couchbase.database_stats.document.reads.rest
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_prometheus_metrics_sgw_database_dcp_received_time_cfd80400
       field: prometheus.metrics.sgw_database_dcp_received_time
       target_field: couchbase.database_stats.dcp.received.time
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_7a46862e
       description: Add job to tag list.
       lang: painless
       ignore_failure: true
@@ -77,10 +91,12 @@ processors:
         }
         ctx.tags.add(ctx.prometheus.labels.job)
   - remove:
+      tag: remove_prometheus_d90ad7ac
       field: prometheus
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_1f571a76
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -99,5 +115,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_a092d654
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_1ba1205b
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

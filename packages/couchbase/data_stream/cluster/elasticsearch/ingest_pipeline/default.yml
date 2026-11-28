@@ -2,111 +2,133 @@
 description: Pipeline for parsing Couchbase Cluster metrics
 processors:
   - set:
+      tag: set_ecs_version_dfb1c51c
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_f4e65fae
       field: event.type
       value: [info]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_d473c70b
       field: event.kind
       value: metric
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_771b9d01
       field: event.category
       value: [database]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_fa37e7f6
       field: event.module
       value: couchbase
       override: true
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_http_cluster_maxBucketCount_8e7ca866
       field: http.cluster.maxBucketCount
       target_field: couchbase.cluster.buckets.max.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_hdd_free_552acf28
       field: http.cluster.storageTotals.hdd.free
       target_field: couchbase.cluster.hdd.free.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_hdd_quotaTotal_ea22b543
       field: http.cluster.storageTotals.hdd.quotaTotal
       target_field: couchbase.cluster.hdd.quota.total.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_hdd_total_194b7011
       field: http.cluster.storageTotals.hdd.total
       target_field: couchbase.cluster.hdd.total.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_hdd_usedByData_522ebf24
       field: http.cluster.storageTotals.hdd.usedByData
       target_field: couchbase.cluster.hdd.used.data.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_hdd_used_19398c37
       field: http.cluster.storageTotals.hdd.used
       target_field: couchbase.cluster.hdd.used.value.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_indexMemoryQuota_a4444ad0
       field: http.cluster.indexMemoryQuota
       target_field: couchbase.cluster.memory.quota.index.mb
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_memoryQuota_e63883e9
       field: http.cluster.memoryQuota
       target_field: couchbase.cluster.memory.quota.mb
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_ram_quotaTotalPerNode_cb65b53c
       field: http.cluster.storageTotals.ram.quotaTotalPerNode
       target_field: couchbase.cluster.ram.quota.total.per_node.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_ram_quotaTotal_6cdcb035
       field: http.cluster.storageTotals.ram.quotaTotal
       target_field: couchbase.cluster.ram.quota.total.value.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_ram_quotaUsedPerNode_47a82b2c
       field: http.cluster.storageTotals.ram.quotaUsedPerNode
       target_field: couchbase.cluster.ram.quota.used.per_node.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_ram_quotaUsed_f8db21ae
       field: http.cluster.storageTotals.ram.quotaUsed
       target_field: couchbase.cluster.ram.quota.used.value.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_ram_total_72fdcc9a
       field: http.cluster.storageTotals.ram.total
       target_field: couchbase.cluster.ram.total.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_ram_usedByData_568cf661
       field: http.cluster.storageTotals.ram.usedByData
       target_field: couchbase.cluster.ram.used.data.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_http_cluster_storageTotals_ram_used_dfbdc256
       field: http.cluster.storageTotals.ram.used
       target_field: couchbase.cluster.ram.used.value.bytes
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_http_7a5e5171
       field: http
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_605a8d14
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -125,5 +147,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_98afb12d
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_0575bd8c
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

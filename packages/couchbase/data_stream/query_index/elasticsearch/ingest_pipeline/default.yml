@@ -2,32 +2,38 @@
 description: Pipeline for parsing Couchbase Query Index metrics.
 processors:
 - set:
+    tag: set_ecs_version_a6f338ee
     field: ecs.version
     value: 8.11.0
     ignore_failure: true
     ignore_empty_value: true
 - set:
+    tag: set_event_type_6a749e84
     field: event.type
     value: [info]
     ignore_failure: true
     ignore_empty_value: true
 - set:
+    tag: set_event_kind_a1ae5f2f
     field: event.kind
     value: metric
     ignore_failure: true
     ignore_empty_value: true
 - set:
+    tag: set_event_category_04ab9794
     field: event.category
     value: [database]
     ignore_failure: true
     ignore_empty_value: true
 - set:
+    tag: set_event_module_8e274cce
     field: event.module
     value: couchbase
     override: true
     ignore_failure: true
     ignore_empty_value: true
 - script:
+    tag: script_80552a95
     lang: painless
     source: |-
         def getLastElement(def arr) {
@@ -57,36 +63,43 @@ processors:
     ignore_failure: true        
     description: Get the last value from an array response.
 - rename:
+    tag: rename_index_remaining_ram_55602ecf
     field: index_remaining_ram
     target_field: couchbase.query_index.ram.remaining
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_index_ram_percent_c3c95dff
     field: index_ram_percent
     target_field: couchbase.query_index.ram.pct
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_query_avg_req_time_cd475e0a
     field: query_avg_req_time
     target_field: couchbase.query_index.query.request_time.avg
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_query_requests_83a33627
     field: query_requests
     target_field: couchbase.query_index.query.requests
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_query_result_count_35e9f4c5
     field: query_result_count
     target_field: couchbase.query_index.query.result.count
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_eventing_failed_count_698379b6
     field: eventing_failed_count
     target_field: couchbase.query_index.eventing.failed.count
     ignore_missing: true
     ignore_failure: true
 - script:
+    tag: script_4e15c80d
     description: Drops null/empty values recursively.
     lang: painless
     source: |
@@ -104,11 +117,21 @@ processors:
       }
       drop(ctx);
 - remove:
+    tag: remove_http_7626ec9a
     field:
     - http
     ignore_missing: true
     ignore_failure: true
 on_failure:
-- set:
-    field: error.message
-    value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      tag: set_event_kind_0420f0e1
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_0dfadb3a
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
