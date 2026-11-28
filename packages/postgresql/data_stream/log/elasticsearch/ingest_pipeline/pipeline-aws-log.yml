@@ -2,6 +2,7 @@
 description: Pipeline for parsing PostgreSQL logs.
 processors:
   - grok:
+      tag: grok_raw_message_17ac75be
       field: raw_message
       ignore_missing: true
       patterns:
@@ -10,3 +11,16 @@ processors:
         GREEDYDATA: '(.|\r|\n)*'
         POSTGRESQL_DB_NAME: '[a-zA-Z0-9_]+[a-zA-Z0-9_\$]*'
         POSTGRESQL_QUERY_STEP: '%{SPACE}%{WORD:postgresql.log.query_step}'
+on_failure:
+  - set:
+      tag: set_event_kind_5d033271
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_054c4cb4
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

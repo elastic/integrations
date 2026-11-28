@@ -2,22 +2,27 @@
 description: Pipeline for parsing PostgreSQL logs.
 processors:
   - set:
+      tag: set_event_ingested_3b6ed9da
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_05c599d8
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_c9ae7b11
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - remove:
+      tag: remove_message_a641df23
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
+      tag: grok_event_original_4adaa56f
       field: event.original
       patterns:
       - '^%{DATETIME:postgresql.log.timestamp}%{CHAR:separator}%{GREEDYDATA:raw_message}'
@@ -68,15 +73,19 @@ processors:
         }
 
   - pipeline:
+      tag: pipeline_bd3a41e2
       name: '{{ IngestPipeline "pipeline-log" }}'
       if: ctx.separator != ',' && ctx.separator != ':'
   - pipeline:
+      tag: pipeline_568dd0bf
       name: '{{ IngestPipeline "pipeline-csv" }}'
       if: ctx.separator == ','
   - pipeline:
+      tag: pipeline_b2a4dc87
       name: '{{ IngestPipeline "pipeline-aws-log" }}'
       if: ctx.separator == ':'
   - date:
+      tag: date_temp_timestamp_ebc5be12
       field: _temp_.timestamp
       target_field: '@timestamp'
       timezone: '{{{_temp_.date_timezone}}}'
@@ -87,73 +96,90 @@ processors:
       - yyyy-MM-dd HH:mm:ss
       on_failure:
         - set:
+            tag: set_error_message_c05f0516
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
   - convert:
+        tag: convert_postgresql_log_client_addr_e4926826
         field: postgresql.log.client_addr
         type: ip
         ignore_missing: true
         on_failure:
             - set:
+                tag: set_tmp_host_4de6c5ae
                 field: tmp_host
                 copy_from: postgresql.log.client_addr
             - append:
+                tag: append_related_hosts_c00ebe6b
                 field: related.hosts
                 value: '{{{tmp_host}}}'
                 allow_duplicates: false
                 if: "ctx.tmp_host != null"
             - set:
+                tag: set_tmp_host_135b9fd1
                 field: tmp_host
                 value: ""
                 if: "ctx.tmp_host != null"
   - append:
+      tag: append_related_ip_6fc306e5
       field: related.ip
       value: '{{{postgresql.log.client_addr}}}'
       allow_duplicates: false
       if: "ctx.tmp_host == null"
   - script:
+      tag: script_4c717d15
       lang: painless
       source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
       params:
         scale: 1000000
       if: ctx.temp?.duration != null
   - remove:
+      tag: remove_temp_duration_d6d62095
       field: temp.duration
       ignore_missing: true
   - set:
+      tag: set_event_kind_3eb3d9d1
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_e1600ecd
       field: event.category
       value:
         - database
   - set:
+      tag: set_event_type_1e9d06cf
       field: event.type
       value:
         - info
       if: "ctx?.postgresql?.log?.sql_state_code == null || (ctx.postgresql.log.sql_state_code ==~ /^0[012].*/)"
   - set:
+      tag: set_event_type_e051cb28
       field: event.type
       value:
         - error
       if: "ctx?.postgresql?.log?.sql_state_code != null && ! (ctx.postgresql.log.sql_state_code ==~ /^0[012].*/)"
   - append:
+      tag: append_related_user_986816cd
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
   - remove:
+      tag: remove_separator_dd24b32c
       field:
         - separator
         - raw_message
   - remove:
+      tag: remove_temp_fbb6adce
       field: temp
       ignore_missing: true
   - remove:
+      tag: remove_temp_1e987594
       field:
        - _temp_
        - _conf
       ignore_missing: true
   - script:
+      tag: script_1cd5558e
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -172,5 +198,14 @@ processors:
       description: Drops null and empty values recursively from the Elasticsearch document context.
 on_failure:
   - set:
+      tag: set_event_kind_053ca078
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_47e5525e
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

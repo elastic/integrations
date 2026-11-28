@@ -3,6 +3,7 @@ description: Pipeline for parsing PostgreSQL CSV logs.
 processors:
 
   - csv:
+      tag: csv_raw_message_a5e23353
       field: raw_message
       separator: ","
       target_fields: ["user.name",
@@ -31,29 +32,35 @@ processors:
       ignore_missing: true
       trim: true
   - grok:
+      tag: grok_tempcsv_connection_from_b02995b5
       field: tempcsv.connection_from
       ignore_missing: true
       patterns:
         - '^%{DATA:postgresql.log.client_addr}(:%{NUMBER:postgresql.log.client_port:int})?$'
   - convert:
+      tag: convert_postgresql_log_session_line_num_1b03ee56
       field: "postgresql.log.session_line_num"
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_process_pid_d67dd7c0
       field: "process.pid"
       type: long
       ignore_missing: true
   - date:
+      tag: date_tempcsv_session_start_time_98b41387
       field: tempcsv.session_start_time
       target_field: postgresql.log.session_start_time
       formats:
       - yyyy-MM-dd HH:mm:ss.SSS zz
       - yyyy-MM-dd HH:mm:ss zz
   - convert:
+      tag: convert_postgresql_log_transaction_id_404c78a5
       field: postgresql.log.transaction_id
       type: long
       ignore_missing: true
   - grok:
+      tag: grok_tempcsv_message_cccfef69
       field: tempcsv.message
       ignore_missing: true
       patterns:
@@ -67,11 +74,26 @@ processors:
           |   )*
         POSTGRESQL_QUERY_STEP: '(parse|bind|statement|fastpath function call|execute|execute fetch from)'
   - grok:
+      tag: grok_tempcsv_connection_from_ffda4923
       field: tempcsv.connection_from
       ignore_missing: true
       patterns:
         - '^%{DATA:postgresql.log.client_addr}(:%{NUMBER:postgresql.log.client_port:int})?$'
   - remove:
+      tag: remove_tempcsv_c3f28f71
       field: 
         - tempcsv
       ignore_missing: true
+on_failure:
+  - set:
+      tag: set_event_kind_e7ec00f9
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_61d117df
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
