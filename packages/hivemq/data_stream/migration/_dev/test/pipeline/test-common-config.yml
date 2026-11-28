@@ -1,0 +1,40 @@
+# Notes on the fixtures:
+# - Groups .log lines like the multiline parser in agent/stream/filestream.yml.hbs:
+#   lines that do not start with a date are appended to the previous event.
+# - Real lines, copied unchanged from _dev/deploy/docker/sample_logs/migration.log
+#   (captured from HiveMQ CE 2026.5):
+#   - test-hivemq-migration-nothing-to-migrate-sample.log: lines 1-15, a fresh
+#     2024.9 broker and its upgrade to 2026.5 with nothing to migrate.
+#   - test-hivemq-migration-value-migration-sample.log: lines 16-39, a fresh
+#     2020.1 broker and its upgrade to 2026.5 with two payload ID migrations.
+#   - test-hivemq-migration-tz-offset-sample.json: two real lines with a broker
+#     timezone set in `_conf.tz_offset`.
+# - Derived lines, written from the exact message templates of the `migrations`
+#   logger in the HiveMQ CE 2026.5 source because the capture could not
+#   reproduce them:
+#   - test-hivemq-migration-type-migration-sample.log: an upgrade from a
+#     persistence without a metadata file (Migrations.checkForTypeMigration),
+#     so the metadata written first holds `'null'` versions, the needed
+#     migrations are logged as a map of unit to type, and the file persistences
+#     are migrated to type FILE_NATIVE. One unit has no old persistence folder.
+#   - test-hivemq-migration-skipped-sample.log: the development snapshot and
+#     missing data folder skip messages.
+#   - test-hivemq-migration-metadata-error-sample.json: the ERROR lines
+#     MetaFileService logs with the exception when it cannot read or write the
+#     metadata file. The stack frames are representative, not captured.
+#   - test-hivemq-migration-missing-payloads-sample.json: the WARN table
+#     PayloadExceptionLogging writes for payloads missing during a payload ID
+#     migration, formatted with its exact format strings.
+#   - test-hivemq-migration-unrecognized-sample.log: a message that matches no
+#     known template, standing in for one added by a later HiveMQ version.
+multiline:
+  first_line_pattern: '^\d{4}-\d{2}-\d{2} '
+fields:
+  tags:
+    - preserve_original_event
+  # Stands in for the time the agent read the event. It only survives into the
+  # expected output for text without a HiveMQ header.
+  "@timestamp": "2026-11-18T09:00:00.000Z"
+  # Set by the add_locale processor in the agent.
+  event:
+    timezone: "+0000"

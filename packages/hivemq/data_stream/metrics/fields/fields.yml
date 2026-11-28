@@ -1,0 +1,101 @@
+- name: hivemq.metrics
+  type: group
+  description: >-
+    HiveMQ broker metrics from the HiveMQ Prometheus Extension. Each field is named after the HiveMQ metric, without the `com.hivemq.` prefix and with `-` replaced by `_`. Counters count since the broker started and reset when it restarts.
+  fields:
+    - name: messages
+      type: group
+      fields:
+        - name: incoming.total.count
+          type: long
+          metric_type: counter
+          description: MQTT messages of all types received by the broker (`com.hivemq.messages.incoming.total.count`).
+        - name: incoming.connect.count
+          type: long
+          metric_type: counter
+          description: MQTT CONNECT messages received by the broker (`com.hivemq.messages.incoming.connect.count`).
+        - name: incoming.publish.count
+          type: long
+          metric_type: counter
+          description: MQTT PUBLISH messages received by the broker (`com.hivemq.messages.incoming.publish.count`).
+        - name: outgoing.total.count
+          type: long
+          metric_type: counter
+          description: MQTT messages of all types sent by the broker (`com.hivemq.messages.outgoing.total.count`).
+        - name: outgoing.publish.count
+          type: long
+          metric_type: counter
+          description: MQTT PUBLISH messages sent by the broker (`com.hivemq.messages.outgoing.publish.count`).
+        - name: dropped.count
+          type: long
+          metric_type: counter
+          description: Messages the broker dropped (`com.hivemq.messages.dropped.count`).
+        - name: retained.current
+          type: long
+          metric_type: gauge
+          description: Retained messages currently stored by the broker (`com.hivemq.messages.retained.current`).
+        - name: will.count.current
+          type: long
+          metric_type: gauge
+          description: Will messages currently stored by the broker (`com.hivemq.messages.will.count.current`).
+        - name: will.published.count.total
+          type: long
+          metric_type: counter
+          description: Will messages the broker has published (`com.hivemq.messages.will.published.count.total`).
+    - name: networking
+      type: group
+      fields:
+        - name: connections.current
+          type: long
+          metric_type: gauge
+          description: MQTT connections currently open (`com.hivemq.networking.connections.current`).
+        - name: connections_closed.total.count
+          type: long
+          metric_type: counter
+          description: MQTT connections that have been closed, gracefully or not (`com.hivemq.networking.connections-closed.total.count`).
+        - name: bytes.read.total
+          type: long
+          unit: byte
+          metric_type: counter
+          description: Bytes read from MQTT connections (`com.hivemq.networking.bytes.read.total`).
+        - name: bytes.write.total
+          type: long
+          unit: byte
+          metric_type: counter
+          description: Bytes written to MQTT connections (`com.hivemq.networking.bytes.write.total`).
+    - name: mqtt.connection.not_writable.current
+      type: long
+      metric_type: gauge
+      description: MQTT connections that are currently not writable (`com.hivemq.mqtt.connection.not-writable.current`).
+    - name: sessions.overall.current
+      type: long
+      metric_type: gauge
+      description: Client sessions currently stored by the broker, for connected and disconnected clients (`com.hivemq.sessions.overall.current`).
+    - name: subscriptions.overall.current
+      type: long
+      metric_type: gauge
+      description: Subscriptions currently stored by the broker (`com.hivemq.subscriptions.overall.current`).
+    - name: persistence
+      type: group
+      description: Memory used by the in-memory persistences. HiveMQ only exports these metrics when it runs with in-memory persistence.
+      fields:
+        - name: client_sessions.in_memory.total_size
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Memory used by the client session persistence (`com.hivemq.persistence.client-sessions.in-memory.total-size`).
+        - name: client_session.subscriptions.in_memory.total_size
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Memory used by the client session subscription persistence (`com.hivemq.persistence.client-session.subscriptions.in-memory.total-size`).
+        - name: queued_messages.in_memory.total_size
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Memory used by the queued message persistence (`com.hivemq.persistence.queued-messages.in-memory.total-size`).
+        - name: retained_messages.in_memory.total_size
+          type: long
+          unit: byte
+          metric_type: gauge
+          description: Memory used by the retained message persistence (`com.hivemq.persistence.retained-messages.in-memory.total-size`).

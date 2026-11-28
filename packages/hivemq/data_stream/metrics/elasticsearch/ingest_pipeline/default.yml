@@ -1,0 +1,144 @@
+---
+description: Pipeline for HiveMQ broker metrics collected from the HiveMQ Prometheus Extension.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: metric
+  # The prometheus/metrics input sets event.module to "prometheus", which the
+  # constant_keyword mapping (value "hivemq") would reject.
+  - set:
+      field: event.module
+      tag: set_event_module
+      value: hivemq
+  # Each HiveMQ (Dropwizard) metric keeps its name, without the "com.hivemq."
+  # prefix and with "-" replaced by "_". The values are integral doubles in the
+  # exposition format; the long mappings take them as they are.
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_incoming_total_count
+      tag: rename_messages_incoming_total_count
+      target_field: hivemq.metrics.messages.incoming.total.count
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_incoming_connect_count
+      tag: rename_messages_incoming_connect_count
+      target_field: hivemq.metrics.messages.incoming.connect.count
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_incoming_publish_count
+      tag: rename_messages_incoming_publish_count
+      target_field: hivemq.metrics.messages.incoming.publish.count
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_outgoing_total_count
+      tag: rename_messages_outgoing_total_count
+      target_field: hivemq.metrics.messages.outgoing.total.count
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_outgoing_publish_count
+      tag: rename_messages_outgoing_publish_count
+      target_field: hivemq.metrics.messages.outgoing.publish.count
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_dropped_count
+      tag: rename_messages_dropped_count
+      target_field: hivemq.metrics.messages.dropped.count
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_retained_current
+      tag: rename_messages_retained_current
+      target_field: hivemq.metrics.messages.retained.current
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_will_count_current
+      tag: rename_messages_will_count_current
+      target_field: hivemq.metrics.messages.will.count.current
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_messages_will_published_count_total
+      tag: rename_messages_will_published_count_total
+      target_field: hivemq.metrics.messages.will.published.count.total
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_networking_connections_current
+      tag: rename_networking_connections_current
+      target_field: hivemq.metrics.networking.connections.current
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_networking_connections_closed_total_count
+      tag: rename_networking_connections_closed_total_count
+      target_field: hivemq.metrics.networking.connections_closed.total.count
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_networking_bytes_read_total
+      tag: rename_networking_bytes_read_total
+      target_field: hivemq.metrics.networking.bytes.read.total
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_networking_bytes_write_total
+      tag: rename_networking_bytes_write_total
+      target_field: hivemq.metrics.networking.bytes.write.total
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_mqtt_connection_not_writable_current
+      tag: rename_mqtt_connection_not_writable_current
+      target_field: hivemq.metrics.mqtt.connection.not_writable.current
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_sessions_overall_current
+      tag: rename_sessions_overall_current
+      target_field: hivemq.metrics.sessions.overall.current
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_subscriptions_overall_current
+      tag: rename_subscriptions_overall_current
+      target_field: hivemq.metrics.subscriptions.overall.current
+      ignore_missing: true
+  # Only exported when HiveMQ runs with in-memory persistence.
+  - rename:
+      field: prometheus.metrics.com_hivemq_persistence_client_sessions_in_memory_total_size
+      tag: rename_persistence_client_sessions_in_memory_total_size
+      target_field: hivemq.metrics.persistence.client_sessions.in_memory.total_size
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_persistence_client_session_subscriptions_in_memory_total_size
+      tag: rename_persistence_client_session_subscriptions_in_memory_total_size
+      target_field: hivemq.metrics.persistence.client_session.subscriptions.in_memory.total_size
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_persistence_queued_messages_in_memory_total_size
+      tag: rename_persistence_queued_messages_in_memory_total_size
+      target_field: hivemq.metrics.persistence.queued_messages.in_memory.total_size
+      ignore_missing: true
+  - rename:
+      field: prometheus.metrics.com_hivemq_persistence_retained_messages_in_memory_total_size
+      tag: rename_persistence_retained_messages_in_memory_total_size
+      target_field: hivemq.metrics.persistence.retained_messages.in_memory.total_size
+      ignore_missing: true
+  # Drops metrics not mapped above and the collector's labels: "instance"
+  # repeats the host and port of service.address, and "job" is always
+  # "prometheus".
+  - remove:
+      field: prometheus
+      tag: remove_prometheus
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

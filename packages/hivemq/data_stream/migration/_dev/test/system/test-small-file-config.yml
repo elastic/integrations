@@ -1,0 +1,12 @@
+wait_for_data_timeout: 1m
+service: hivemq-migration-small-filestream
+input: filestream
+data_stream:
+  vars:
+    paths:
+      - "{{SERVICE_LOGS_DIR}}/migration-fresh.log"
+    tz_offset: "UTC"
+assert:
+  # migration.log of a fresh HiveMQ CE 2024.9 installation: 6 lines, 809 bytes,
+  # below the default filestream fingerprint length of 1024 bytes.
+  hit_count: 6

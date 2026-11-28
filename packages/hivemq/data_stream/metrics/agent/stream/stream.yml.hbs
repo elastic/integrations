@@ -1,0 +1,26 @@
+metricsets: ["collector"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+metrics_path: {{metrics_path}}
+period: {{period}}
+# The extension exports every metric, including monotonic counters, with
+# Prometheus type "gauge", so typed collection would mislabel the counters.
+use_types: false
+metrics_filters:
+  include: ["com_hivemq_*"]
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{#if condition}}
+condition: {{condition}}
+{{/if}}

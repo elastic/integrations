@@ -1,0 +1,189 @@
+---
+description: Pipeline for parsing HiveMQ Community Edition broker logs (hivemq.log).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # HiveMQ writes a timezone-less timestamp in the local timezone of the broker's
+  # JVM, so an explicit offset from the integration policy wins over the Elastic
+  # Agent host timezone supplied by `add_locale`.
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz_offset
+      value: '{{{_conf.tz_offset}}}'
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != ''
+
+  # Logback pattern `%-30(%d %level)- %msg%n%ex`: the timestamp and level are
+  # right-padded to 30 characters, so the separator before the message varies
+  # (`INFO  - `, `ERROR - `). The Elastic Agent multiline parser joins WARN banners
+  # and stack traces to the line before them, so the event can span several lines.
+  # `\A` and `\z` anchor to the start and end of the whole event: in grok, `^` and
+  # `$` match at every line boundary and would accept a partial match. `[ ]` is
+  # used instead of `\s` so the separator can never consume a line break.
+  # The second pattern keeps text that carries no HiveMQ header, such as the
+  # start script banner the Docker image prints to stdout, in `message`; its
+  # `@timestamp` stays the time the agent read it.
+  - grok:
+      field: event.original
+      tag: grok_header
+      patterns:
+        - '\A(?<_temp.timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?<log.level>TRACE|DEBUG|INFO|WARN|ERROR)[ ]+-[ ]?(?<_temp.body>(?<_temp.first_line>[^\r\n]*)(?:\r?\n(?<_temp.continuation>[\s\S]*))?)\z'
+        - '\A(?<message>[\s\S]*)\z'
+      if: ctx.event?.original != null
+  - lowercase:
+      field: log.level
+      tag: lowercase_log_level
+      ignore_missing: true
+
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_with_timezone
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss,SSS'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss,SSS'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
+
+  # A Java exception follows the message line as `<exception class>[: <message>]`.
+  # - The first pattern takes an exception with stack frames. Its message can
+  #   span several lines, so everything up to the first `\tat ` frame belongs to
+  #   it.
+  # - The second pattern takes an exception without frames, as the JVM writes
+  #   for a repeated exception once it omits the stack trace. Only a class name
+  #   that ends in `Exception`, `Error` or `Throwable` counts, so other text is
+  #   not mistaken for an exception.
+  # - The catch-all lets any other continuation (for example a WARN banner) pass
+  #   through unchanged.
+  # The exception message is not copied to `error.message`: that field marks
+  # ingest failures, and the full exception text stays in `error.stack_trace`.
+  - grok:
+      field: _temp.continuation
+      tag: grok_stack_trace
+      patterns:
+        - '\A(?<_temp.error_type>[\w$]+(?:\.[\w$]+)+)(?::[\s\S]*?)?\r?\n\tat [\s\S]*\z'
+        - '\A(?<_temp.error_type>(?:[\w$]+\.)+[\w$]*(?:Exception|Error|Throwable))(?::[^\r\n]*)?\s*\z'
+        - '\A[\s\S]*\z'
+      if: ctx._temp?.continuation != null
+  - trim:
+      field: _temp.first_line
+      tag: trim_first_line
+      ignore_missing: true
+
+  # The human readable message is the first line when a stack trace follows it,
+  # and the whole body otherwise, so a continuation that is not a stack trace is
+  # never lost.
+  - set:
+      field: message
+      tag: set_message_from_first_line
+      copy_from: _temp.first_line
+      if: ctx._temp?.error_type != null && ctx._temp?.first_line != null && ctx._temp.first_line != ''
+  - set:
+      field: message
+      tag: set_message_from_body
+      copy_from: _temp.body
+      if: ctx.message == null && ctx._temp?.body != null
+  - trim:
+      field: message
+      tag: trim_message
+      ignore_missing: true
+
+  # HiveMQ logs some WARN notices, such as the missing security extension notice,
+  # as an empty first line followed by a box of `#` characters. Strip the frame
+  # so `message` holds only the notice text. `gsub` uses Java regular
+  # expressions, where `(?m)` makes `^` and `$` match at line boundaries.
+  - set:
+      field: _temp.banner
+      tag: set_banner_marker
+      value: true
+      if: ctx.log?.level != null && ctx._temp?.first_line == '' && ctx.message != null && ctx.message.startsWith('###')
+  - gsub:
+      field: message
+      tag: gsub_banner_frame_lines
+      pattern: '(?m)^#{3,}[ \t]*(?:\r?\n|$)'
+      replacement: ''
+      if: ctx._temp?.banner == true
+  - gsub:
+      field: message
+      tag: gsub_banner_frame_edges
+      pattern: '(?m)^#[ \t]?(.*?)[ \t]*#[ \t]*\r?$'
+      replacement: '$1'
+      if: ctx._temp?.banner == true
+  - trim:
+      field: message
+      tag: trim_banner_message
+      if: ctx._temp?.banner == true
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+  - rename:
+      field: _temp.error_type
+      tag: rename_error_type
+      target_field: error.type
+      ignore_missing: true
+  - rename:
+      field: _temp.continuation
+      tag: rename_error_stack_trace
+      target_field: error.stack_trace
+      ignore_missing: true
+      if: ctx.error?.type != null
+
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields_on_failure
+      ignore_missing: true
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

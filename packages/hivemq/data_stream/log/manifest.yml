@@ -1,0 +1,68 @@
+title: HiveMQ broker logs
+type: logs
+streams:
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: HiveMQ broker logs
+    description: Collect the broker server log (hivemq.log) from HiveMQ Community Edition
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        description: >-
+          Paths to the HiveMQ broker log. The default matches `hivemq.log` and its daily-rotated `hivemq.YYYY-MM-DD.log` files in the default HiveMQ log folder, so log lines written while Elastic Agent was stopped across a rotation are still collected. Do not use a `*.log` glob on that folder: it also holds `event.log` and `migration.log`.
+        default:
+          - /opt/hivemq/log/hivemq*.log
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          HiveMQ writes timestamps without a timezone, in the local timezone of the broker's JVM (the official Docker image runs in UTC). Use this parameter to declare the timezone of the broker when it differs from the host running Elastic Agent. Both a canonical ID (such as `Europe/Amsterdam`) and an HH:mm differential (such as `-05:00`) are accepted. When unset, the Elastic Agent host timezone is used.
+      - name: container_parser
+        type: bool
+        title: Parse Container Logs
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          Enable when collecting the broker's stdout from container log files (for example `/var/log/containers/*.log`), which wrap each line in the CRI or Docker JSON envelope. The HiveMQ Docker image writes the same log format to stdout. This also makes the input follow symlinks, since the Kubernetes files under `/var/log/containers/` are symlinks into `/var/log/pods/`. Leave this off when reading the `hivemq.log` file.
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        multi: false
+        required: true
+        show_user: true
+        default: false
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - hivemq-log
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: condition
+        type: text
+        title: Condition
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.

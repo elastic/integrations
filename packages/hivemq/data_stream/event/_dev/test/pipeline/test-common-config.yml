@@ -1,0 +1,42 @@
+# Notes on the fixtures:
+# - Groups .log lines like the multiline parser in agent/stream/filestream.yml.hbs:
+#   lines that do not start with a date are appended to the previous event.
+# - Real lines, copied unchanged from _dev/deploy/docker/sample_logs/event.log
+#   (captured from HiveMQ CE 2026.5): test-hivemq-event-connected-sample.log,
+#   test-hivemq-event-disconnected-sample.log (except its last two lines, see
+#   below), test-hivemq-event-message-dropped-sample.log and
+#   test-hivemq-event-session-expired-sample.log.
+# - Derived lines, written from the exact format strings in HiveMQ's EventLog
+#   class because the capture could not reproduce them:
+#   - test-hivemq-event-shared-subscription-dropped-sample.log: publish message
+#     dropped for a shared subscription group.
+#   - test-hivemq-event-packet-dropped-sample.log: outgoing MQTT packet dropped.
+#   - test-hivemq-event-authentication-sample.log: AUTH received and sent. HiveMQ
+#     logs these at DEBUG, so they only reach event.log when the logback
+#     configuration routes the event.authentication logger there.
+#   - test-hivemq-event-websocket-listener-sample.log: ungraceful disconnect
+#     from a non-default listener, with an IPv6 client address.
+#   - test-hivemq-event-unrecognized-sample.log: a message that matches no known
+#     template, standing in for one added by a later HiveMQ version.
+#   - test-hivemq-event-client-id-separator-sample.log: a client ID that
+#     contains `, `, which MQTT allows.
+#   - test-hivemq-event-disconnected-sample.log, last two lines: an ungraceful
+#     disconnect with both the client ID and the IP address logged as
+#     `UNKNOWN`, and a graceful disconnect whose IP value is not an IP address.
+# - test-hivemq-event-legacy-ungraceful-sample.log: a real line captured from
+#   HiveMQ CE 2020.1, which writes ungraceful disconnects without the listener
+#   and port. Only the client IP was replaced with a documentation address.
+# - test-hivemq-event-tz-offset-sample.json: real lines with the line timestamp
+#   shifted to the broker timezone set in `_conf.tz_offset`. The session expiry
+#   time inside the message stays UTC, as HiveMQ always writes it in UTC.
+multiline:
+  first_line_pattern: '^\d{4}-\d{2}-\d{2} '
+fields:
+  tags:
+    - preserve_original_event
+  # Stands in for the time the agent read the event. It only survives into the
+  # expected output for text without a HiveMQ header.
+  "@timestamp": "2026-11-18T09:00:00.000Z"
+  # Set by the add_locale processor in the agent.
+  event:
+    timezone: "+0000"

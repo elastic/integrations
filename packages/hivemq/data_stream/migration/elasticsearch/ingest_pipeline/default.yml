@@ -1,0 +1,344 @@
+---
+description: Pipeline for parsing HiveMQ Community Edition persistence migration logs (migration.log).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # HiveMQ writes a timezone-less timestamp in the local timezone of the broker's
+  # JVM, so an explicit offset from the integration policy wins over the Elastic
+  # Agent host timezone supplied by `add_locale`.
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz_offset
+      value: '{{{_conf.tz_offset}}}'
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != ''
+
+  # migration.log uses the same logback pattern as hivemq.log,
+  # `%-30(%d %level)- %msg%n%ex`, so the header handling matches the `log` data
+  # stream. The timestamp and level are right-padded to 30 characters, so the
+  # separator before the message varies (`INFO  - `, `ERROR - `). The Elastic
+  # Agent multiline parser joins stack traces and the missing payloads table to
+  # the line before them, so the event can span several lines.
+  # `\A` and `\z` anchor to the start and end of the whole event: in grok, `^` and
+  # `$` match at every line boundary and would accept a partial match. `[ ]` is
+  # used instead of `\s` so the separator can never consume a line break.
+  # The second pattern keeps text that carries no HiveMQ header in `message`; its
+  # `@timestamp` stays the time the agent read it.
+  - grok:
+      field: event.original
+      tag: grok_header
+      patterns:
+        - '\A(?<_temp.timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?<log.level>TRACE|DEBUG|INFO|WARN|ERROR)[ ]+-[ ]?(?<_temp.body>(?<_temp.first_line>[^\r\n]*)(?:\r?\n(?<_temp.continuation>[\s\S]*))?)\z'
+        - '\A(?<message>[\s\S]*)\z'
+      if: ctx.event?.original != null
+  - lowercase:
+      field: log.level
+      tag: lowercase_log_level
+      ignore_missing: true
+
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp_with_timezone
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss,SSS'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone != null
+  - date:
+      field: _temp.timestamp
+      tag: date_timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss,SSS'
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
+
+  # A Java exception follows the message line as `<exception class>[: <message>]`.
+  # - The first pattern takes an exception with stack frames. Its message can
+  #   span several lines, so everything up to the first `\tat ` frame belongs to
+  #   it.
+  # - The second pattern takes an exception without frames, as the JVM writes
+  #   for a repeated exception once it omits the stack trace. Only a class name
+  #   that ends in `Exception`, `Error` or `Throwable` counts, so other text is
+  #   not mistaken for an exception.
+  # - The catch-all lets any other continuation, such as the missing payloads
+  #   table, pass through unchanged.
+  # The exception message is not copied to `error.message`: that field marks
+  # ingest failures, and the full exception text stays in `error.stack_trace`.
+  - grok:
+      field: _temp.continuation
+      tag: grok_stack_trace
+      patterns:
+        - '\A(?<_temp.error_type>[\w$]+(?:\.[\w$]+)+)(?::[\s\S]*?)?\r?\n\tat [\s\S]*\z'
+        - '\A(?<_temp.error_type>(?:[\w$]+\.)+[\w$]*(?:Exception|Error|Throwable))(?::[^\r\n]*)?\s*\z'
+        - '\A[\s\S]*\z'
+      if: ctx._temp?.continuation != null
+  - trim:
+      field: _temp.first_line
+      tag: trim_first_line
+      ignore_missing: true
+
+  # The human readable message is the first line when an exception follows it,
+  # and the whole body otherwise, so a continuation that is not an exception is
+  # never lost.
+  - set:
+      field: message
+      tag: set_message_from_first_line
+      copy_from: _temp.first_line
+      if: ctx._temp?.error_type != null && ctx._temp?.first_line != null && ctx._temp.first_line != ''
+  - set:
+      field: message
+      tag: set_message_from_body
+      copy_from: _temp.body
+      if: ctx.message == null && ctx._temp?.body != null
+  - trim:
+      field: message
+      tag: trim_message
+      ignore_missing: true
+
+  # Message templates of the `migrations` logger in HiveMQ's migration package
+  # (Migrations, PersistenceMigrator, MetaFileService, the *Migration classes and
+  # PayloadExceptionLogging). Each pattern captures a literal marker in
+  # `_temp.kind` that the categorization script below maps to `event.action`.
+  # - The `to type` variants come before the plain `Migrating` and `Migrated`
+  #   patterns, so the migration unit never swallows the target type.
+  # - HiveMQ appends no period to the `... in N ms` messages.
+  # - The needed migrations list is a set (`[a, b]`) for value migrations and a
+  #   map of unit to target type (`{a=FILE_NATIVE}`) for type migrations.
+  # - The missing payloads warning starts with an empty line, so its message
+  #   starts with the table title.
+  # - The last pattern accepts any other message, so a template added in a
+  #   later HiveMQ version is still indexed with its `message`.
+  - grok:
+      field: message
+      tag: grok_migration_message
+      patterns:
+        - '\AChecking for (?<_temp.kind>migrations|value migrations) \(HiveMQ version (?<hivemq.migration.hivemq_version>[^)]+)\)\.\z'
+        - '\A(?<_temp.kind>Skipping migration) because (?<event.reason>.+)\.\z'
+        - '\A(?<_temp.kind>No meta file present), assuming HiveMQ version .+ => Migration needed\.\z'
+        - '\A(?<_temp.kind>Nothing to migrate found)\.\z'
+        - '\A(?<_temp.kind>Found following needed migrations): [\[{](?<_temp.needed>.*)[\]}]\z'
+        - '\A(?<_temp.kind>Start migration)\.\z'
+        - '\A(?<_temp.kind>Migrating) (?<hivemq.migration.unit>.+?) to type (?<hivemq.migration.target_type>[A-Z_]+)\.\z'
+        - '\A(?<_temp.kind>Migrating) (?<hivemq.migration.unit>.+)\.\z'
+        - '\A(?<_temp.kind>Migrated) (?<hivemq.migration.unit>.+?) to type (?<hivemq.migration.target_type>[A-Z_]+) successfully in (?<_temp.duration_ms>\d+) ms\z'
+        - '\A(?<_temp.kind>Migrated) (?<hivemq.migration.unit>.+?) successfully in (?<_temp.duration_ms>\d+) ms\z'
+        - '\A(?<_temp.kind>Start File Persistence migration)\.\z'
+        - '\A(?<_temp.kind>File Persistences successfully migrated) in (?<_temp.duration_ms>\d+) ms\z'
+        - '\A(?<_temp.kind>No \(old\) persistence folder) \((?<hivemq.migration.persistence_folder>[^)]+)\) present, skipping migration\.\z'
+        - '\A(?<_temp.kind>Read metadata file): MetaInformation\{(?<_temp.metadata>.*)\}\z'
+        - '\A(?<_temp.kind>Write metadata file): MetaInformation\{(?<_temp.metadata>.*)\}\z'
+        - '\A(?<_temp.kind>Not able to read metadata file)\z'
+        - '\A(?<_temp.kind>Not able to write metadata file)\z'
+        - '\A(?<_temp.kind>Finished migration)\.\z'
+        - '\A(?<_temp.kind>MISSING PAYLOADS)\s[\s\S]*\z'
+        - '\A[\s\S]*\z'
+      if: ctx.message != null
+
+  # The unit names contain spaces, so the list is only split on `, `. For a type
+  # migration the target type of each unit is dropped from the list; it is
+  # logged again on the `Migrating <unit> to type <type>.` line.
+  - gsub:
+      field: _temp.needed
+      tag: gsub_needed_migration_types
+      pattern: '=[A-Z_]+'
+      replacement: ''
+      if: ctx._temp?.needed != null
+  - split:
+      field: _temp.needed
+      tag: split_needed_migrations
+      target_field: hivemq.migration.needed
+      separator: ', '
+      if: ctx._temp?.needed != null && ctx._temp.needed != ''
+
+  # The duration is logged in milliseconds and `event.duration` holds
+  # nanoseconds. Appending six zeros multiplies by 1,000,000 without a script.
+  - set:
+      field: _temp.duration_ns
+      tag: set_duration_ns
+      value: '{{{_temp.duration_ms}}}000000'
+      if: ctx._temp?.duration_ms != null
+  - convert:
+      field: _temp.duration_ns
+      tag: convert_event_duration
+      target_field: event.duration
+      type: long
+      ignore_missing: true
+
+  # MetaInformation.toString() lists the versions and persistence types read from
+  # or written to the metadata file as `key='value'` pairs. HiveMQ writes
+  # `'null'` for a value it does not know, for example when no metadata file
+  # existed before, and those values are not indexed.
+  - kv:
+      field: _temp.metadata
+      tag: kv_metadata
+      target_field: _temp.meta
+      field_split: ', '
+      value_split: '='
+      trim_value: "'"
+      ignore_missing: true
+  - rename:
+      field: _temp.meta.hivemqVersion
+      tag: rename_metadata_hivemq_version
+      target_field: hivemq.migration.metadata.hivemq_version
+      if: ctx._temp?.meta?.hivemqVersion != null && ctx._temp.meta.hivemqVersion != 'null'
+  - rename:
+      field: _temp.meta.clientSessionPersistenceVersion
+      tag: rename_metadata_client_session_persistence_version
+      target_field: hivemq.migration.metadata.client_session_persistence_version
+      if: ctx._temp?.meta?.clientSessionPersistenceVersion != null && ctx._temp.meta.clientSessionPersistenceVersion != 'null'
+  - rename:
+      field: _temp.meta.queuedMessagesPersistenceVersion
+      tag: rename_metadata_queued_messages_persistence_version
+      target_field: hivemq.migration.metadata.queued_messages_persistence_version
+      if: ctx._temp?.meta?.queuedMessagesPersistenceVersion != null && ctx._temp.meta.queuedMessagesPersistenceVersion != 'null'
+  - rename:
+      field: _temp.meta.subscriptionPersistenceVersion
+      tag: rename_metadata_subscription_persistence_version
+      target_field: hivemq.migration.metadata.subscription_persistence_version
+      if: ctx._temp?.meta?.subscriptionPersistenceVersion != null && ctx._temp.meta.subscriptionPersistenceVersion != 'null'
+  - rename:
+      field: _temp.meta.retainedMessagesPersistenceVersion
+      tag: rename_metadata_retained_messages_persistence_version
+      target_field: hivemq.migration.metadata.retained_messages_persistence_version
+      if: ctx._temp?.meta?.retainedMessagesPersistenceVersion != null && ctx._temp.meta.retainedMessagesPersistenceVersion != 'null'
+  - rename:
+      field: _temp.meta.publishPayloadPersistenceVersion
+      tag: rename_metadata_publish_payload_persistence_version
+      target_field: hivemq.migration.metadata.publish_payload_persistence_version
+      if: ctx._temp?.meta?.publishPayloadPersistenceVersion != null && ctx._temp.meta.publishPayloadPersistenceVersion != 'null'
+  - rename:
+      field: _temp.meta.retainedMessagesPersistenceType
+      tag: rename_metadata_retained_messages_persistence_type
+      target_field: hivemq.migration.metadata.retained_messages_persistence_type
+      if: ctx._temp?.meta?.retainedMessagesPersistenceType != null && ctx._temp.meta.retainedMessagesPersistenceType != 'null'
+  - rename:
+      field: _temp.meta.publishPayloadPersistenceType
+      tag: rename_metadata_publish_payload_persistence_type
+      target_field: hivemq.migration.metadata.publish_payload_persistence_type
+      if: ctx._temp?.meta?.publishPayloadPersistenceType != null && ctx._temp.meta.publishPayloadPersistenceType != 'null'
+
+  # Migration messages describe the broker's own maintenance of its local
+  # persistence, which no ECS event category describes, so only `event.kind`,
+  # `event.action` and, where HiveMQ reports it, `event.outcome` are set.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - script:
+      lang: painless
+      tag: script_event_action
+      description: Map the matched migration message template to event.action and event.outcome.
+      if: ctx._temp?.kind != null
+      params:
+        migrations:
+          action: migration-check
+        value migrations:
+          action: value-migration-check
+        Skipping migration:
+          action: migration-skipped
+        No meta file present:
+          action: metadata-missing
+        Nothing to migrate found:
+          action: migration-not-needed
+        Found following needed migrations:
+          action: migrations-found
+        Start migration:
+          action: migration-started
+        Migrating:
+          action: migration-unit-started
+        Migrated:
+          action: migration-unit-completed
+          outcome: success
+        Start File Persistence migration:
+          action: file-persistence-migration-started
+        File Persistences successfully migrated:
+          action: file-persistence-migration-completed
+          outcome: success
+        No (old) persistence folder:
+          action: migration-unit-skipped
+        Read metadata file:
+          action: metadata-read
+        Write metadata file:
+          action: metadata-written
+        Not able to read metadata file:
+          action: metadata-read-failed
+          outcome: failure
+        Not able to write metadata file:
+          action: metadata-write-failed
+          outcome: failure
+        Finished migration:
+          action: migration-finished
+        MISSING PAYLOADS:
+          action: missing-payloads-reported
+      source: |-
+        def mapping = params[ctx._temp.kind];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.action = mapping.action;
+        if (mapping.containsKey('outcome')) {
+          ctx.event.outcome = mapping.outcome;
+        }
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+  - rename:
+      field: _temp.error_type
+      tag: rename_error_type
+      target_field: error.type
+      ignore_missing: true
+  - rename:
+      field: _temp.continuation
+      tag: rename_error_stack_trace
+      target_field: error.stack_trace
+      ignore_missing: true
+      if: ctx.error?.type != null
+
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields_on_failure
+      ignore_missing: true
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
