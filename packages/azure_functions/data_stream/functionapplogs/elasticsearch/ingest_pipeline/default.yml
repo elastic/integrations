@@ -2,15 +2,18 @@
 description: Pipeline for processing Azure Function logs.
 processors:
   - set:
+      tag: set_ecs_version_8de19ebb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_f12ba49d
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_913371c4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
@@ -18,14 +21,17 @@ processors:
     
     # Converts the JSON string in the event.original field into a structured JSON object
   - json:
+      tag: json_event_original_f1736433
       field: event.original
       target_field: json
       on_failure:
         - set:
+            tag: set_error_message_3217f32f
             field: error.message
             value: 'Received invalid JSON from the Azure Function service. Unable to parse the source log message'
             ignore_failure: true
   - date:
+      tag: date_json_time_e2c25372
       field: json.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -33,24 +39,29 @@ processors:
         - ISO8601
       if: ctx.json?.time != null
   - rename:
+      tag: rename_json_category_e68b0a29
       field: json.category
       target_field: azure.category
       ignore_missing: true
   - rename:
+      tag: rename_json_resourceId_957d17b0
       field: json.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - rename:
+      tag: rename_json_operationName_e9bfc3c4
       field: json.operationName
       target_field: azure.operation_name
       ignore_missing: true
   - set:
+      tag: set_temp_properties_fc4308ad
       field: temp_properties
       value: '{{json.properties}}'
       if: "ctx.json?.properties instanceof String"
       ignore_failure: true
       description: 'Temporarily store the properties string.'
   - script:
+      tag: script_be99f0db
       lang: painless
       source: >
         if (ctx.json?.properties instanceof String) {
@@ -59,112 +70,140 @@ processors:
       ignore_failure: true
       description: 'Replace single quotes with double quotes.'
   - remove:
+      tag: remove_json_properties_6d942edb
       field: json.properties
       if: "ctx.temp_properties != null"
       ignore_missing: true
       description: 'Remove the properties string field.'
   - json:
+      tag: json_temp_properties_b6c21570
       field: temp_properties
       target_field: json.properties
       if: "ctx.temp_properties != null"
       ignore_failure: true
       description: 'Parse the stringified JSON properties field into a nested object.'
   - remove:
+      tag: remove_temp_properties_296bd372
       field: temp_properties
       ignore_missing: true
       description: 'Remove the temporary field after successful parsing.'
   - rename:
+      tag: rename_json_properties_level_8cdecb4a
       field: json.properties.level
       target_field: azure.function.level
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_levelId_7cd6a359
       field: json.properties.levelId
       target_field: azure.function.level_id
       ignore_missing: true    
   - rename:
+      tag: rename_json_properties_appName_7e392ad0
       field: json.properties.appName
       target_field: azure.function.app_name
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_category_88e26f1c
       field: json.properties.category
       target_field: azure.function.category
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_roleInstance_bab83334
       field: json.properties.roleInstance
       target_field: azure.function.role_instance
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_hostVersion_d0444e78
       field: json.properties.hostVersion
       target_field: azure.function.host_version
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_functionInvocationId_f249a29e
       field: json.properties.functionInvocationId
       target_field: azure.function.invocation_id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_functionName_16e52889
       field: json.properties.functionName
       target_field: azure.function.name
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_hostInstanceId_f2c0cf81
       field: json.properties.hostInstanceId
       target_field: azure.function.host_instance_id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_processId_977df470
       field: json.properties.processId
       target_field: azure.function.process_id
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_eventName_c97c61f7
       field: json.properties.eventName
       target_field: azure.function.event_name
       ignore_missing: true      
   - rename:
+      tag: rename_json_properties_eventId_e7335744
       field: json.properties.eventId
       target_field: azure.function.event_id
       ignore_missing: true      
   - rename:
+      tag: rename_json_properties_message_2b4392ee
       field: json.properties.message
       target_field: azure.function.message
       ignore_missing: true
   - set:
+      tag: set_observer_type_8962f1db
       field: observer.type
       value: functions
   - set:
+      tag: set_observer_vendor_f09714c3
       field: observer.vendor
       value: Azure
   - set:
+      tag: set_observer_product_0d4d1a1c
       field: observer.product
       value: "Azure Functions"
   - rename:
+      tag: rename_json_properties_exceptionDetails_f1e21730
       field: json.properties.exceptionDetails
       target_field: azure.function.exception_details
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_exceptionMessage_a0593e9a
       field: json.properties.exceptionMessage
       target_field: azure.function.exception_message
       ignore_missing: true
   - rename:
+      tag: rename_json_EventStampType_05817f28
       field: json.EventStampType
       target_field: azure.event_stamp_type
       ignore_missing: true
   - rename:
+      tag: rename_json_EventPrimaryStampName_e2a5adb1
       field: json.EventPrimaryStampName
       target_field: azure.event_primary_stamp_name
       ignore_missing: true
   - rename:
+      tag: rename_json_EventStampName_7e3aa7a7
       field: json.EventStampName
       target_field: azure.event_stamp_name
       ignore_missing: true
   - rename:
+      tag: rename_json_properties_exceptionType_89a4f5b1
       field: json.properties.exceptionType
       target_field: azure.function.exception_type
       ignore_missing: true
   - remove:
+      tag: remove_json_52619b0f
       field:
         - json
       ignore_missing: true
   - pipeline:
+      tag: pipeline_3f8880e0
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - script:
+      tag: script_955ce992
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -182,12 +221,15 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
+  - set:
+      tag: set_event_kind_be20a1ed
+      field: event.kind
+      value: pipeline_error
   - append:
+      tag: append_error_message_10327c36
       field: error.message
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
-  - remove:
-      field:
-        - json
-        - _conf
-        - message
-      ignore_missing: true
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

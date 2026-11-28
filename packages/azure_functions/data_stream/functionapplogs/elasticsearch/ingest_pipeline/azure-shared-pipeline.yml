@@ -2,9 +2,11 @@
 description: Pipeline for parsing Azure shared log fields.
 processors:
   - set:
+      tag: set_cloud_provider_3d21ba27
       field: cloud.provider
       value: azure
   - grok:
+      tag: grok_azure_resource_id_63655e2a
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
@@ -16,18 +18,29 @@ processors:
         NAME: .+$
       ignore_failure: false    
   - rename:
+      tag: rename_azure_resource_id_2472fa4e
       field: azure.resource_id
       target_field: azure.resource.id
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_outcome_2cb0d48e
       field: event.outcome
       ignore_missing: true
   - set:
+      tag: set_cloud_account_id_f574d88e
       field: cloud.account.id
       copy_from: azure.subscription_id
       ignore_empty_value: true
 on_failure:
   - set:
+      tag: set_event_kind_43dc4143
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_066b10a4
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
-
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
