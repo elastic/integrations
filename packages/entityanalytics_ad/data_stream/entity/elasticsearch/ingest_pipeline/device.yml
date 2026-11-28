@@ -278,8 +278,8 @@ processors:
       lang: painless
       ignore_failure: true
       tag: set_device_relationships_f1d3e2c7
-      description: Build host.entity.relationships from managedObjects (administers) and directReports (supervises).
-      if: ctx.activedirectory?.device?.managed_objects != null || ctx.activedirectory?.device?.direct_reports != null
+      description: Build host.entity.relationships from managedObjects (administers).
+      if: ctx.activedirectory?.device?.managed_objects != null
       source: |-
         def parseDn(def dn) {
           def result = ['id': dn];
@@ -333,34 +333,10 @@ processors:
           }
           return rel;
         }
-        def buildUserRel(def dns) {
-          def rel = ['user': [:]];
-          def dnList = (dns instanceof List) ? dns : [dns];
-          for (def dn : dnList) {
-            if (!(dn instanceof String) || dn.isEmpty()) continue;
-            def p = parseDn(dn);
-            if (!rel['user'].containsKey('id')) rel['user']['id'] = new ArrayList();
-            rel['user']['id'].add(p['id']);
-            if (p.containsKey('name')) {
-              if (!rel['user'].containsKey('name')) rel['user']['name'] = new ArrayList();
-              rel['user']['name'].add(p['name']);
-            }
-            if (p.containsKey('domain')) {
-              if (!rel['user'].containsKey('domain')) rel['user']['domain'] = new ArrayList();
-              rel['user']['domain'].add(p['domain']);
-            }
-          }
-          return rel;
-        }
         ctx.host = ctx.host ?: [:];
         ctx.host.entity = ctx.host.entity ?: [:];
         ctx.host.entity.relationships = ctx.host.entity.relationships ?: [:];
-        if (ctx.activedirectory?.device?.managed_objects != null) {
-          ctx.host.entity.relationships.administers = buildHostRel(ctx.activedirectory.device.managed_objects);
-        }
-        if (ctx.activedirectory?.device?.direct_reports != null) {
-          ctx.host.entity.relationships.supervises = buildUserRel(ctx.activedirectory.device.direct_reports);
-        }
+        ctx.host.entity.relationships.administers = buildHostRel(ctx.activedirectory.device.managed_objects);
 
   - set:
       tag: set_device_account_never_expires_43b923ba

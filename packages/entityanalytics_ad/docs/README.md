@@ -373,9 +373,6 @@ This is the `Device` dataset.
 | host.entity.relationships.administers.host.id | Referenced host ids. | keyword |
 | host.entity.relationships.administers.host.name | Referenced host names. | keyword |
 | host.entity.relationships.administers.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
-| host.entity.relationships.supervises.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
-| host.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
-| host.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | user.account.activated_date |  | date |
