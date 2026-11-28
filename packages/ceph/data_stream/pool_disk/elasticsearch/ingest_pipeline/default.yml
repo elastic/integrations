@@ -2,58 +2,78 @@
 description: Pipeline for processing Ceph Pool Disk metrics.
 processors:
   - set:
+      tag: set_ecs_version_bee26780
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_31427b4f
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_57dc4c1c
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_24c9a203
       field: event.module
       value: ceph
   - rename:
+      tag: rename_message_77086d36
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_ead1c1a3
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_2f882a61
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_f24a581b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename: 
+      tag: rename_json_id_5866075d
       field: json.id
       target_field: ceph.pool_disk.pool_id
       ignore_missing: true
   - rename: 
+      tag: rename_json_name_7f2edbde
       field: json.name
       target_field: ceph.pool_disk.pool_name
       ignore_missing: true
   - rename: 
+      tag: rename_json_stats_bytes_used_b080731b
       field: json.stats.bytes_used
       target_field: ceph.pool_disk.used.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_stats_max_avail_c907d2b3
       field: json.stats.max_avail
       target_field: ceph.pool_disk.available.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_stats_objects_b68fa487
       field: json.stats.objects
       target_field: ceph.pool_disk.object.count
       ignore_missing: true
   - rename: 
+      tag: rename_json_stats_stored_0f8ca42f
       field: json.stats.stored
       target_field: ceph.pool_disk.stored.bytes
       ignore_missing: true
   - rename: 
+      tag: rename_json_stats_percent_used_4f1f4fe3
       field: json.stats.percent_used
       target_field: ceph.pool_disk.used.pct
       ignore_missing: true
   - script:
+      tag: script_79d47bc5
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -71,14 +91,20 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_0d88f3f2
       field:
         - json
       ignore_missing: true
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_010db43b
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_f5afd61a
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

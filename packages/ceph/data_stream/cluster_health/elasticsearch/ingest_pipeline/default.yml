@@ -2,42 +2,58 @@
 description: Pipeline for processing Ceph Cluster Health metrics.
 processors:
   - set:
+      tag: set_ecs_version_43e96181
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_a0b95ac0
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_cfeaba3a
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_8cb8d3b2
       field: event.module
       value: ceph
   - rename:
+      tag: rename_message_65c1740d
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_b99dede2
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_981a285c
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_e4922761
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename: 
+      tag: rename_json_outb_timechecks_epoch_192d65a9
       field: json.outb.timechecks.epoch
       target_field: ceph.cluster_health.epoch
       ignore_missing: true
   - rename: 
+      tag: rename_json_outb_timechecks_round_aa08ad3e
       field: json.outb.timechecks.round
       target_field: ceph.cluster_health.round.count
       ignore_missing: true
   - rename: 
+      tag: rename_json_outb_timechecks_round_status_b7da65ea
       field: json.outb.timechecks.round_status
       target_field: ceph.cluster_health.round.status
       ignore_missing: true
   - script:
+      tag: script_b32d1618
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -55,14 +71,20 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_cf602e13
       field:
         - json
       ignore_missing: true
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_d0470dde
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_8949ed48
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

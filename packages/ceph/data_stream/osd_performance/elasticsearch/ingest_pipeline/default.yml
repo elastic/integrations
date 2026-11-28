@@ -2,42 +2,58 @@
 description: Pipeline for processing Ceph OSD Performance metrics.
 processors:
   - set:
+      tag: set_ecs_version_1ac9fc9e
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_4cd264f6
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_e15eaa94
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_ddf13abb
       field: event.module
       value: ceph
   - rename:
+      tag: rename_message_349d3097
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_772c87da
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_c6c75820
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_20db4f23
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename: 
+      tag: rename_json_id_7c2d0686
       field: json.id
       target_field: ceph.osd_performance.osd_id
       ignore_missing: true
   - rename: 
+      tag: rename_json_perf_stats_commit_latency_ms_8c881bab
       field: json.perf_stats.commit_latency_ms
       target_field: ceph.osd_performance.latency.commit.ms
       ignore_missing: true
   - rename: 
+      tag: rename_json_perf_stats_apply_latency_ms_665f3f2a
       field: json.perf_stats.apply_latency_ms
       target_field: ceph.osd_performance.latency.apply.ms
       ignore_missing: true
   - script:
+      tag: script_51434b44
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -55,14 +71,20 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_4a98124a
       field:
         - json
       ignore_missing: true
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_0675213c
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_5c82dc84
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

@@ -2,94 +2,123 @@
 description: Pipeline for processing Ceph OSD Tree metrics.
 processors:
   - set:
+      tag: set_ecs_version_f4a73508
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_type_42c5cb20
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_7b888ede
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_a6144491
       field: event.module
       value: ceph
   - rename:
+      tag: rename_message_89d6365f
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_da18253b
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_df789caa
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_1667b185
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_exists_dfe8dab1
       field: json.exists
       type: string
       ignore_missing: true
   - set:
+      tag: set_json_exists_fac1adb7
       field: json.exists
       value: true
       if: ctx.json?.exists == "1"
   - set:
+      tag: set_json_exists_a2ed9043
       field: json.exists
       value: false
       if: ctx.json?.exists == "0"
   - convert:
+      tag: convert_json_children_77f348d4
       field: json.children
       type: string
       ignore_missing: true
   - rename: 
+      tag: rename_json_children_706bccd5
       field: json.children
       target_field: ceph.osd_tree.children
       ignore_missing: true
   - rename: 
+      tag: rename_json_crush_weight_fcd985be
       field: json.crush_weight
       target_field: ceph.osd_tree.crush_weight
       ignore_missing: true
   - rename: 
+      tag: rename_json_depth_641923f8
       field: json.depth
       target_field: ceph.osd_tree.depth
       ignore_missing: true
   - rename: 
+      tag: rename_json_device_class_627dcf30
       field: json.device_class
       target_field: ceph.osd_tree.device_class
       ignore_missing: true
   - rename: 
+      tag: rename_json_exists_b67c9a89
       field: json.exists
       target_field: ceph.osd_tree.exists
       ignore_missing: true
   - rename: 
+      tag: rename_json_id_73170431
       field: json.id
       target_field: ceph.osd_tree.node_osd_id
       ignore_missing: true
   - rename: 
+      tag: rename_json_name_e55c0dfe
       field: json.name
       target_field: ceph.osd_tree.node_osd_name
       ignore_missing: true
   - rename: 
+      tag: rename_json_primary_affinity_fb15a116
       field: json.primary_affinity
       target_field: ceph.osd_tree.primary_affinity.count
       ignore_missing: true
   - rename: 
+      tag: rename_json_reweight_ba87ebb6
       field: json.reweight
       target_field: ceph.osd_tree.reweight
       ignore_missing: true
   - rename: 
+      tag: rename_json_status_a3e1a878
       field: json.status
       target_field: ceph.osd_tree.status
       ignore_missing: true
   - rename: 
+      tag: rename_json_type_73316972
       field: json.type
       target_field: ceph.osd_tree.type.name
       ignore_missing: true
   - rename: 
+      tag: rename_json_type_id_f637410e
       field: json.type_id
       target_field: ceph.osd_tree.type.id
       ignore_missing: true
   - script:
+      tag: script_1d6467d9
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -107,14 +136,20 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_3f1e6158
       field:
         - json
       ignore_missing: true
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_7002b4f3
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_7a28bf66
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
