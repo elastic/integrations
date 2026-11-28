@@ -47,11 +47,18 @@ Endpoints:
       so auth.oauth2 cannot manage token refresh — it is done here.
 
   GET https://auditlog.us.greenhouse.io/events
-    - Query: paging=true, after_time, performer_ids, event_types
+    - Query: paging=true, after_time, before_time (resumed searches only),
+      performer_ids, event_types
     - Headers: Authorization (Bearer), Size (page size 100-500),
       Pit-Id + Search-After (for page 2+)
     - Response: {paging: {pit_id, next_search_after}, results: [...]}
     - next_search_after is null on the last page.
+    - A page request can be rejected with HTTP 400 (for example code
+      pit_id_expired once a Pit-Id is unused for a minute, or a rejected
+      Pit-Id/Search-After). Greenhouse documents that the pages already
+      received are complete, and that a new search without Pit-Id and
+      Search-After, with before_time set to the event_time of the last
+      event received, resumes the listing (so results are newest first).
 
 Rejection enrichment (optional, enrich_rejections):
 
@@ -122,22 +129,30 @@ Cursor:
     before the oldest held action (never earlier than the current value)
     so that late-indexed siblings are still read. The overlap is bounded
     because held actions are always resolved at the end of the next window.
-  max_event_time — newest event_time seen anywhere in the current window.
-    Cleared when the window completes; preserved when an expired PIT
-    forces a retry of the same window.
+  max_event_time, min_event_time — newest and oldest event_time seen
+    anywhere in the current window. Cleared when the window completes;
+    preserved when a rejected page forces the search to be resumed.
+  before_time — upper bound of a resumed search, empty otherwise. When a
+    page request carrying a Pit-Id is rejected with HTTP 400, it is set to
+    min_event_time + 1ms and pit_id/search_after are cleared, so the next
+    request starts a new search over the part of the window not yet read.
+    The extra millisecond re-reads events sharing the oldest event_time
+    instead of skipping them (Greenhouse does not document whether the
+    bound is inclusive); re-read events collapse on the ingest pipeline
+    fingerprint. Cleared when the window completes.
   pit_id, search_after — pagination state; cleared between poll intervals.
   rd_win — compact RejectionDetails pairs accumulated over the pages of the
-    current window. Reset when the window completes or a PIT-expiry retry
-    restarts it.
+    current window. Reset when the window completes; kept when a search is
+    resumed, because the pages already received are not read again.
   rd_carry — pairs from the previous window whose request.id matched no
     rejection action in it (their action may arrive in this window).
   pending_actions — [{e: event, w: windows_held}] rejection actions awaiting
     resolution. Entries with w == 0 belong to the current window and are
-    dropped on a PIT-expiry retry (the retry re-reads them); w == 1 entries
-    came from the previous window and are always resolved at this window's
-    end. An action read again because of the window overlap is ignored while
-    its held copy is pending. Duplicates are collapsed by the ingest pipeline
-    fingerprint.
+    kept when a search is resumed; w == 1 entries came from the previous
+    window and are always resolved at this window's end. An action read
+    again because of the window overlap, or at a resumed search's
+    before_time boundary, is ignored while its held copy is pending.
+    Duplicates are collapsed by the ingest pipeline fingerprint.
 --}}
 program: |-
   // 1. Resolve auth token (sequential state pipeline — avoids nesting the event fetch inside the auth block).
@@ -195,8 +210,10 @@ program: |-
           )
       )
   ).as(state,
-    // Exit early if auth failed.
-    has(state.events) ? state :
+    // Exit early if auth failed, which sets events to an error object. state.events can also hold the
+    // empty list returned by the previous evaluation (the input only removes events it publishes), so
+    // has(state.events) alone would stop every poll after one that returned no events.
+    (type(state.?events.orValue(null)) == map) ? state :
     // 2. Determine the start of the current collection window.
     state.?cursor.window_start_time.orValue(
       (now - duration(state.initial_interval)).format(time_layout.RFC3339)
@@ -207,6 +224,9 @@ program: |-
           state.url.trim_right("/") + "/events?" + {
             "paging": ["true"],
             "after_time": [window_start_time],
+            ?"before_time": state.?cursor.before_time.optFlatMap(v,
+              (v != "") ? optional.of([v]) : optional.none()
+            ),
             ?"performer_ids": state.?performer_ids.optFlatMap(v,
               (v != "") ? optional.of([v]) : optional.none()
             ),
@@ -244,6 +264,15 @@ program: |-
                       ts.max().format(time_layout.RFC3339Nano)
                     :
                       prev_max
+                  )
+                ),
+                // Oldest event_time seen so far in the window: the bound a rejected page resumes from.
+                "next_min": state.?cursor.min_event_time.orValue("").as(prev_min,
+                  body.?results.orValue([]).filter(e, type(e.?event_time.orValue(null)) == string).map(e, timestamp(e.event_time)).as(ts,
+                    (ts.size() > 0 && (prev_min == "" || ts.min() < timestamp(prev_min))) ?
+                      ts.min().format(time_layout.RFC3339Nano)
+                    :
+                      prev_min
                   )
                 ),
                 // Compact {request.id, application_id, rejection_details id} tuples for the
@@ -513,6 +542,8 @@ program: |-
                                   )
                                 ),
                               "max_event_time": pg.has_more ? pg.next_max : "",
+                              "min_event_time": pg.has_more ? pg.next_min : "",
+                              "before_time": pg.has_more ? state.?cursor.before_time.orValue("") : "",
                               "pit_id": pg.has_more ? string(body.paging.pit_id) : "",
                               "search_after": pg.has_more ? string(body.paging.next_search_after) : "",
                               "rd_win": pg.has_more ? state.?cursor.rd_win.orValue([]) + pg.rd_now : [],
@@ -539,20 +570,37 @@ program: |-
               "events": [],
               "want_more": false,
             }
-          : string(resp.Body).contains("Pit_Id") ?
+          : (resp.StatusCode == 400 && state.?cursor.pit_id.orValue("") != "") ?
+            // A follow-up page was rejected (expired or rejected Pit-Id/Search-After). Match on the status
+            // and the request rather than the error text, which Greenhouse has changed before. Resume as the
+            // API documents: drop the Pit-Id and Search-After and bound a new search with before_time, so the
+            // pages already received are not read again. Without an event_time to resume from, the current
+            // search is started again with the bound it already had. The stale Pit-Id must not be kept, or
+            // every poll would resend it and fail the same way.
+            //
+            // No event is emitted, so the input ends this run and the resumed search is the first request of
+            // the next poll (which also keeps new paging sessions well inside the API's limit). The cursor is
+            // held in memory and persisted with the next published page; after a restart in between, the
+            // persisted Pit-Id is rejected once more and this branch runs again.
             {
-              "auth_token": state.auth_token,
-              "events": [{"retry": true}],
+              "events": [],
               "cursor": {
                 "window_start_time": window_start_time,
                 "max_event_time": state.?cursor.max_event_time.orValue(""),
+                "min_event_time": state.?cursor.min_event_time.orValue(""),
+                "before_time": state.?cursor.min_event_time.orValue("").as(m,
+                  (m != "") ?
+                    (timestamp(m) + duration("1ms")).format(time_layout.RFC3339Nano)
+                  :
+                    state.?cursor.before_time.orValue("")
+                ),
                 "pit_id": "",
                 "search_after": "",
-                // The window is re-read from the start, so drop this window's accumulated pairs and
-                // held actions (they will be seen again); keep entries carried from the previous window.
-                "rd_win": [],
+                // Keep this window's pairs and held actions: the events they came from are not read again.
+                // Events re-read at the before_time boundary are matched against the held copies.
+                "rd_win": state.?cursor.rd_win.orValue([]),
                 "rd_carry": state.?cursor.rd_carry.orValue([]),
-                "pending_actions": state.?cursor.pending_actions.orValue([]).filter(p, p.w > 0),
+                "pending_actions": state.?cursor.pending_actions.orValue([]),
               },
               "want_more": false,
             }
