@@ -26,7 +26,8 @@ program: |-
     state.?want_more.orValue(false) ?
       state
     :
-      state.with({
+      // New window: drop paging state left by an interrupted window.
+      state.drop(["next", "newest_timestamp"]).with({
         "start_time": state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval))),
         "end_time": int(now),
       })
@@ -35,14 +36,17 @@ program: |-
       "GET",
       state.url.trim_right("/") + "/v1/organization/audit_logs?" +
         "limit=" + string(state.batch_size) +
-        (has(state.next) && state.next != null && has(state.next.before_cursor) ? "&before=" + string(state.next.before_cursor) : "") +
+        (has(state.next) && state.next != null && has(state.next.after_cursor) ? "&after=" + string(state.next.after_cursor) : "") +
         "&effective_at%5Bgte%5D=" + string(int(state.start_time)) + "&effective_at%5Blte%5D=" + string(int(state.end_time))
     ).with({
       "Header": {
         "Authorization": ["Bearer " + string(state.admin_token)]
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body, {
+      bytes(resp.Body).decode_json().as(body, (
+        [?state.?cursor.last_timestamp, ?state.?newest_timestamp] +
+        ((has(body.data) && size(body.data) > 0) ? [body.data[0].effective_at] : [])
+      ).as(seen, {
         "events": (
             has(body.data)
           ?
@@ -52,29 +56,27 @@ program: |-
           :
             []
         ),
+        // Records come newest first: keep the window start until the last page.
         "cursor": {
-          ?"last_timestamp": (has(body.data) && size(body.data) > 0) ?
-            (has(state.?cursor.last_timestamp) ?
-              optional.of(
-                max([
-                  state.cursor.last_timestamp,
-                  body.data[0].effective_at
-                ])
-              )
-            :
-              optional.of(body.data[0].effective_at)
-            )
-          :
+          ?"last_timestamp": body.?has_more.orValue(false) ?
+            optional.of(state.?cursor.last_timestamp.orValue(state.start_time))
+          : (size(seen) == 0) ?
             state.?cursor.last_timestamp
+          :
+            optional.of(max(seen))
         },
+        ?"newest_timestamp": (body.?has_more.orValue(false) && size(seen) > 0) ?
+          optional.of(max(seen))
+        :
+          optional.none(),
         "want_more": body.?has_more.orValue(false),
         "next": {
-          ?"before_cursor": body.?has_more.orValue(false) ?
+          ?"after_cursor": body.?has_more.orValue(false) ?
             optional.of(body.last_id)
           :
             optional.none(),
         },
-      })
+      }))
     :
       {
         "events": {
