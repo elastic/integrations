@@ -16,3 +16,9 @@ processors:
     copy_from: "agent.id"
     ignore_empty_value: true
     override: true
+- rename:
+    field: error
+    target_field: error.message
+    tag: rename_error_to_error_message
+    description: Osquerybeat reports a failed action as a top-level `error` string. Move it to ECS `error.message` so `error` stays an object, as ECS expects.
+    if: ctx.error instanceof String
