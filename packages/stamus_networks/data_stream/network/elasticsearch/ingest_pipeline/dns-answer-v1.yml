@@ -1,0 +1,53 @@
+---
+description: Pipeline for Stamus Networks DNS answers, Suricata EVE version 1.
+
+processors:
+  - script:
+      lang: painless
+      tag: dns_answer_v1
+      source: |
+        def dns = ctx.json != null ? ctx.json.dns : null;
+        if (dns == null) {
+            return;
+        }
+        def name = dns.rrname;
+        def data = dns.rdata;
+        def type = dns.rrtype;
+        def ttl = dns.ttl;
+        def answer = new HashMap();
+        if (name != null) {
+            answer.put("name", name);
+        }
+        if (data != null) {
+            answer.put("data", data);
+        }
+        if (type != null) {
+            answer.put("type", type);
+        }
+        if (ttl != null) {
+            answer.put("ttl", ttl);
+        }
+        if (!answer.isEmpty()) {
+            ctx.dns.answers = [answer];
+        }
+        if (type == "A" || type == "AAAA") {
+            ctx.dns.resolved_ip = [data];
+        }
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_dns_v1_pipeline_error_kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      tag: append_dns_v1_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      tag: append_dns_v1_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
