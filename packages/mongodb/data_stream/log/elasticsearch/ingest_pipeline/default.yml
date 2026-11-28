@@ -2,56 +2,78 @@
 description: Pipeline for parsing MongoDB logs
 processors:
 - set:
+    tag: set_ecs_version_1668012c
     field: ecs.version
     value: '8.11.0'
 - set:
+    tag: set_event_ingested_01b9acde
     field: event.ingested
     value: '{{_ingest.timestamp}}'
 - rename:
+    tag: rename_timestamp_a9d1a109
     field: '@timestamp'
     target_field: event.created
 - grok:
+    tag: grok_message_099aea59
     field: message
     patterns:
     - ^%{CHAR:first_char}
     pattern_definitions:
       CHAR: .
 - pipeline:
+    tag: pipeline_97c828d2
     if: ctx.first_char != '{'
     name: '{{ IngestPipeline "pipeline-plaintext" }}'
 - pipeline:
+    tag: pipeline_ade9dd49
     if: ctx.first_char == '{'
     name: '{{ IngestPipeline "pipeline-json" }}'
 - set:
+    tag: set_event_kind_24e631ed
     field: event.kind
     value: event
 - append:
+    tag: append_event_category_d3094ccf
     field: event.category
     value: database
 - append:
+    tag: append_related_user_e669e1c7
     field: related.user
     value: "{{{ user.name }}}"
     allow_duplicates: false
     if: ctx.user?.name != null && ctx.user?.name != ''
 - append:
+    tag: append_related_user_fc3732fe
     field: related.user
     value: "{{{ user.effective.name }}}"
     allow_duplicates: false
     if: ctx.user?.effective?.name != null && ctx.user?.effective?.name != ''
 - append:
+    tag: append_related_ip_e2186986
     field: related.ip
     value: "{{{ source.ip }}}"
     allow_duplicates: false
     if: ctx.source?.ip != null && ctx.source?.ip != ''
 - append:
+    tag: append_related_hosts_e1c1624f
     field: related.hosts
     value: "{{{ host.hostname }}}"
     allow_duplicates: false
     if: ctx.host?.hostname != null && ctx.host?.hostname != ''
 - remove:
+    tag: remove_first_char_294aa5c4
     field:
     - first_char
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_60e16427
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_732b6caa
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
