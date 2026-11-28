@@ -2,41 +2,60 @@
 description: Pipeline for processing Azure App Service Console Logs
 processors:
   - rename:
+      tag: rename_azure_app_service_ResourceId_7dc3efaf
       field: azure.app_service.ResourceId
       target_field: azure.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_Category_4cc60a30
       field: azure.app_service.Category
       target_field: azure.app_service.category
   - rename:
+      tag: rename_azure_app_service_OperationName_7cef2987
       field: azure.app_service.OperationName
       target_field: azure.app_service.operation_name
   - rename:
+      tag: rename_azure_app_service_Properties_e998d887
       field: azure.app_service.Properties
       target_field: azure.app_service.properties
       ignore_missing: true
   - rename:
+      tag: rename_azure_app_service_properties_Protocol_92adcb20
       field: azure.app_service.properties.Protocol
       target_field: azure.app_service.properties.protocol
   - rename:
+      tag: rename_azure_app_service_properties_User_8a000f84
       field: azure.app_service.properties.User
       target_field: azure.app_service.properties.user
   - rename:
+      tag: rename_azure_app_service_properties_UserAddress_3ceff802
       field: azure.app_service.properties.UserAddress
       target_field: azure.app_service.properties.client_ip
   - rename:
+      tag: rename_azure_app_service_properties_UserDisplayName_c2563fab
       field: azure.app_service.properties.UserDisplayName
       target_field: azure.app_service.properties.user_display_name
   - grok:
+      tag: grok_azure_app_service_properties_client_ip_4068b58e
       field: azure.app_service.properties.client_ip
       patterns:
         - '%{IPORHOST:azure.app_service.properties.client_ip}:%{POSINT:azure.app_service.properties.client_port:long}'
       ignore_failure: true
   - convert:
+      tag: convert_azure_app_service_properties_client_ip_ed5eff50
       field: azure.app_service.properties.client_ip
       type: ip
       ignore_missing: true
 on_failure:
+  - set:
+      tag: set_event_kind_981d1a09
+      field: event.kind
+      value: pipeline_error
   - append:
-      field: "error.message"
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+      tag: append_error_message_540fd864
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
