@@ -98,10 +98,19 @@ while [ "$i" -lt 30 ]; do
 done
 [ "$boot_ok" = "1" ]
 
-# 3. Verify transform states are started + green and destinations are empty lookup-mode indices.
+# 3. Poll until transforms finish Checkpoint 1 (started, green, checkpoint >= 1) and destinations are empty lookup-mode indices.
 for tid in "$TID_CONF" "$TID_CUR"; do
-  st=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/${tid}/_stats")
-  printf '%s' "$st" | jq -e '.transforms[0].state == "started" and .transforms[0].health.status == "green"' >/dev/null
+  i=0
+  tf_ready="0"
+  while [ "$i" -lt 30 ]; do
+    if curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/${tid}/_stats" 2>/dev/null | jq -e '.transforms[0].state == "started" and .transforms[0].health.status == "green" and ((.transforms[0].checkpointing.last.checkpoint // 0) >= 1)' >/dev/null 2>&1; then
+      tf_ready="1"
+      break
+    fi
+    i=$((i + 1))
+    sleep 2
+  done
+  [ "$tf_ready" = "1" ]
 done
 
 for pair in \
