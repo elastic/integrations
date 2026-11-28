@@ -2,6 +2,7 @@
 description: Pipeline for normalizing envoy HTTP ACCESS logs
 processors:
 - script:
+    tag: script_3e714d93
     lang: painless
     source: >-
       ctx['http'] = new HashMap();
@@ -10,56 +11,71 @@ processors:
       ctx.http.version = ctx.proto.substring(p+1, l);
     if: ctx.proto != null && ctx.proto != '-'
 - rename:
+    tag: rename_method_9248ec26
     field: method
     target_field: http.request.method
 - rename:
+    tag: rename_path_5bb4bb6a
     field: path
     target_field: url.path
     override: true
 - convert:
+    tag: convert_response_code_d5ab2399
     field: response_code
     type: long
 - rename:
+    tag: rename_response_code_ea0d41b4
     field: response_code
     target_field: http.response.status_code
 - rename:
+    tag: rename_bytes_received_4ac72879
     field: bytes_received
     target_field: http.response.body.bytes
 - convert:
+    tag: convert_http_response_body_bytes_63d949df
     field: http.response.body.bytes
     type: long
 - rename:
+    tag: rename_bytes_sent_2782a139
     field: bytes_sent
     target_field: http.request.body.bytes
 - convert:
+    tag: convert_http_request_body_bytes_46e8ec6c
     field: http.request.body.bytes
     type: long
 - script:
+    tag: script_1c4b30c3
     lang: painless
     source: ctx.envoyproxy.log.upstream_service_time = Math.round(Double.parseDouble(ctx.upstream_service_time) * params.scale)
     params:
       scale: 1000000
     if: ctx.upstream_service_time != null && ctx.upstream_service_time != '-'
 - set:
+    tag: set_envoyproxy_log_proxy_type_9427b7ea
     field: envoyproxy.log.proxy_type
     value: http
 - set:
+    tag: set_url_domain_4529fceb
     field: url.domain
     value: '{{envoyproxy.log.authority}}'
     if: ctx.envoyproxy?.log?.authority != null && ctx.envoyproxy?.log?.authority != '-'
 - registered_domain:
+    tag: registered_domain_url_domain_36284516
     field: url.domain
     target_field: url
 - user_agent:
+    tag: user_agent_user_agent_original_e1df75ac
     field: user_agent.original
     ignore_missing: true
 - append:
+    tag: append_event_type_ed029d41
     field: event.type
     allow_duplicates: false
     value:
       - connection
       - protocol
 - set:
+    tag: set_network_protocol_b7496038
     field: network.protocol
     value: http
 on_failure:

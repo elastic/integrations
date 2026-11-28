@@ -2,26 +2,33 @@
 description: Pipeline for normalizing envoyproxy logs
 processors:
 - set:
+    tag: set_ecs_version_c841ee4c
     field: ecs.version
     value: 8.11.0
 - set:
+    tag: set_event_kind_f593bd15
     field: event.kind
     value: event
 - append:
+    tag: append_event_category_2a33cbda
     field: event.category
     value: network
 - set:
+    tag: set_event_ingested_df61c860
     field: event.ingested
     value: '{{_ingest.timestamp}}'
     ignore_empty_value: true
     ignore_failure: true
 - pipeline:
+    tag: pipeline_f893e9f6
     if: ctx.message.startsWith('{')
     name: '{{ IngestPipeline "json"}}'
 - pipeline:
+    tag: pipeline_8f9d2e35
     if: ctx.message.charAt(0) != (char)("{")
     name: '{{ IngestPipeline "plaintext"}}'
 - pipeline:
+    tag: pipeline_710be8e5
     name: '{{ IngestPipeline "geo"}}'
 - rename:
     field: message
@@ -35,30 +42,37 @@ processors:
     tag: remove_message
     if: ctx.event?.original != null
 - set:
+    tag: set_event_created_9a285b35
     field: event.created
     value: '{{@timestamp}}'
 - append:
+    tag: append_related_ip_4f9bc78b
     field: related.ip
     value: "{{source.ip}}"
     if: "ctx?.source?.ip != null"
     allow_duplicates: false
 - append:
+    tag: append_related_ip_f3234ab8
     field: related.ip
     value: "{{destination.ip}}"
     if: "ctx?.destination?.ip != null"
     allow_duplicates: false
 - set:
+    tag: set_event_outcome_49d54025
     field: event.outcome
     value: failure
     if: ctx.envoyproxy?.log?.response_flags != null
 - set:
+    tag: set_event_outcome_027451be
     field: event.outcome
     value: success
     if: ctx.envoyproxy?.log?.response_flags == null
 - set:
+    tag: set_timestamp_edb57784
     field: '@timestamp'
     value: '{{timestamp}}'
 - remove:
+    tag: remove_timestamp_3e341aa9
     field:
     - timestamp
 - script:
@@ -80,6 +94,7 @@ processors:
       }
       drop(ctx);
 - append:
+    tag: append_event_kind_d0a32f09
     field: event.kind
     value: pipeline_error
     allow_duplicates: false
