@@ -3,14 +3,22 @@ description: Pipeline for parsing IIS access logs. Requires the geoip and user_a
   plugins.
 processors:
   - set:
+      tag: set_ecs_version_6bd41085
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_c22c0e9d
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_40630f0f
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_f5b71bf3
       field: event.original
       ignore_missing: true
       pattern_definitions:
@@ -85,51 +93,63 @@ processors:
           (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NUMBER:iis.access.win32_status:long})
           (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IP:network.forwarded_ip}))?'
   - uri_parts:
+      tag: uri_parts_temp_url_path_f69d2447
       field: _temp_.url_path
       ignore_failure: true
   - set:
+      tag: set_url_original_cb6ab281
       field: url.original
       value: "{{_temp_.url_path}}"
       ignore_failure: true
       if: ctx?._temp_?.url_path != null && ctx?.url?.original == null
   - urldecode:
+      tag: urldecode_temp_url_query_b0f8e6aa
       field: _temp_.url_query
       target_field: url.query
       ignore_missing: true
       ignore_failure: true
       if: ctx.url?.query == null
   - set:
+      tag: set_url_domain_b3ed6294
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
   - rename:
+      tag: rename_timestamp_75eb319a
       field: '@timestamp'
       target_field: event.created
       ignore_missing: true
   - date:
+      tag: date_iis_access_time_fc76603c
       field: iis.access.time
       target_field: '@timestamp'
       formats:
           - yyyy-MM-dd HH:mm:ss
   - remove:
+      tag: remove_iis_access_time_e1b8a332
       field: iis.access.time
   - script:
+      tag: script_fee9aa3d
       lang: painless
       source: ctx.event.duration = Math.round(ctx._temp_.duration * params.scale)
       params:
           scale: 1000000
       if: ctx._temp_?.duration != null
   - remove:
+      tag: remove_temp_637b8109
       field:
         - _temp_
       ignore_missing: true
   - urldecode:
+      tag: urldecode_user_agent_original_8a337153
       field: user_agent.original
       ignore_missing: true
   - user_agent:
+      tag: user_agent_user_agent_original_363a2488
       field: user_agent.original
       ignore_missing: true
   - script:
+      tag: script_2e46009f
       lang: painless
       description: |
         This script processor handles ctx.source[field] as per grok changes in ES 8.7+.
@@ -151,6 +171,7 @@ processors:
         fields:
             - "address"
   - script:
+      tag: script_17222d15
       lang: painless
       description: |
         This script processor handles ctx.destination[field] as per grok changes in ES 8.7+.
@@ -172,6 +193,7 @@ processors:
         fields:
             - "address"
   - grok:
+      tag: grok_destination_address_5a5e312b
       field: destination.address
       ignore_failure: true
       patterns:
@@ -179,6 +201,7 @@ processors:
       pattern_definitions:
           NOZONEIP: '[^%]*'
   - grok:
+      tag: grok_source_address_410fe818
       field: source.address
       ignore_failure: true
       patterns:
@@ -186,10 +209,12 @@ processors:
       pattern_definitions:
           NOZONEIP: '[^%]*'
   - geoip:
+      tag: geoip_source_ip_81f98730
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_a177c42e
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -198,28 +223,35 @@ processors:
           - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_4f667a00
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_0f6d9b3f
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_72e6fe23
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_f2dabe30
       field: event.category
       value: web
   - append:
+      tag: append_event_category_8bf9c983
       field: event.category
       value: network
       if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
   - append:
+      tag: append_event_type_489b33ae
       field: event.type
       value: connection
       if: "ctx?.source?.ip != null && ctx?.destination?.ip != null"
   - grok:
+      tag: grok_user_name_7c7c2049
       field: user.name
       patterns:
         - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
@@ -229,38 +261,46 @@ processors:
       ignore_missing: true
       if: ctx.user?.name != null && ctx.user?.name != ""
   - lowercase:
+      tag: lowercase_iis_access_server_name_40408404
       field: iis.access.server_name
       target_field: host.name
       if: ctx.iis?.access?.server_name != null
   - append:
+      tag: append_related_ip_f2ed6c48
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: "ctx?.source?.ip != null"
   - append:
+      tag: append_related_ip_ad5a4bf4
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
       if: "ctx?.destination?.ip != null"
   - append:
+      tag: append_related_user_e54527e7
       field: related.user
       value: "{{user.name}}"
       allow_duplicates: false
       if: "ctx?.user?.name != null"
   - append:
+      tag: append_related_hosts_74d63c9e
       field: related.hosts
       value: "{{host.name}}"
       allow_duplicates: false
       if: "ctx?.host?.name != null"
   - set:
+      tag: set_event_outcome_9f306875
       field: event.outcome
       value: success
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_3957acfb
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - script:
+      tag: script_0735bd72
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -285,10 +325,20 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_tmp_416939d4
       field: _tmp
       ignore_failure: true
       ignore_missing: true
 on_failure:
-    - set:
-          field: error.message
-          value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_cea5311f
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_1988df75
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
