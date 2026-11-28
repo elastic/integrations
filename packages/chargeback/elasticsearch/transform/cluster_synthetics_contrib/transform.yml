@@ -1,0 +1,706 @@
+description: Aggregates daily Synthetics monitor check execution metrics per deployment, monitor, and synthetic type into a single daily lookup row, deduplicating overlapping multi-policy collections while merging non-overlapping collector intervals.
+source:
+  index:
+    - metrics-chargeback.usage-*
+    - chargeback_lookup.dest_billing_cluster_cost-1*
+    - -chargeback_lookup.dest_cluster_*
+  query:
+    term:
+      doc_type: "synthetics_monitor"
+  runtime_mappings:
+    cb_monitor_id:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['monitor_id.keyword', 'monitor_id']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          def sv = params._source?.get('monitor_id');
+          if (sv != null && sv.toString() != '') {
+            emit(sv.toString());
+          }
+    cb_monitor_type:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['monitor_type.keyword', 'monitor_type']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          def sv = params._source?.get('monitor_type');
+          if (sv != null && sv.toString() != '') {
+            emit(sv.toString());
+          }
+dest:
+  index: chargeback_lookup.dest_cluster_synthetics_monitor_contribution-1
+  aliases:
+    - alias: chargeback_lookup.cluster_synthetics_monitor_contribution
+      move_on_creation: true
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "usage" }}'
+frequency: 5m
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_name:
+      terms:
+        field: elasticsearch.cluster.name
+    monitor_id:
+      terms:
+        field: cb_monitor_id
+    monitor_type:
+      terms:
+        field: cb_monitor_type
+  aggregations:
+    aux_rollup:
+      scripted_metric:
+        init_script: |
+          state.emitters = new HashMap();
+          state.dep_name = '';
+          state.dep_name_ts = -1L;
+          state.dep_name_ing = -1L;
+          state.dep_group = '';
+          state.dep_group_ts = -1L;
+          state.dep_group_ing = -1L;
+          state.has_dep_group = false;
+          state.mon_name = '';
+          state.mon_name_ts = -1L;
+          state.mon_name_ing = -1L;
+          state.mon_ns = '';
+          state.mon_ns_ts = -1L;
+          state.mon_ns_ing = -1L;
+        map_script: |
+          if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
+          long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
+          long ingTs = -1L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (params._source?.event?.ingested != null) {
+              ingTs = ZonedDateTime.parse(params._source.event.ingested.toString()).toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+
+          String dn = '';
+          for (String dnf : ['deployment_name.keyword', 'deployment_name']) {
+            try {
+              if (doc.containsKey(dnf) && !doc[dnf].empty) {
+                dn = doc[dnf].value.toString();
+                if (dn != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (dn == '') {
+            try {
+              def sdn = params._source?.get('deployment_name');
+              if (sdn != null && sdn.toString() != '') { dn = sdn.toString(); }
+            } catch (Exception e) {}
+          }
+          if (dn != '' && (ingTs > state.dep_name_ing || (ingTs == state.dep_name_ing && ts >= state.dep_name_ts))) {
+            state.dep_name_ing = ingTs;
+            state.dep_name_ts = ts;
+            state.dep_name = dn;
+          }
+
+          boolean hasDg = false;
+          String dg = '';
+          if (params._source != null && params._source.containsKey('deployment_group') && params._source.get('deployment_group') != null) {
+            hasDg = true;
+            dg = params._source.get('deployment_group').toString();
+          } else {
+            for (String dgf : ['deployment_group.keyword', 'deployment_group']) {
+              try {
+                if (doc.containsKey(dgf) && !doc[dgf].empty) {
+                  hasDg = true;
+                  dg = doc[dgf].value.toString();
+                  break;
+                }
+              } catch (Exception e) {}
+            }
+          }
+          if (hasDg && (ingTs > state.dep_group_ing || (ingTs == state.dep_group_ing && ts >= state.dep_group_ts))) {
+            state.has_dep_group = true;
+            state.dep_group_ing = ingTs;
+            state.dep_group_ts = ts;
+            state.dep_group = dg;
+          }
+
+          String mn = '';
+          for (String mnf : ['monitor_name.keyword', 'monitor_name']) {
+            try {
+              if (doc.containsKey(mnf) && !doc[mnf].empty) {
+                mn = doc[mnf].value.toString();
+                if (mn != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (mn == '' && params._source?.get('monitor_name') != null) {
+            mn = params._source.get('monitor_name').toString();
+          }
+          if (mn != '' && (ingTs > state.mon_name_ing || (ingTs == state.mon_name_ing && ts >= state.mon_name_ts))) {
+            state.mon_name_ing = ingTs;
+            state.mon_name_ts = ts;
+            state.mon_name = mn;
+          }
+
+          String mns = '';
+          for (String mnsf : ['monitor_namespace.keyword', 'monitor_namespace']) {
+            try {
+              if (doc.containsKey(mnsf) && !doc[mnsf].empty) {
+                mns = doc[mnsf].value.toString();
+                if (mns != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (mns == '' && params._source?.get('monitor_namespace') != null) {
+            mns = params._source.get('monitor_namespace').toString();
+          }
+          if (mns != '' && (ingTs > state.mon_ns_ing || (ingTs == state.mon_ns_ing && ts >= state.mon_ns_ts))) {
+            state.mon_ns_ing = ingTs;
+            state.mon_ns_ts = ts;
+            state.mon_ns = mns;
+          }
+
+          String ns = 'default';
+          for (String nf : ['data_stream.namespace.keyword', 'data_stream.namespace']) {
+            try {
+              if (doc.containsKey(nf) && !doc[nf].empty) {
+                String v = doc[nf].value.toString().trim();
+                if (v != '') { ns = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ns == 'default') {
+            try {
+              def sns = params._source?.data_stream instanceof Map ? params._source.data_stream.get('namespace') : params._source?.get('data_stream.namespace');
+              if (sns != null && sns.toString().trim() != '') { ns = sns.toString().trim(); }
+            } catch (Exception e) {}
+          }
+
+          String polId = '';
+          for (String pf : ['conf_policy_id.keyword', 'conf_policy_id', 'package_policy_id.keyword', 'package_policy_id', 'input.package_policy_id.keyword', 'input.package_policy_id', 'elastic_agent.package_policy_id.keyword', 'elastic_agent.package_policy_id', 'input.id.keyword', 'input.id', 'elastic_agent.policy_id.keyword', 'elastic_agent.policy_id']) {
+            try {
+              if (doc.containsKey(pf) && !doc[pf].empty) {
+                String pv = doc[pf].value.toString().trim();
+                if (pv != '') { polId = pv; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (polId == '' && params._source != null) {
+            if (params._source.get('conf_policy_id') != null) { polId = params._source.get('conf_policy_id').toString().trim(); }
+            else if (params._source.get('package_policy_id') != null) { polId = params._source.get('package_policy_id').toString().trim(); }
+            else if (params._source.input instanceof Map && params._source.input.get('package_policy_id') != null) { polId = params._source.input.get('package_policy_id').toString().trim(); }
+            else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.get('package_policy_id') != null) { polId = params._source.elastic_agent.get('package_policy_id').toString().trim(); }
+            else if (params._source.input instanceof Map && params._source.input.get('id') != null) { polId = params._source.input.get('id').toString().trim(); }
+            else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.get('policy_id') != null) { polId = params._source.elastic_agent.get('policy_id').toString().trim(); }
+          }
+          if (polId == '') { polId = '_default_'; }
+
+          String collectorId = '';
+          for (String cf : ['agent.id.keyword', 'agent.id', 'elastic_agent.id.keyword', 'elastic_agent.id', 'host.id.keyword', 'host.id', 'host.name.keyword', 'host.name']) {
+            try {
+              if (doc.containsKey(cf) && !doc[cf].empty) {
+                String cv = doc[cf].value.toString().trim();
+                if (cv != '') { collectorId = cv; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (collectorId == '' && params._source != null) {
+            if (params._source.agent instanceof Map && params._source.agent.get('id') != null) { collectorId = params._source.agent.get('id').toString().trim(); }
+            else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.get('id') != null) { collectorId = params._source.elastic_agent.get('id').toString().trim(); }
+            else if (params._source.host instanceof Map && params._source.host.get('id') != null) { collectorId = params._source.host.get('id').toString().trim(); }
+            else if (params._source.host instanceof Map && params._source.host.get('name') != null) { collectorId = params._source.host.get('name').toString().trim(); }
+          }
+          if (collectorId == '') { collectorId = '_default_'; }
+          String emKey = ns + '|' + polId + '|' + collectorId;
+
+          long chkCnt = 0L;
+          try {
+            if (doc.containsKey('check_count') && !doc['check_count'].empty) {
+              chkCnt = ((Number)doc['check_count'].value).longValue();
+            } else if (params._source?.get('check_count') instanceof Number) {
+              chkCnt = ((Number)params._source.get('check_count')).longValue();
+            }
+          } catch (Exception e) {}
+          if (chkCnt < 0L) { chkCnt = 0L; }
+
+          long upCnt = 0L;
+          try {
+            if (doc.containsKey('up_count') && !doc['up_count'].empty) {
+              upCnt = ((Number)doc['up_count'].value).longValue();
+            } else if (params._source?.get('up_count') instanceof Number) {
+              upCnt = ((Number)params._source.get('up_count')).longValue();
+            }
+          } catch (Exception e) {}
+          if (upCnt < 0L) { upCnt = 0L; }
+
+          long downCnt = 0L;
+          try {
+            if (doc.containsKey('down_count') && !doc['down_count'].empty) {
+              downCnt = ((Number)doc['down_count'].value).longValue();
+            } else if (params._source?.get('down_count') instanceof Number) {
+              downCnt = ((Number)params._source.get('down_count')).longValue();
+            }
+          } catch (Exception e) {}
+          if (downCnt < 0L) { downCnt = 0L; }
+
+          long locCnt = 0L;
+          try {
+            if (doc.containsKey('locations_count') && !doc['locations_count'].empty) {
+              locCnt = ((Number)doc['locations_count'].value).longValue();
+            } else if (params._source?.get('locations_count') instanceof Number) {
+              locCnt = ((Number)params._source.get('locations_count')).longValue();
+            }
+          } catch (Exception e) {}
+
+          double totDurMs = 0.0;
+          try {
+            if (doc.containsKey('total_duration_ms') && !doc['total_duration_ms'].empty) {
+              totDurMs = ((Number)doc['total_duration_ms'].value).doubleValue();
+            } else if (params._source?.get('total_duration_ms') instanceof Number) {
+              totDurMs = ((Number)params._source.get('total_duration_ms')).doubleValue();
+            }
+          } catch (Exception e) {}
+          if (totDurMs < 0.0) { totDurMs = 0.0; }
+
+          double avgDurMs = 0.0;
+          try {
+            if (doc.containsKey('average_duration_ms') && !doc['average_duration_ms'].empty) {
+              avgDurMs = ((Number)doc['average_duration_ms'].value).doubleValue();
+            } else if (params._source?.get('average_duration_ms') instanceof Number) {
+              avgDurMs = ((Number)params._source.get('average_duration_ms')).doubleValue();
+            }
+          } catch (Exception e) {}
+
+          List docLocs = new ArrayList();
+          boolean addedDocLoc = false;
+          for (String lf : ['observer_locations.keyword', 'observer_locations']) {
+            try {
+              if (doc.containsKey(lf) && !doc[lf].empty) {
+                for (def lv : doc[lf]) {
+                  if (lv != null) {
+                    String ls = lv.toString().trim();
+                    if (ls != '' && docLocs.size() < 500 && !docLocs.contains(ls)) {
+                      docLocs.add(ls);
+                    }
+                  }
+                }
+                addedDocLoc = true;
+                break;
+              }
+            } catch (Exception e) {}
+          }
+          if (!addedDocLoc && params._source?.get('observer_locations') != null) {
+            def rawLocs = params._source.get('observer_locations');
+            if (rawLocs instanceof List) {
+              for (def lv : (List)rawLocs) {
+                if (lv != null) {
+                  String ls = lv.toString().trim();
+                  if (ls != '' && docLocs.size() < 500 && !docLocs.contains(ls)) {
+                    docLocs.add(ls);
+                  }
+                }
+              }
+            } else {
+              String ls = rawLocs.toString().trim();
+              if (ls != '' && docLocs.size() < 500 && !docLocs.contains(ls)) {
+                docLocs.add(ls);
+              }
+            }
+          }
+
+          long rem = ((ts % 86400000L) + 86400000L) % 86400000L;
+          long dayStartMs = ts - rem;
+          long dayEndMs = dayStartMs + 86400000L;
+          long intStartMs = -1L;
+          long intEndMs = -1L;
+          try {
+            if (doc.containsKey('interval_start') && !doc['interval_start'].empty) {
+              intStartMs = doc['interval_start'].value.toInstant().toEpochMilli();
+            } else if (params._source?.get('interval_start') != null) {
+              def rs = params._source.get('interval_start');
+              if (rs instanceof Number) { intStartMs = ((Number)rs).longValue(); }
+              else { intStartMs = ZonedDateTime.parse(rs.toString().trim()).toInstant().toEpochMilli(); }
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('interval_end') && !doc['interval_end'].empty) {
+              intEndMs = doc['interval_end'].value.toInstant().toEpochMilli();
+            } else if (params._source?.get('interval_end') != null) {
+              def re = params._source.get('interval_end');
+              if (re instanceof Number) { intEndMs = ((Number)re).longValue(); }
+              else { intEndMs = ZonedDateTime.parse(re.toString().trim()).toInstant().toEpochMilli(); }
+            }
+          } catch (Exception e) {}
+
+          int sMin = 0;
+          int eMin = 0;
+          if (intStartMs >= 0L && intEndMs > intStartMs) {
+            long cStart = intStartMs < dayStartMs ? dayStartMs : (intStartMs > dayEndMs ? dayEndMs : intStartMs);
+            long cEnd = intEndMs > dayEndMs ? dayEndMs : (intEndMs < dayStartMs ? dayStartMs : intEndMs);
+            if (cEnd > cStart) {
+              sMin = (int)((cStart - dayStartMs) / 60000L);
+              if (sMin < 0) { sMin = 0; }
+              if (sMin > 1439) { sMin = 1439; }
+              eMin = (int)((cEnd - dayStartMs + 59999L) / 60000L);
+              if (eMin <= sMin) { eMin = sMin + 1; }
+              if (eMin > 1440) { eMin = 1440; }
+            }
+          }
+          if (eMin <= sMin) {
+            int hour = (int)(rem / 3600000L);
+            if (hour < 0) { hour = 0; }
+            if (hour > 23) { hour = 23; }
+            sMin = hour * 60;
+            eMin = sMin + 60;
+          }
+
+          Map em = (Map)state.emitters.get(emKey);
+          if (em == null) {
+            em = new HashMap();
+            em.put('doc_cnt', 0L);
+            em.put('max_loc', 0L);
+            em.put('max_avg_dur', 0.0);
+            em.put('locs', new ArrayList());
+            em.put('ivs', new ArrayList());
+            state.emitters.put(emKey, em);
+          }
+          em.put('doc_cnt', ((Number)em.get('doc_cnt')).longValue() + 1L);
+          if (locCnt > ((Number)em.get('max_loc')).longValue()) {
+            em.put('max_loc', locCnt);
+          }
+          if (avgDurMs > ((Number)em.get('max_avg_dur')).doubleValue()) {
+            em.put('max_avg_dur', avgDurMs);
+          }
+          List emLocs = (List)em.get('locs');
+          for (def lsObj : docLocs) {
+            String ls = lsObj.toString();
+            if (emLocs.size() < 500 && !emLocs.contains(ls)) {
+              emLocs.add(ls);
+            }
+          }
+          if (chkCnt > 0L || upCnt > 0L || downCnt > 0L || totDurMs > 0.0) {
+            Map rec = new HashMap();
+            rec.put('s', sMin);
+            rec.put('e', eMin);
+            rec.put('chk', chkCnt);
+            rec.put('up', upCnt);
+            rec.put('down', downCnt);
+            rec.put('max_loc', locCnt);
+            rec.put('tot_dur', totDurMs);
+            rec.put('max_avg_dur', avgDurMs);
+            rec.put('locs', docLocs);
+            ((List)em.get('ivs')).add(rec);
+          }
+        combine_script: "return state;"
+        reduce_script: |
+          Map mergedEmitters = new HashMap();
+          String depName = '';
+          long depNameTs = -1L;
+          long depNameIng = -1L;
+          String depGroup = '';
+          long depGroupTs = -1L;
+          long depGroupIng = -1L;
+          boolean hasDepGroup = false;
+          String monName = '';
+          long monNameTs = -1L;
+          long monNameIng = -1L;
+          String monNs = '';
+          long monNsTs = -1L;
+          long monNsIng = -1L;
+          for (def st : states) {
+            if (!(st instanceof Map)) { continue; }
+            String sdn = st.get('dep_name') != null ? st.get('dep_name').toString() : '';
+            long sdnIng = st.get('dep_name_ing') instanceof Number ? ((Number)st.get('dep_name_ing')).longValue() : -1L;
+            long sdnTs = st.get('dep_name_ts') instanceof Number ? ((Number)st.get('dep_name_ts')).longValue() : -1L;
+            if (sdn != '' && (sdnIng > depNameIng || (sdnIng == depNameIng && sdnTs >= depNameTs))) {
+              depNameIng = sdnIng;
+              depNameTs = sdnTs;
+              depName = sdn;
+            }
+            if (Boolean.TRUE.equals(st.get('has_dep_group'))) {
+              String sdg = st.get('dep_group') != null ? st.get('dep_group').toString() : '';
+              long sdgIng = st.get('dep_group_ing') instanceof Number ? ((Number)st.get('dep_group_ing')).longValue() : -1L;
+              long sdgTs = st.get('dep_group_ts') instanceof Number ? ((Number)st.get('dep_group_ts')).longValue() : -1L;
+              if (!hasDepGroup || sdgIng > depGroupIng || (sdgIng == depGroupIng && sdgTs >= depGroupTs)) {
+                hasDepGroup = true;
+                depGroupIng = sdgIng;
+                depGroupTs = sdgTs;
+                depGroup = sdg;
+              }
+            }
+            String smn = st.get('mon_name') != null ? st.get('mon_name').toString() : '';
+            long smnIng = st.get('mon_name_ing') instanceof Number ? ((Number)st.get('mon_name_ing')).longValue() : -1L;
+            long smnTs = st.get('mon_name_ts') instanceof Number ? ((Number)st.get('mon_name_ts')).longValue() : -1L;
+            if (smn != '' && (smnIng > monNameIng || (smnIng == monNameIng && smnTs >= monNameTs))) {
+              monNameIng = smnIng;
+              monNameTs = smnTs;
+              monName = smn;
+            }
+            String smns = st.get('mon_ns') != null ? st.get('mon_ns').toString() : '';
+            long smnsIng = st.get('mon_ns_ing') instanceof Number ? ((Number)st.get('mon_ns_ing')).longValue() : -1L;
+            long smnsTs = st.get('mon_ns_ts') instanceof Number ? ((Number)st.get('mon_ns_ts')).longValue() : -1L;
+            if (smns != '' && (smnsIng > monNsIng || (smnsIng == monNsIng && smnsTs >= monNsTs))) {
+              monNsIng = smnsIng;
+              monNsTs = smnsTs;
+              monNs = smns;
+            }
+            if (!(st.get('emitters') instanceof Map)) { continue; }
+            for (def ee : ((Map)st.get('emitters')).entrySet()) {
+              String ek = ee.getKey().toString();
+              Map src = (Map)ee.getValue();
+              Map dst = (Map)mergedEmitters.get(ek);
+              if (dst == null) {
+                dst = new HashMap();
+                dst.put('doc_cnt', 0L);
+                dst.put('max_loc', 0L);
+                dst.put('max_avg_dur', 0.0);
+                dst.put('locs', new HashSet());
+                dst.put('ivs_map', new HashMap());
+                List wMask = new ArrayList();
+                for (int wi = 0; wi < 23; wi++) { wMask.add(0L); }
+                dst.put('wmask', wMask);
+                dst.put('max_end', -1);
+                dst.put('chk_sum', 0L);
+                mergedEmitters.put(ek, dst);
+              }
+              dst.put('doc_cnt', ((Number)dst.get('doc_cnt')).longValue() + ((Number)src.get('doc_cnt')).longValue());
+              long sMaxLoc = ((Number)src.get('max_loc')).longValue();
+              if (sMaxLoc > ((Number)dst.get('max_loc')).longValue()) {
+                dst.put('max_loc', sMaxLoc);
+              }
+              double sMaxAvg = ((Number)src.get('max_avg_dur')).doubleValue();
+              if (sMaxAvg > ((Number)dst.get('max_avg_dur')).doubleValue()) {
+                dst.put('max_avg_dur', sMaxAvg);
+              }
+              Set emLocSet = (Set)dst.get('locs');
+              if (src.get('locs') instanceof List) {
+                for (def lv : (List)src.get('locs')) {
+                  if (lv != null && emLocSet.size() < 500) { emLocSet.add(lv.toString()); }
+                }
+              }
+              if (src.get('ivs') instanceof List) {
+                Map ivsMap = (Map)dst.get('ivs_map');
+                List wMask = (List)dst.get('wmask');
+                for (def rObj : (List)src.get('ivs')) {
+                  if (!(rObj instanceof Map)) { continue; }
+                  Map rec = (Map)rObj;
+                  int sMin = ((Number)rec.get('s')).intValue();
+                  int eMin = ((Number)rec.get('e')).intValue();
+                  long chk = ((Number)rec.get('chk')).longValue();
+                  long up = ((Number)rec.get('up')).longValue();
+                  long down = ((Number)rec.get('down')).longValue();
+                  long rMaxLoc = ((Number)rec.get('max_loc')).longValue();
+                  double totDur = ((Number)rec.get('tot_dur')).doubleValue();
+                  double rMaxAvg = ((Number)rec.get('max_avg_dur')).doubleValue();
+                  String ivk = Integer.toString(sMin) + ':' + Integer.toString(eMin);
+                  Map iv = (Map)ivsMap.get(ivk);
+                  if (iv == null) {
+                    iv = new HashMap();
+                    iv.put('s', sMin);
+                    iv.put('e', eMin);
+                    iv.put('chk', chk);
+                    iv.put('up', up);
+                    iv.put('down', down);
+                    iv.put('max_loc', rMaxLoc);
+                    iv.put('tot_dur', totDur);
+                    iv.put('max_avg_dur', rMaxAvg);
+                    iv.put('locs', new HashSet());
+                    ivsMap.put(ivk, iv);
+                  } else {
+                    iv.put('chk', ((Number)iv.get('chk')).longValue() + chk);
+                    iv.put('up', ((Number)iv.get('up')).longValue() + up);
+                    iv.put('down', ((Number)iv.get('down')).longValue() + down);
+                    if (rMaxLoc > ((Number)iv.get('max_loc')).longValue()) { iv.put('max_loc', rMaxLoc); }
+                    iv.put('tot_dur', ((Number)iv.get('tot_dur')).doubleValue() + totDur);
+                    if (rMaxAvg > ((Number)iv.get('max_avg_dur')).doubleValue()) { iv.put('max_avg_dur', rMaxAvg); }
+                  }
+                  Set ivLocSet = (Set)iv.get('locs');
+                  if (rec.get('locs') instanceof List) {
+                    for (def lv : (List)rec.get('locs')) {
+                      if (lv != null && ivLocSet.size() < 500) { ivLocSet.add(lv.toString()); }
+                    }
+                  }
+                  dst.put('chk_sum', ((Number)dst.get('chk_sum')).longValue() + chk);
+                  if (eMin > ((Number)dst.get('max_end')).intValue()) {
+                    dst.put('max_end', eMin);
+                  }
+                  for (int m = sMin; m < eMin; m++) {
+                    int wi = m >> 6;
+                    long bit = 1L << (m & 63);
+                    wMask.set(wi, ((Number)wMask.get(wi)).longValue() | bit);
+                  }
+                }
+              }
+            }
+          }
+
+          List ranked = new ArrayList();
+          for (def ee : mergedEmitters.entrySet()) {
+            String ek = ee.getKey().toString();
+            Map em = (Map)ee.getValue();
+            int covMins = 0;
+            for (def wv : (List)em.get('wmask')) {
+              covMins += Long.bitCount(((Number)wv).longValue());
+            }
+            em.put('key', ek);
+            em.put('nz', ((Number)em.get('chk_sum')).longValue() > 0L ? 1L : 0L);
+            em.put('cov_mins', covMins);
+            ranked.add(em);
+          }
+
+          List ordered = new ArrayList();
+          while (ranked.size() > 0) {
+            int bi = 0;
+            Map bEm = (Map)ranked.get(0);
+            for (int i = 1; i < ranked.size(); i++) {
+              Map cEm = (Map)ranked.get(i);
+              long cNz = ((Number)cEm.get('nz')).longValue();
+              long bNz = ((Number)bEm.get('nz')).longValue();
+              int cCov = ((Number)cEm.get('cov_mins')).intValue();
+              int bCov = ((Number)bEm.get('cov_mins')).intValue();
+              int cEnd = ((Number)cEm.get('max_end')).intValue();
+              int bEnd = ((Number)bEm.get('max_end')).intValue();
+              long cDocs = ((Number)cEm.get('doc_cnt')).longValue();
+              long bDocs = ((Number)bEm.get('doc_cnt')).longValue();
+              String cKey = cEm.get('key').toString();
+              String bKey = bEm.get('key').toString();
+              if (cNz > bNz
+                  || (cNz == bNz && (cCov > bCov
+                  || (cCov == bCov && (cEnd > bEnd
+                  || (cEnd == bEnd && (cDocs > bDocs
+                  || (cDocs == bDocs && cKey.compareTo(bKey) < 0)))))))) {
+                bi = i;
+                bEm = cEm;
+              }
+            }
+            ordered.add(ranked.remove(bi));
+          }
+
+          List globalCov = new ArrayList();
+          for (int wi = 0; wi < 23; wi++) { globalCov.add(0L); }
+          long mergedChk = 0L;
+          long mergedUp = 0L;
+          long mergedDown = 0L;
+          long mergedMaxLoc = 0L;
+          double mergedTotDur = 0.0;
+          double mergedMaxAvgDur = 0.0;
+          Set mergedLocs = new HashSet();
+
+          for (def emObj : ordered) {
+            Map em = (Map)emObj;
+            List emIvs = new ArrayList(((Map)em.get('ivs_map')).values());
+            while (emIvs.size() > 0) {
+              int ii = 0;
+              Map bIv = (Map)emIvs.get(0);
+              for (int j = 1; j < emIvs.size(); j++) {
+                Map cIv = (Map)emIvs.get(j);
+                int cS = ((Number)cIv.get('s')).intValue();
+                int bS = ((Number)bIv.get('s')).intValue();
+                int cE = ((Number)cIv.get('e')).intValue();
+                int bE = ((Number)bIv.get('e')).intValue();
+                if (cS < bS || (cS == bS && cE > bE)) {
+                  ii = j;
+                  bIv = cIv;
+                }
+              }
+              emIvs.remove(ii);
+              int sMin = ((Number)bIv.get('s')).intValue();
+              int eMin = ((Number)bIv.get('e')).intValue();
+              int totalMins = eMin - sMin;
+              if (totalMins <= 0) { continue; }
+              int uncovMins = 0;
+              for (int m = sMin; m < eMin; m++) {
+                int wi = m >> 6;
+                long bit = 1L << (m & 63);
+                long word = ((Number)globalCov.get(wi)).longValue();
+                if ((word & bit) == 0L) {
+                  uncovMins++;
+                  globalCov.set(wi, word | bit);
+                }
+              }
+              if (uncovMins <= 0) { continue; }
+              long ivChk = ((Number)bIv.get('chk')).longValue();
+              long ivUp = ((Number)bIv.get('up')).longValue();
+              long ivDown = ((Number)bIv.get('down')).longValue();
+              double ivTotDur = ((Number)bIv.get('tot_dur')).doubleValue();
+              long ivMaxLoc = ((Number)bIv.get('max_loc')).longValue();
+              double ivMaxAvg = ((Number)bIv.get('max_avg_dur')).doubleValue();
+              if (uncovMins == totalMins) {
+                mergedChk += ivChk;
+                mergedUp += ivUp;
+                mergedDown += ivDown;
+                mergedTotDur += ivTotDur;
+              } else {
+                double frac = (double)uncovMins / (double)totalMins;
+                long addChk = Math.round((double)ivChk * frac);
+                long addUp = Math.round((double)ivUp * frac);
+                long addDown = Math.round((double)ivDown * frac);
+                if (addUp > addChk) { addUp = addChk; }
+                if (addUp + addDown > addChk) { addDown = addChk - addUp; }
+                mergedChk += addChk;
+                mergedUp += addUp;
+                mergedDown += addDown;
+                mergedTotDur += ivTotDur * frac;
+              }
+              if (ivMaxLoc > mergedMaxLoc) { mergedMaxLoc = ivMaxLoc; }
+              if (ivMaxAvg > mergedMaxAvgDur) { mergedMaxAvgDur = ivMaxAvg; }
+              for (def lv : (Set)bIv.get('locs')) {
+                if (lv != null && mergedLocs.size() < 500) {
+                  mergedLocs.add(lv.toString());
+                }
+              }
+            }
+          }
+
+          if (mergedChk == 0L && mergedTotDur == 0.0 && ordered.size() > 0) {
+            Map topEm = (Map)ordered.get(0);
+            mergedMaxLoc = ((Number)topEm.get('max_loc')).longValue();
+            mergedMaxAvgDur = ((Number)topEm.get('max_avg_dur')).doubleValue();
+            for (def lv : (Set)topEm.get('locs')) {
+              if (lv != null && mergedLocs.size() < 500) {
+                mergedLocs.add(lv.toString());
+              }
+            }
+          }
+
+          Map res = new HashMap();
+          res.put('check_count', mergedChk);
+          res.put('up_count', mergedUp);
+          res.put('down_count', mergedDown);
+          res.put('distinct_locations_count', (long)mergedLocs.size());
+          res.put('max_locations_count', mergedMaxLoc);
+          res.put('total_duration_ms', mergedTotDur);
+          res.put('max_avg_duration_ms', mergedMaxAvgDur);
+          if (depName != '') { res.put('deployment_name', depName); }
+          if (hasDepGroup) { res.put('deployment_group', depGroup); }
+          if (monName != '') { res.put('monitor_name', monName); }
+          if (monNs != '') { res.put('monitor_namespace', monNs); }
+          return res;
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  order: 13
+  run_as_kibana_system: false
+  fleet_transform_version: 0.7.0

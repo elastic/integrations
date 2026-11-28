@@ -52,6 +52,8 @@ The `metrics-ess_billing.billing` data stream collects billing data from the Ela
 
 Field names such as `ess.billing.deployment_id` and `ess.billing.deployment_name` are used for all instance types for backward compatibility. For Serverless projects, `ess.billing.deployment_type` reflects the project type (for example, `observability` or `security`). For Hosted deployments, it is `deployment`.
 
+For Hosted deployments, `ess.billing.deployment_id` contains the ID of the deployment's Elasticsearch resource, as returned by the billing API. This is not the deployment ID shown in the Elastic Cloud console. Use `ess.billing.deployment_name` to identify the deployment.
+
 An example event for `billing` looks as following:
 
 ```json
@@ -156,7 +158,7 @@ An example event for `billing` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ess.billing.cloud.machine.type | The machine type of the instance (e.g., n2.68x16x45). | keyword |
 | ess.billing.cloud.service.type | The service type of the serverless project. | keyword |
-| ess.billing.deployment_id | ID of the billed instance (Hosted deployment, Serverless project, or other Elastic Cloud service). | keyword |
+| ess.billing.deployment_id | ID of the billed instance (Hosted deployment, Serverless project, or other Elastic Cloud service). For Hosted deployments, this is the ID of the deployment's Elasticsearch resource, not the deployment ID shown in the Elastic Cloud console. | keyword |
 | ess.billing.deployment_name | Name of the billed instance. | keyword |
 | ess.billing.deployment_tags | Tags associated with the billed Hosted deployment (when available). | keyword |
 | ess.billing.deployment_type | Instance type—for Hosted deployments this is `deployment`; for Serverless projects this is the project type (for example, `elasticsearch`, `observability`, or `security`). | keyword |

@@ -1,0 +1,527 @@
+# End-to-end 0.6.0 -> 0.7.0 Fleet registry upgrade test verifying the
+# zero-mutation additive-lookup architecture:
+# - Preserves all 0.6.0 dest_*-1 indices, strict dynamic:false mappings,
+#   chargeback_conf manual/historical rows, and aged-out billing rows in place.
+# - Leaves sync_fleet_config: false manual rates untouched on 0.7.0 checkpoints.
+# - Deploys 0.7.0 additive lookup transforms and index.mode=lookup templates/indices cleanly.
+# - Evaluates 0.7.0 Spend Alert (USD/$) and New Group Alert (0 false alerts).
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:sh] skip 'Skipping test requiring absent sh command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Ensure a clean starting state even if an earlier test installed chargeback 0.7.0.
+exec sh scripts/cleanup.sh
+
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} cb-mock
+
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 0.6.0
+
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 0.6.0 test_config.yaml DATA_STREAM_NAME
+
+# Wait for initial 0.6.0 billing + config_snapshot ingestion, then clear the 60s
+# transform sync.time.delay so _schedule_now processes the ingested documents.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+sleep 65s
+
+# Materialize 0.6.0 lookup indices via their 0.6.0 transforms, confirm strict
+# dynamic:false mappings, and seed manual config + aged-out billing rows.
+exec sh scripts/prepare_060.sh
+
+# Upgrade package + policy in place to local 0.7.0 build.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+# Verify 0.6.0 preservation, 0.7.0 additive lookup deployment, ES|QL alerts, and sync_fleet_config=false safety.
+exec sh scripts/verify_070.sh
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down cb-mock
+
+# Final stack cleanup and restore the local 0.7.0 package so subsequent test suites can run against it.
+exec sh scripts/cleanup.sh
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+-- scripts/cleanup.sh --
+#!/bin/sh
+set -e
+CA="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+KBN="https://localhost:5601"
+ES="https://localhost:9200"
+
+POLS=$(curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" "$KBN/api/fleet/package_policies?perPage=100" | jq -r '[.items[]? | select(.package.name == "chargeback") | .id] | @json')
+if [ "$POLS" != "[]" ] && [ -n "$POLS" ]; then
+  curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" -H "Content-Type: application/json" -X POST "$KBN/api/fleet/package_policies/delete" -d "{\"packagePolicyIds\":$POLS}" >/dev/null || true
+fi
+
+VER=$(curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" "$KBN/api/fleet/epm/packages/chargeback" | jq -r 'if .item.status == "installed" then .item.version else "" end')
+if [ -n "$VER" ]; then
+  curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" -X DELETE "$KBN/api/fleet/epm/packages/chargeback-${VER}" >/dev/null || true
+fi
+
+for tid in $(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.*" | jq -r '.transforms[]?.id'); do
+  curl -sS -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${tid}/_stop?force=true&wait_for_completion=true" >/dev/null || true
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_transform/${tid}" >/dev/null || true
+done
+
+for ds in $(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_data_stream/logs-chargeback.*,metrics-chargeback.*" | jq -r '.data_streams[]?.name'); do
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_data_stream/${ds}" >/dev/null || true
+done
+for idx in $(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_cat/indices/chargeback_lookup.*,cluster_capacity_utilization_lookup?format=json" | jq -r 'if type=="array" then .[]?.index else empty end'); do
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/${idx}" >/dev/null || true
+done
+
+-- scripts/prepare_060.sh --
+#!/bin/sh
+set -e
+CA="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+ES="https://localhost:9200"
+
+TID_CONF=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.chargeback_conf_lookup-default-*" | jq -r '.transforms[0].id')
+TID_BILL=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.billing_cluster_cost-default-*" | jq -r '.transforms[0].id')
+[ -n "$TID_CONF" ] && [ "$TID_CONF" != "null" ]
+[ -n "$TID_BILL" ] && [ "$TID_BILL" != "null" ]
+
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CONF}/_schedule_now" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_BILL}/_schedule_now" >/dev/null
+
+i=0
+c1="404"
+c2="404"
+while [ "$i" -lt 45 ]; do
+  c1=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_mapping")
+  c2=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_cluster_cost-1/_mapping")
+  if [ "$c1" = "200" ] && [ "$c2" = "200" ]; then
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+
+# Note: when sync_fleet_config=false drops the config_snapshot batch, dest_chargeback_conf-1
+# may not have been indexed into yet; creating via PUT uses the Fleet destination template
+# (which sets dynamic:false and index.mode:lookup).
+if [ "$c1" != "200" ]; then
+  curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config?refresh=true" -d '{"config_join_key":"chargeback_config","conf_chargeable_unit_rate":1.25,"conf_chargeable_unit_rate_unit":"USD","conf_start_date":"2020-01-01T00:00:00Z","conf_end_date":"2099-12-31T23:59:59.999Z"}' >/dev/null
+  curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_aliases" -d '{"actions":[{"add":{"index":"chargeback_lookup.dest_chargeback_conf-1","alias":"chargeback_lookup.chargeback_conf"}}]}' >/dev/null || true
+fi
+[ "$c2" = "200" ]
+
+DYN_CONF=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_mapping" | jq -r '.["chargeback_lookup.dest_chargeback_conf-1"].mappings.dynamic')
+DYN_BILL=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_cluster_cost-1/_mapping" | jq -r '.["chargeback_lookup.dest_billing_cluster_cost-1"].mappings.dynamic')
+[ "$DYN_CONF" = "false" ]
+[ "$DYN_BILL" = "false" ]
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config?refresh=true" -d '{"config_join_key":"chargeback_config","conf_chargeable_unit_rate":1.25,"conf_chargeable_unit_rate_unit":"USD","conf_start_date":"2020-01-01T00:00:00Z","conf_end_date":"2099-12-31T23:59:59.999Z"}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/fy24_manual?refresh=true" -d '{"config_join_key":"chargeback_config","conf_chargeable_unit_rate":0.78,"conf_chargeable_unit_rate_unit":"USD","conf_start_date":"2024-01-01T00:00:00Z","conf_end_date":"2024-12-31T23:59:59.999Z"}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_billing_cluster_cost-1/_doc/aged_existing?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","deployment_id":"dep-aged","deployment_name":"aged-existing","deployment_group":"team-existing","cost_category":"data_tier","is_onprem":false,"total_chargeable_units":100.0}' >/dev/null
+
+# Materialize an un-rolled-over 0.6.0 usage backing index without 0.7.0 AI/Synthetics mappings.
+curl -sS -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/metrics-chargeback.usage-default/_doc?refresh=true" -d '{"@timestamp":"2026-01-15T12:00:00Z","period_start":"2026-01-15T12:00:00Z","doc_type":"index_usage","elasticsearch":{"cluster":{"name":"dep-aged"},"index":{"name":"seed-060"}}}' > /tmp/prep_usage.json || { cat /tmp/prep_usage.json >&2; exit 1; }
+jq -e '._id != null' /tmp/prep_usage.json >/dev/null || { cat /tmp/prep_usage.json >&2; exit 1; }
+USAGE_BACKING=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_data_stream/metrics-chargeback.usage-default" | jq -r '.data_streams[0].indices[-1].index_name')
+HAS_MODEL_ID=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/${USAGE_BACKING}/_mapping" | jq -r --arg idx "$USAGE_BACKING" '.[$idx].mappings.properties.model_id // empty')
+if [ -n "$HAS_MODEL_ID" ]; then
+  echo "Unexpected model_id mapping on 0.6.0 usage index: $HAS_MODEL_ID" >&2
+  exit 1
+fi
+
+-- scripts/verify_070.sh --
+#!/bin/sh
+set -e
+CA="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+ES="https://localhost:9200"
+
+# 1. Alias chargeback_lookup.chargeback_conf must point solely to dest_chargeback_conf-1.
+ALIAS_KEYS=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.chargeback_conf" | jq -c 'keys | sort')
+[ "$ALIAS_KEYS" = '["chargeback_lookup.dest_chargeback_conf-1"]' ]
+
+# 2. Seeded manual rate rows & aged-out billing row preserved intact.
+R_CFG=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" | jq -r '._source.conf_chargeable_unit_rate')
+R_MAN=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/fy24_manual" | jq -r '._source.conf_chargeable_unit_rate')
+AGED_GRP=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_cluster_cost-1/_doc/aged_existing" | jq -r '._source.deployment_group')
+AGED_UNITS=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_cluster_cost-1/_doc/aged_existing" | jq -r '._source.total_chargeable_units')
+[ "$R_CFG" = "1.25" ]
+[ "$R_MAN" = "0.78" ]
+[ "$AGED_GRP" = "team-existing" ]
+[ "$AGED_UNITS" = "100" ] || [ "$AGED_UNITS" = "100.0" ]
+
+# Seed AI & Synthetics usage events into the un-rolled-over 0.6.0 usage backing index now
+# so their 120s sync delay elapses in parallel with the remaining upgrade checks.
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/metrics-chargeback.usage-default/_doc?refresh=true" -d '{"@timestamp":"2026-01-16T12:00:00Z","doc_type":"ai_model","elasticsearch":{"cluster":{"name":"dep-aged"}},"model_id":"elser-v2","task_type":"ingest_inference","inference_count":42,"total_inference_time_ms":840,"average_inference_time_ms":20.0}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/metrics-chargeback.usage-default/_doc?refresh=true" -d '{"@timestamp":"2026-01-16T12:00:00Z","doc_type":"synthetics_monitor","elasticsearch":{"cluster":{"name":"dep-aged"}},"monitor_id":"mon-checkout","monitor_name":"Checkout","monitor_type":"browser","check_count":12,"up_count":11,"down_count":1,"locations_count":1,"observer_locations":["eu-west-1","us-east-1"],"total_duration_ms":3600.0,"average_duration_ms":300.0}' >/dev/null
+AI_SYN_SEED_TS=$(date +%s)
+
+# 3. Verify 0.7.0 additive lookup transforms exist and install lookup-mode destination templates/indices.
+TID_CUR=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.chargeback_currency_lookup-default-*" | jq -r '.transforms[0].id')
+TID_ENR=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.billing_enrichment-default-*" | jq -r '.transforms[0].id')
+TID_META=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.usage_deployment_metadata-default-*" | jq -r '.transforms[0].id')
+TID_AI=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_ai_contrib-default-*" | jq -r '.transforms[0].id')
+TID_SYN=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_synthetics_contrib-default-*" | jq -r '.transforms[0].id')
+[ -n "$TID_CUR" ] && [ "$TID_CUR" != "null" ]
+[ -n "$TID_ENR" ] && [ "$TID_ENR" != "null" ]
+[ -n "$TID_META" ] && [ "$TID_META" != "null" ]
+[ -n "$TID_AI" ] && [ "$TID_AI" != "null" ]
+[ -n "$TID_SYN" ] && [ "$TID_SYN" != "null" ]
+
+# Trigger 0.7.0 lookup transforms via _schedule_now (no manual index creation) and wait for
+# TransformIndexer to materialize every lookup-mode destination index and move_on_creation alias.
+TID_DEP=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_deployment_contribution-default-*" | jq -r '.transforms[0].id')
+[ -n "$TID_DEP" ] && [ "$TID_DEP" != "null" ]
+
+for tid in "$TID_CUR" "$TID_ENR" "$TID_META" "$TID_DEP"; do
+  curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${tid}/_schedule_now" >/dev/null
+done
+
+i=0
+all_ok="0"
+while [ "$i" -lt 45 ]; do
+  s_cur=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.chargeback_currency")
+  s_enr=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.billing_enrichment")
+  s_meta=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.usage_deployment_metadata")
+  s_dep=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.cluster_deployment_contribution")
+  if [ "$s_cur" = "200" ] && [ "$s_enr" = "200" ] && [ "$s_meta" = "200" ] && [ "$s_dep" = "200" ]; then
+    all_ok="1"
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+[ "$all_ok" = "1" ]
+
+for pair in \
+  "chargeback_lookup.dest_chargeback_currency-1:chargeback_lookup.chargeback_currency" \
+  "chargeback_lookup.dest_billing_enrichment-1:chargeback_lookup.billing_enrichment" \
+  "chargeback_lookup.dest_usage_deployment_metadata-1:chargeback_lookup.usage_deployment_metadata" \
+  "chargeback_lookup.dest_cluster_deployment_contribution-1:chargeback_lookup.cluster_deployment_contribution"; do
+  idx="${pair%%:*}"
+  al="${pair##*:}"
+  al_keys=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_alias/${al}" | jq -c 'keys | sort')
+  [ "$al_keys" = "[\"${idx}\"]" ]
+  imode=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/${idx}/_settings" | jq -r --arg idx "$idx" '.[$idx].settings.index.mode')
+  idyn=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/${idx}/_mapping" | jq -r --arg idx "$idx" '.[$idx].mappings.dynamic')
+  [ "$imode" = "lookup" ]
+  [ "$idyn" = "false" ]
+done
+
+# 4. Run 0.7.0 Spend Alert ES|QL for dep-aged: 100.0 * 1.25 = 125.0 USD with "$" fallback symbol.
+jq -n --arg q 'FROM chargeback_lookup.billing_cluster_cost
+| WHERE @timestamp IS NOT NULL AND deployment_id == "dep-aged"
+| INLINE STATS latest_day = MAX(@timestamp) BY deployment_id
+| WHERE @timestamp == latest_day
+| EVAL ts = @timestamp, threshold_spend = 100.0, is_onprem_row = COALESCE(is_onprem, false), cloud_cfg_key = "chargeback_config"
+| LOOKUP JOIN chargeback_lookup.chargeback_conf ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date
+| EVAL cloud_rate = conf_chargeable_unit_rate, cloud_unit = conf_chargeable_unit_rate_unit
+| DROP config_join_key, conf_start_date, conf_end_date, conf_chargeable_unit_rate, conf_chargeable_unit_rate_unit
+| LOOKUP JOIN chargeback_lookup.chargeback_currency ON cloud_cfg_key == config_join_key AND ts >= conf_start_date AND ts <= conf_end_date
+| EVAL cloud_sym = conf_currency_symbol, cloud_sym_unit = conf_currency_unit
+| DROP cloud_cfg_key, config_join_key, conf_start_date, conf_end_date, conf_currency_symbol, conf_currency_unit
+| EVAL _c_unit = CASE(LENGTH(TRIM(cloud_unit)) > 0, TO_UPPER(TRIM(cloud_unit)), null),
+       _c_sym_u = CASE(LENGTH(TRIM(cloud_sym_unit)) > 0, TO_UPPER(TRIM(cloud_sym_unit)), null)
+| EVAL _c_sym = CASE(LENGTH(TRIM(cloud_sym)) > 0 AND (_c_sym_u IS NULL OR _c_sym_u == COALESCE(_c_unit, "EUR")), TRIM(cloud_sym), null),
+       rate = COALESCE(cloud_rate, 0.85),
+       unit = COALESCE(_c_unit, "EUR")
+| EVAL _def_sym = CASE(unit == "USD", "$", unit == "GBP", "£", unit == "ZAR", "R", "€")
+| EVAL sym = CASE(_c_sym IS NOT NULL, _c_sym, _def_sym),
+       cost = COALESCE(total_chargeable_units, 0.0) * rate
+| STATS spend = ROUND(SUM(cost), 2), sym = MAX(sym), threshold = MAX(threshold_spend) BY deployment_id, unit
+| WHERE spend > threshold
+| EVAL result = CONCAT(sym, TO_STRING(spend), " ", unit)
+| KEEP deployment_id, spend, unit, sym, result' '{"query": $q}' > spend_query.json
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_query?format=json" -d @spend_query.json > spend_res.json
+jq -e '.values | length == 1 and (.[0][1] == 125 or .[0][1] == 125.0) and .[0][2] == "USD" and .[0][3] == "$"' spend_res.json >/dev/null
+
+# 5. Run 0.7.0 New Group Alert ES|QL: team-existing (2026-01-15) produces 0 false alerts.
+jq -n --arg q 'FROM chargeback_lookup.billing_cluster_cost
+| WHERE @timestamp IS NOT NULL
+| EVAL b_ts = @timestamp, b_grp = deployment_group, ck = composite_key::keyword
+| DROP @timestamp, composite_key, deployment_id, deployment_name, deployment_group, is_onprem
+| LOOKUP JOIN chargeback_lookup.billing_enrichment ON ck == composite_key
+| EVAL obs_ts = COALESCE(group_first_seen, b_ts)
+| INLINE STATS org_earliest_ts = MIN(b_ts), org_latest_ts = MAX(b_ts), org_latest_obs_ts = MAX(obs_ts)
+| EVAL ref_latest_ts = CASE(org_latest_obs_ts > org_latest_ts, org_latest_obs_ts, org_latest_ts)
+| WHERE b_grp IS NOT NULL AND b_grp != ""
+| STATS first_seen = MIN(obs_ts) BY b_grp, org_earliest_ts, ref_latest_ts
+| WHERE ref_latest_ts > org_earliest_ts AND first_seen > org_earliest_ts AND first_seen >= ref_latest_ts - 3 days
+| RENAME b_grp AS deployment_group
+| WHERE deployment_group == "team-existing"
+| KEEP deployment_group, first_seen' '{"query": $q}' > ng_query.json
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_query?format=json" -d @ng_query.json > ng_res.json
+jq -e '.values | length == 0' ng_res.json >/dev/null
+
+# 5b. Run 0.7.0 Missing Usage Alert ES|QL against transform-created cluster_deployment_contribution on billing-only setup.
+jq -n --arg q 'FROM chargeback_lookup.billing_cluster_cost
+| WHERE deployment_group IS NOT NULL AND deployment_group != ""
+| EVAL billing_deployment_id = deployment_id, bill_dep_name = deployment_name, bill_dep_group = deployment_group, bill_day = LEFT(composite_key, 10), ck = composite_key::keyword
+| DROP deployment_id, deployment_name, deployment_group, composite_key
+| LOOKUP JOIN chargeback_lookup.cluster_deployment_contribution ON ck == composite_key
+| WHERE deployment_id IS NULL
+| STATS day_vals = VALUES(bill_day), dep_names = VALUES(bill_dep_name) BY billing_deployment_id, bill_dep_group
+| RENAME bill_dep_group AS deployment_group
+| WHERE billing_deployment_id == "dep-aged"
+| KEEP billing_deployment_id, deployment_group' '{"query": $q}' > mu_query.json
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_query?format=json" -d @mu_query.json > mu_res.json
+jq -e '.values | length == 1 and .[0][0] == "dep-aged" and .[0][1] == "team-existing"' mu_res.json >/dev/null
+
+# 6. Trigger 0.7.0 chargeback_conf_lookup checkpoint; sync_fleet_config=false must keep manual rates untouched.
+TID_CONF07=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.chargeback_conf_lookup-default-*" | jq -r '.transforms[0].id')
+BASE_CP=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/${TID_CONF07}/_stats" | jq -r '.transforms[0].checkpointing.last.checkpoint // 0')
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CONF07}/_schedule_now" >/dev/null
+i=0
+while [ "$i" -lt 20 ]; do
+  CUR_CP=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/${TID_CONF07}/_stats" | jq -r '.transforms[0].checkpointing.last.checkpoint // 0')
+  if [ "$CUR_CP" -gt "$BASE_CP" ]; then
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+R_CFG_AFTER=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" | jq -r '._source.conf_chargeable_unit_rate')
+R_MAN_AFTER=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/fy24_manual" | jq -r '._source.conf_chargeable_unit_rate')
+[ "$R_CFG_AFTER" = "1.25" ]
+[ "$R_MAN_AFTER" = "0.78" ]
+
+# 7. Enable sync_fleet_config=true with currency_unit="USD" (without setting currency_symbol)
+# and confirm 0.7.0 updates config while deriving "$" instead of "€" and keeping fy24_manual intact.
+# Roll over the 0.6.0 billing data stream so the new write index picks up the 0.7.0
+# metrics-chargeback.billing template (including the cb_sync_ts -> event.ingested alias
+# needed by Elasticsearch 9.2.0 continuous transform change detection).
+for ds in $(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_data_stream/metrics-chargeback.billing-*" | jq -r '.data_streams[]?.name'); do
+  curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/${ds}/_rollover" >/dev/null
+done
+KBN="https://localhost:5601"
+POL_FULL=$(curl -sSf -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" "$KBN/api/fleet/package_policies?perPage=100" | jq '.items[] | select(.package.name == "chargeback")')
+POL_ID=$(printf '%s' "$POL_FULL" | jq -r '.id')
+[ -n "$POL_ID" ] && [ "$POL_ID" != "null" ]
+
+printf '%s' "$POL_FULL" | jq '{
+  name,
+  description,
+  namespace,
+  policy_id,
+  policy_ids,
+  output_id,
+  package: {name: .package.name, version: .package.version},
+  enabled,
+  force: true,
+  inputs: (.inputs | map(
+    if .type == "cel" then
+      .vars = ((.vars // {}) + {sync_fleet_config: {type: "bool", value: true}})
+      | .streams = (.streams | map(
+          del(.compiled_stream)
+          | if .data_stream.dataset == "chargeback.billing" then
+              .vars = ((.vars // {}) + {
+                unit_rate: {type: "text", value: "1.10"},
+                currency_unit: {type: "text", value: "USD"}
+              })
+            else . end
+        ))
+    else
+      .streams = (.streams | map(del(.compiled_stream)))
+    end
+  ))
+} | with_entries(select(.value != null))' > pol_update.json
+
+HTTP_PUT=$(curl -sS -o put_resp.json -w "%{http_code}" -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" -H "Content-Type: application/json" -X PUT "$KBN/api/fleet/package_policies/${POL_ID}" -d @pol_update.json)
+if [ "$HTTP_PUT" != "200" ]; then
+  echo "PUT /api/fleet/package_policies/${POL_ID} failed with HTTP ${HTTP_PUT}:" >&2
+  cat put_resp.json >&2
+  exit 1
+fi
+
+# Wait for the reconfigured agent to ingest a sync-enabled config_snapshot, then clear sync.time.delay.
+i=0
+sync_doc="0"
+while [ "$i" -lt 45 ]; do
+  cnt=$(curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/metrics-chargeback.billing-*/_count" -d '{"query":{"bool":{"must":[{"term":{"doc_type":"config_snapshot"}},{"term":{"conf_sync_enabled":true}}]}}}' | jq -r '.count // 0')
+  if [ "$cnt" -gt 0 ]; then
+    sync_doc="1"
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+[ "$sync_doc" = "1" ]
+sleep 65
+
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CONF07}/_schedule_now" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CUR}/_schedule_now" >/dev/null
+
+i=0
+synced_ok="0"
+while [ "$i" -lt 30 ]; do
+  if [ "$i" -eq 10 ]; then
+    curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CONF07}/_schedule_now" >/dev/null || true
+    curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_CUR}/_schedule_now" >/dev/null || true
+  fi
+  cur_code=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config")
+  if [ "$cur_code" = "200" ] && curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" | jq -e '._source.conf_chargeable_unit_rate == 1.1' >/dev/null 2>&1; then
+    synced_ok="1"
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+if [ "$synced_ok" != "1" ]; then
+  echo "Step 7 sync check timed out; conf and currency docs:" >&2
+  curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" >&2 || true
+  curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config" >&2 || true
+  exit 1
+fi
+
+R_SYNC_UNIT=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/config" | jq -r '._source.conf_chargeable_unit_rate_unit')
+R_MAN_SYNC=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_conf-1/_doc/fy24_manual" | jq -r '._source.conf_chargeable_unit_rate')
+CUR_UNIT=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config" | jq -r '._source.conf_currency_unit')
+CUR_SYM=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_chargeback_currency-1/_doc/config" | jq -r '._source.conf_currency_symbol')
+[ "$R_SYNC_UNIT" = "USD" ]
+[ "$R_MAN_SYNC" = "0.78" ]
+[ "$CUR_UNIT" = "USD" ]
+[ "$CUR_SYM" = "$" ]
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_query?format=json" -d @spend_query.json > spend_res_sync.json
+jq -e '.values | length == 1 and (.[0][1] == 110 or .[0][1] == 110.0) and .[0][2] == "USD" and .[0][3] == "$"' spend_res_sync.json >/dev/null
+
+# 8. Confirm cluster_ai_contrib and cluster_synthetics_contrib roll up AI and Synthetics events
+# written into the existing 0.6.0 usage data stream without rollover once the 120s sync delay clears.
+
+ELAPSED=$(( $(date +%s) - AI_SYN_SEED_TS ))
+if [ "$ELAPSED" -lt 125 ]; then
+  sleep $((125 - ELAPSED))
+fi
+
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_AI}/_schedule_now" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_SYN}/_schedule_now" >/dev/null
+
+i=0
+ai_syn_ok="0"
+while [ "$i" -lt 30 ]; do
+  ai_hits=$(curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.cluster_ai_model_contribution/_count" 2>/dev/null | jq -r '.count // 0')
+  syn_hits=$(curl -sS -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.cluster_synthetics_monitor_contribution/_count" 2>/dev/null | jq -r '.count // 0')
+  if [ "$ai_hits" -gt 0 ] && [ "$syn_hits" -gt 0 ]; then
+    ai_syn_ok="1"
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+if [ "$ai_syn_ok" != "1" ]; then
+  echo "Step 8 AI/Synthetics runtime fallback check timed out (ai_hits=${ai_hits:-0}, syn_hits=${syn_hits:-0})" >&2
+  curl -sS -u elastic:changeme --cacert "$CA" "$ES/_transform/${TID_AI}/_stats" >&2 || true
+  curl -sS -u elastic:changeme --cacert "$CA" "$ES/_transform/${TID_SYN}/_stats" >&2 || true
+  exit 1
+fi
+
+curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.cluster_ai_model_contribution/_search" > ai_res.json
+jq -e '.hits.total.value == 1 and .hits.hits[0]._source.model_id == "elser-v2" and .hits.hits[0]._source.task_type == "ingest_inference" and .hits.hits[0]._source.inference_count == 42' ai_res.json >/dev/null || { cat ai_res.json >&2; exit 1; }
+curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.cluster_synthetics_monitor_contribution/_search" > syn_res.json
+jq -e '.hits.total.value == 1 and .hits.hits[0]._source.monitor_id == "mon-checkout" and .hits.hits[0]._source.monitor_type == "browser" and .hits.hits[0]._source.check_count == 12 and .hits.hits[0]._source.locations_count == 2' syn_res.json >/dev/null || { cat syn_res.json >&2; exit 1; }
+
+-- test_config.yaml --
+input: cel
+vars:
+  organization_id: "1111"
+  cloud_api_key: cloud-key
+  billing_api_base: http://cb-mock:8080
+  cloud_api_base: http://cb-mock:8080
+  sync_fleet_config: false
+  enable_request_tracer: false
+data_stream:
+  vars:
+    lookbehind: 1
+    collect_ess_credits: false
+    unit_rate: "0.85"
+    currency_unit: EUR
+-- cb-mock/docker-compose.yml --
+version: '2.3'
+services:
+  cb-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: cb-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- cb-mock/config.yml --
+rules:
+  - path: /api/v1/deployments/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"deployments":[{"id":"dep-ech-01","name":"prod-observability","metadata":{"tags":[{"key":"chargeback_group","value":"team-existing"}]}}],"total":1}
+
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/observability
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/security
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/vectordb
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v2/billing/organizations/1111/costs/instances
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"total_ecu":7.3728,"instances":[{"id":"dep-ech-01","name":"prod-observability","type":"deployment","total_ecu":7.3728,"product_line_items":[{"sku":"aws.es.datahot.c6gd_us-east-1_4096_2","type":"capacity","kind":"elasticsearch","total_ecu":7.3728,"quantity":{"value":24.0}}]}]}

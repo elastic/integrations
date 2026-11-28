@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_sqlserver_otel-instance-down-or-not-running-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL SQL Server OTel] Instance down or not running",
+        "description": "Alerts when a SQL Server instance's latest `up` sample is 0 or its latest `instance_state` is not RUNNING (MAINTENANCE, RUNNABLE/stopped, SUSPENDED, FAILED, UNKNOWN_STATE). Instances that have not reported page_life_expectancy in the 24-hour window are out of scope. The current state is resolved from the last 15 minutes; the SQL Server engine marker is evaluated over the 24-hour rule window so a just-stopped instance stays in scope. Requires 3 consecutive breaching runs. An instance stopped or deleted for more than 24 hours drops out of scope and recovers. Returns up to 100 instances, grouped by database_id.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "sqlserver"
+        ]
+      },
+      "schedule": {
+        "every": "5m",
+        "lookback": "24h"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "FROM metrics-gcp.cloudsql_sqlserver.otel-*\n| WHERE gcp.resource_type == \"cloudsql_database\"\n// Two windows in one pass:\n//  - the SQL Server engine marker (page_life_expectancy) over the whole rule window (24h),\n//    so an instance that has just stopped (and no longer emits page_life_expectancy) stays\n//    in scope;\n//  - the current state from the last 15 minutes only. Keep this >= 10-15 minutes to\n//    tolerate the 3-5+ minute Cloud Monitoring ingestion delay.\n// Older documents are only needed for the marker, so everything else is dropped before\n// aggregating. One row per instance, no per-minute buckets: cheap on large fleets.\n| WHERE `@timestamp` >= NOW() - 15 minutes\n     OR `cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy` IS NOT NULL\n| EVAL recent = `@timestamp` >= NOW() - 15 minutes\n// Latest value by timestamp across all documents, so a stale series fragment can never\n// win (unlike MAX(LAST_OVER_TIME()) per series). attributes.state is only meaningful on\n// the instance_state document whose value is 1.\n| STATS ss_total = COUNT(`cloudsql.googleapis.com/database/sqlserver/memory/page_life_expectancy`),\n        state = LAST(attributes.state, `@timestamp`) WHERE recent AND `cloudsql.googleapis.com/database/instance_state` == 1,\n        up = LAST(`cloudsql.googleapis.com/database/up`, `@timestamp`) WHERE recent AND `cloudsql.googleapis.com/database/up` IS NOT NULL,\n        last_seen = MAX(`@timestamp`) WHERE recent\n    BY database_id",
+        "breach": {
+          "segment": "// SQL Server engine marker, and the instance reported in the signal window\nWHERE ss_total > 0 AND last_seen IS NOT NULL\n| EVAL last_seen = DATE_TRUNC(1 minute, last_seen)\n| WHERE up IS NOT NULL OR state IS NOT NULL\n// Breach: the instance is not serving (up = 0) or is in a non-RUNNING state.\n// MAINTENANCE is Google-scheduled and expected; it only alerts if it outlasts the\n// alert delay. If owners intentionally stop instances (RUNNABLE) or you want to ignore\n// maintenance, append e.g. | WHERE COALESCE(state, \"\") NOT IN (\"RUNNABLE\", \"MAINTENANCE\")\n| WHERE up == 0 OR (state IS NOT NULL AND state != \"RUNNING\")\n| EVAL reason = CASE(\n    state IS NOT NULL AND state != \"RUNNING\", CONCAT(\"instance_state=\", state),\n    \"up=0 (not serving while RUNNING)\")\n| KEEP database_id, state, up, reason, last_seen\n| SORT database_id\n| LIMIT 100"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 2
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-instance-down-or-not-running-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL for SQL Server instance down or not running\n\nThe instance is not serving (`up` = 0) or its `instance_state` is not RUNNING.\n\n### Triage\n1. Check the `reason` and `state` columns:\n   - `MAINTENANCE`: Google-scheduled maintenance. Check the instance's maintenance window and Cloud SQL notifications. It should clear within minutes.\n   - `RUNNABLE`: the instance was stopped by an owner (activation policy NEVER). Confirm with the owning team whether this was intentional.\n   - `SUSPENDED`: Google suspended the instance, typically for billing problems. Check billing for the project.\n   - `FAILED` / `UNKNOWN_STATE`: open a support case and check the Google Cloud status page.\n   - `up=0` while RUNNING: unplanned downtime. Check the Cloud SQL operations log and SQL Server error log (disk full, memory, crash).\n2. Open the SQL Server Instance Detail dashboard for the affected `database_id` and look at restarts, disk and memory around `last_seen`.\n3. For HA instances, check whether an automatic failover happened (see the HA failover alert).\n\n### Tuning\n- To silence intentionally stopped instances, append `| WHERE COALESCE(state, \"\") != \"RUNNABLE\"` after the breach filter (plain `state != \"RUNNABLE\"` would also drop up=0 rows that have no state).\n- To ignore maintenance completely, append `| WHERE COALESCE(state, \"\") != \"MAINTENANCE\"` after the breach filter.\n- The 15-minute signal window tolerates ingest delay; do not shorten it below 10 minutes.\n\n### Behaviour notes\n- Healthy: latest `up` = 1 and latest state RUNNING. Breaching: latest `up` = 0 or latest state anything other than RUNNING, for 3 consecutive runs (5-minute schedule).\n- Missing data: if the instance stops reporting `up` and `instance_state` entirely (collector or API problem, or the instance was deleted), this rule recovers rather than alerting; Fleet's idle data streams rule covers that case. Only SQL Server instances (page_life_expectancy seen in the last 24 hours) are evaluated, so instances that are still being created are out of scope."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-instance-down-or-not-running-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-46d11bef-3642-4b3f-b979-d748c687acd6"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_sqlserver_otel-instance-down-or-not-running-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_sqlserver_otel-0953c329-69c9-4605-9c7c-b2c2d5b10846"
+          }
+        }
+      ]
+    }
+  }
+}

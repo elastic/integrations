@@ -1,0 +1,432 @@
+---
+description: "Chargeback: Set composite_key from @timestamp and deployment_id, extract cost_type/cost_category, and populate ESS Billing compatibility fields."
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      tag: ess_billing
+      source: |
+        boolean incomingOnprem = Boolean.TRUE.equals(ctx.is_onprem) || (ctx.is_onprem != null && ctx.is_onprem.toString().equalsIgnoreCase('true'));
+        try {
+          Map chosen = ctx;
+          if (ctx.native instanceof Map && ctx.native.doc_cnt instanceof Number && ((Number)ctx.native.doc_cnt).longValue() > 0L) {
+            chosen = ctx.native;
+          } else if (ctx.legacy instanceof Map && ctx.legacy.doc_cnt instanceof Number && ((Number)ctx.legacy.doc_cnt).longValue() > 0L) {
+            chosen = ctx.legacy;
+          } else if (ctx.legacy instanceof Map && !ctx.legacy.containsKey('doc_cnt')) {
+            chosen = ctx.legacy;
+          }
+          if (chosen != ctx) {
+            for (String k : ['total_chargeable_units', 'quantity_value', 'deployment_group', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region', 'is_onprem']) {
+              if (chosen.containsKey(k)) {
+                ctx[k] = chosen[k];
+              } else if (k == 'deployment_group') {
+                ctx[k] = '';
+              }
+            }
+            incomingOnprem = incomingOnprem || Boolean.TRUE.equals(ctx.is_onprem) || (ctx.is_onprem != null && ctx.is_onprem.toString().equalsIgnoreCase('true'));
+          }
+        } catch (Exception e) {
+          ctx.remove('native');
+          ctx.remove('legacy');
+          throw e;
+        }
+        ctx.remove('native');
+        ctx.remove('legacy');
+
+        // Unwrap optional transform terms-aggregation buckets
+        for (String fn : ['deployment_group', 'deployment_name', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region']) {
+          def v = ctx[fn];
+          if (v instanceof Map) {
+            def b = v.buckets;
+            if (b instanceof List && b.size() > 0) {
+              ctx[fn] = b[0].key_as_string != null ? b[0].key_as_string : b[0].key;
+            } else if (!(b instanceof List)) {
+              def ks = new ArrayList(v.keySet());
+              ctx[fn] = ks.size() > 0 ? ks[0] : null;
+            } else {
+              ctx[fn] = null;
+            }
+          }
+        }
+
+        if (ctx.deployment_group == null) {
+          ctx.deployment_group = '';
+        } else {
+          ctx.deployment_group = ctx.deployment_group.toString();
+        }
+        if (ctx.deployment_name == null || ctx.deployment_name.toString() == '') {
+          if (ctx.deployment_id != null && ctx.deployment_id.toString().startsWith('unassociated_')) {
+            ctx.deployment_name = 'Unassociated (' + ctx.deployment_id.toString().substring(13) + ')';
+          } else if (ctx.deployment_id != null && ctx.deployment_id.toString().equalsIgnoreCase('unassociated')) {
+            ctx.deployment_name = 'Unassociated';
+          } else {
+            ctx.deployment_name = ctx.deployment_id != null ? ctx.deployment_id.toString() : 'unknown';
+          }
+        } else {
+          ctx.deployment_name = ctx.deployment_name.toString();
+        }
+
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+          def rawTs = ctx['@timestamp'];
+          String dateStr = null;
+          if (rawTs instanceof Number) {
+            dateStr = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              dateStr = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                dateStr = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
+          }
+          if (dateStr != null) {
+            ctx.composite_key = dateStr + '_' + ctx.deployment_id;
+          }
+        }
+
+        // Populate ESS Billing compatibility fields
+        ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.billing', 'namespace': 'default'];
+        if (ctx.event == null) { ctx.event = [:]; }
+        ctx.event.dataset = 'ess_billing.billing';
+
+        String s = ctx.sku != null ? ctx.sku.toString() : '';
+        String sLower = s.toLowerCase(Locale.ROOT);
+        String orgId = (ctx.organization_id != null && ctx.organization_id != '') ? ctx.organization_id.toString() : 'unknown';
+        String depName = ctx.deployment_name;
+        String existingEssDepType = (ctx.ess instanceof Map && ctx.ess.billing instanceof Map && ctx.ess.billing.deployment_type != null)
+          ? ctx.ess.billing.deployment_type.toString()
+          : '';
+        String depType = (ctx.deployment_type != null && ctx.deployment_type != '')
+          ? ctx.deployment_type.toString()
+          : (existingEssDepType != '' ? existingEssDepType : ((incomingOnprem || s == 'onprem_node') ? 'onprem' : ((sLower.startsWith('observability.') || sLower.contains('.observability.') || sLower.startsWith('oblt.') || sLower.contains('.oblt.') || sLower.startsWith('serverless.observability.') || sLower.startsWith('serverless.oblt.') || sLower.contains('synthetic')) ? 'observability' : ((sLower.startsWith('security.') || sLower.contains('.security.') || sLower.startsWith('sec.') || sLower.contains('.sec.') || sLower.startsWith('serverless.security.') || sLower.startsWith('serverless.sec.')) ? 'security' : ((sLower.startsWith('vectordb.') || sLower.contains('.vectordb.') || sLower.startsWith('serverless.vectordb.')) ? 'vectordb' : ((sLower.startsWith('search.') || sLower.startsWith('serverless.search.')) ? 'search' : ((sLower.startsWith('elasticsearch.') || sLower.contains('.elasticsearch.') || sLower.startsWith('es.') || sLower.startsWith('serverless.elasticsearch.') || sLower.startsWith('serverless.es.') || sLower.startsWith('serverless.') || sLower.contains('-vcu') || sLower.contains('.vcu')) ? 'elasticsearch' : 'deployment')))))));
+
+        if (ctx.ess == null) { ctx.ess = [:]; }
+        if (ctx.ess.billing == null) { ctx.ess.billing = [:]; }
+        ctx.ess.billing.organization_id = orgId;
+        ctx.ess.billing.deployment_id = ctx.deployment_id;
+        ctx.ess.billing.deployment_name = depName;
+        ctx.ess.billing.deployment_type = depType;
+        ctx.ess.billing.sku = ctx.sku;
+        ctx.ess.billing.total_ecu = ctx.total_chargeable_units instanceof Number ? ((Number)ctx.total_chargeable_units).doubleValue() : 0.0;
+        ctx.ess.billing.quantity = ['value': ctx.quantity_value instanceof Number ? ((Number)ctx.quantity_value).doubleValue() : 0.0];
+        if (ctx.billing_kind != null && ctx.billing_kind != '') {
+          ctx.ess.billing.kind = ctx.billing_kind.toString();
+        } else if (sLower.contains('.es.') || sLower.contains('.es-') || sLower.startsWith('elasticsearch.') || sLower.startsWith('serverless.elasticsearch.') || sLower.startsWith('es.')) {
+          ctx.ess.billing.kind = 'elasticsearch';
+        } else if (sLower.startsWith('observability.') || sLower.startsWith('serverless.observability.') || sLower.contains('.observability.') || sLower.startsWith('oblt.')) {
+          ctx.ess.billing.kind = 'observability';
+        } else if (sLower.startsWith('security.') || sLower.startsWith('serverless.security.') || sLower.contains('.security.') || sLower.startsWith('sec.')) {
+          ctx.ess.billing.kind = 'security';
+        } else if (sLower.startsWith('vectordb.') || sLower.startsWith('serverless.vectordb.') || sLower.contains('.vectordb.')) {
+          ctx.ess.billing.kind = 'vectordb';
+        } else if (sLower.startsWith('search.') || sLower.startsWith('serverless.search.')) {
+          ctx.ess.billing.kind = 'search';
+        } else if (sLower == 'none' && depType != '' && depType != 'deployment') {
+          ctx.ess.billing.kind = depType;
+        }
+
+        String btype = (ctx.billing_type != null && ctx.billing_type != '') ? ctx.billing_type.toString() : '';
+        String tLower = btype.toLowerCase(Locale.ROOT);
+        if (tLower == '' || tLower == 'vcu' || tLower == 'search ai lake' || tLower == 'synthetics' || tLower == 'data transfer') {
+          if (sLower.contains('data-out') || sLower.contains('data-transfer-out') || sLower.contains('egress')) {
+            btype = 'data_out';
+          } else if (sLower.contains('data-in') || sLower.contains('data-transfer-in') || sLower.contains('ingress')) {
+            btype = 'data_in';
+          } else if (sLower.contains('snapshot') || sLower.contains('retained') || sLower.contains('storage')) {
+            btype = 'storage';
+          } else if (sLower.contains('support')) {
+            btype = 'support';
+          } else if (sLower.contains('.es.') || sLower.contains('.kibana.') || sLower.contains('.apm.') || sLower.contains('.integrationsserver.') || sLower.contains('.integrations_server.') || sLower.contains('.enterprisesearch.') || sLower.contains('.enterprise_search.') || sLower.contains('vcu') || sLower.contains('complete')) {
+            btype = 'capacity';
+          } else if ((sLower.contains('_ingest') || sLower.contains('.ingest') || sLower.contains('-ingest')) && !sLower.contains('vcu')) {
+            btype = 'ingest';
+          } else {
+            btype = 'usage';
+          }
+        }
+        ctx.ess.billing.type = btype;
+
+        ctx.cloud = [
+          'account': ['id': orgId],
+          'instance': ['id': ctx.deployment_id, 'name': depName]
+        ];
+        if (ctx.cloud_region != null && ctx.cloud_region != '') {
+          ctx.cloud.region = ctx.cloud_region.toString();
+        }
+
+        Map regionGeo = [
+          'gcp-us-central1': ['location': ['lon': -95.8608, 'lat': 41.2619], 'name': 'gcp-us-central1'],
+          'gcp-us-east4': ['location': ['lon': -77.4874, 'lat': 39.0438], 'name': 'gcp-us-east4'],
+          'gcp-us-west1': ['location': ['lon': -121.1787, 'lat': 45.5946], 'name': 'gcp-us-west1'],
+          'gcp-us-west2': ['location': ['lon': -118.2437, 'lat': 34.0522], 'name': 'gcp-us-west2'],
+          'gcp-us-east1': ['location': ['lon': -80.0131, 'lat': 33.1960], 'name': 'gcp-us-east1'],
+          'gcp-northamerica-northeast1': ['location': ['lon': -73.6148, 'lat': 45.5059], 'name': 'gcp-northamerica-northeast1'],
+          'gcp-southamerica-east1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'gcp-southamerica-east1'],
+          'gcp-europe-west1': ['location': ['lon': 3.8189, 'lat': 50.4501], 'name': 'gcp-europe-west1'],
+          'gcp-europe-west2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'gcp-europe-west2'],
+          'gcp-europe-west3': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'gcp-europe-west3'],
+          'gcp-europe-west4': ['location': ['lon': 6.8315, 'lat': 53.4386], 'name': 'gcp-europe-west4'],
+          'gcp-europe-north1': ['location': ['lon': 24.9458, 'lat': 60.1921], 'name': 'gcp-europe-north1'],
+          'gcp-asia-east1': ['location': ['lon': 121.5654, 'lat': 25.0330], 'name': 'gcp-asia-east1'],
+          'gcp-asia-northeast1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'gcp-asia-northeast1'],
+          'gcp-asia-south1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'gcp-asia-south1'],
+          'gcp-asia-southeast1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'gcp-asia-southeast1'],
+          'gcp-australia-southeast1': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'gcp-australia-southeast1'],
+          'gcp-asia-northeast3': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'gcp-asia-northeast3'],
+          'gcp-asia-southeast2': ['location': ['lon': 106.8650, 'lat': -6.2088], 'name': 'gcp-asia-southeast2'],
+          'gcp-europe-west9': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'gcp-europe-west9'],
+          'gcp-me-west1': ['location': ['lon': 34.8516, 'lat': 31.0461], 'name': 'gcp-me-west1'],
+          'aws-us-east-2': ['location': ['lon': -82.9988, 'lat': 39.9612], 'name': 'aws-us-east-2'],
+          'aws-us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'aws-us-east-1'],
+          'us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'us-east-1'],
+          'aws-eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'aws-eu-west-1'],
+          'eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'eu-west-1'],
+          'aws-us-west-1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'aws-us-west-1'],
+          'us-west-1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'us-west-1'],
+          'aws-us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'aws-us-west-2'],
+          'us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'us-west-2'],
+          'aws-ca-central-1': ['location': ['lon': -75.6972, 'lat': 45.4215], 'name': 'aws-ca-central-1'],
+          'aws-sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'aws-sa-east-1'],
+          'sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'sa-east-1'],
+          'aws-eu-west-2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'aws-eu-west-2'],
+          'aws-eu-west-3': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'aws-eu-west-3'],
+          'aws-eu-central-1': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'aws-eu-central-1'],
+          'aws-ap-south-1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'aws-ap-south-1'],
+          'aws-ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'aws-ap-northeast-1'],
+          'ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'ap-northeast-1'],
+          'aws-ap-northeast-2': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'aws-ap-northeast-2'],
+          'aws-ap-east-1': ['location': ['lon': 114.1095, 'lat': 22.3964], 'name': 'aws-ap-east-1'],
+          'aws-ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'aws-ap-southeast-1'],
+          'ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'ap-southeast-1'],
+          'aws-ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'aws-ap-southeast-2'],
+          'ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'ap-southeast-2'],
+          'aws-af-south-1': ['location': ['lon': 18.4241, 'lat': -33.9249], 'name': 'aws-af-south-1'],
+          'aws-me-south-1': ['location': ['lon': 50.5577, 'lat': 26.0667], 'name': 'aws-me-south-1'],
+          'aws-me-central-1': ['location': ['lon': 55.2708, 'lat': 25.2048], 'name': 'aws-me-central-1'],
+          'aws-eu-south-1': ['location': ['lon': 9.1900, 'lat': 45.4642], 'name': 'aws-eu-south-1'],
+          'aws-eu-north-1': ['location': ['lon': 18.0686, 'lat': 59.3293], 'name': 'aws-eu-north-1'],
+          'aws-eu-central-2': ['location': ['lon': 8.5417, 'lat': 47.3769], 'name': 'aws-eu-central-2'],
+          'eu-central-2': ['location': ['lon': 8.5417, 'lat': 47.3769], 'name': 'eu-central-2'],
+          'azure-eastus2': ['location': ['lon': -78.3875, 'lat': 36.6676], 'name': 'azure-eastus2'],
+          'azure-eastus': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'azure-eastus'],
+          'azure-centralus': ['location': ['lon': -93.6250, 'lat': 41.5868], 'name': 'azure-centralus'],
+          'azure-southcentralus': ['location': ['lon': -97.7431, 'lat': 30.2672], 'name': 'azure-southcentralus'],
+          'azure-westus2': ['location': ['lon': -119.8526, 'lat': 47.2343], 'name': 'azure-westus2'],
+          'azure-northeurope': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'azure-northeurope'],
+          'azure-uksouth': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'azure-uksouth'],
+          'azure-westeurope': ['location': ['lon': 4.9041, 'lat': 52.3676], 'name': 'azure-westeurope'],
+          'azure-francecentral': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'azure-francecentral'],
+          'azure-japaneast': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'azure-japaneast'],
+          'azure-southeastasia': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'azure-southeastasia'],
+          'azure-australiaeast': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'azure-australiaeast'],
+          'azure-canadacentral': ['location': ['lon': -79.3832, 'lat': 43.6532], 'name': 'azure-canadacentral'],
+          'azure-brazilsouth': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'azure-brazilsouth'],
+          'azure-southafricanorth': ['location': ['lon': 28.0473, 'lat': -26.2041], 'name': 'azure-southafricanorth'],
+          'azure-centralindia': ['location': ['lon': 73.8567, 'lat': 18.5204], 'name': 'azure-centralindia']
+        ];
+
+        def echMatcher = /^(?:Cloud-[A-Za-z]+_)?(aws|gcp|azure|global)\.(.+)_([^_]+)_(\d+)_(\d+)$/.matcher(s);
+        if (!incomingOnprem && echMatcher.matches()) {
+          ctx.cloud.provider = echMatcher.group(1);
+          ctx.cloud.machine = ['type': echMatcher.group(2)];
+          if (ctx.cloud.region == null || ctx.cloud.region == '') {
+            ctx.cloud.region = echMatcher.group(3);
+          }
+          ctx.ess.billing.ram_per_zone = Long.parseLong(echMatcher.group(4));
+          ctx.ess.billing.zone_count = Long.parseLong(echMatcher.group(5));
+        } else if (incomingOnprem || depType == 'onprem' || depType == 'ece' || depType == 'eck' || s == 'onprem_node') {
+          ctx.cloud.provider = 'onprem';
+        } else if (depType == 'deployment') {
+          String sStripped = s;
+          if (sStripped.startsWith('Cloud-')) {
+            int us = sStripped.indexOf('_');
+            if (us > 6 && us < sStripped.length() - 1) { sStripped = sStripped.substring(us + 1); }
+          }
+          ctx.cloud.provider = sStripped.startsWith('aws.') ? 'aws' : (sStripped.startsWith('gcp.') ? 'gcp' : (sStripped.startsWith('azure.') ? 'azure' : 'cloud'));
+        } else {
+          ctx.cloud.provider = 'serverless';
+          def slsMatcher = /^[^.]+\.(.+?)(?:_((?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\d+))?$/.matcher(s);
+          if (slsMatcher.matches()) {
+            ctx.ess.billing.cloud = ['service': ['type': slsMatcher.group(1)]];
+            String r2 = slsMatcher.group(2);
+            if ((ctx.cloud.region == null || ctx.cloud.region == '') && r2 != null && (regionGeo.containsKey(r2) || /^(?:(?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\d+)$/.matcher(r2).matches())) {
+              ctx.cloud.region = r2;
+            }
+          }
+        }
+
+        String reg = ctx.cloud.region;
+        Map geoEntry = null;
+        if (reg != null && reg != '') {
+          if (regionGeo.containsKey(reg)) {
+            geoEntry = regionGeo[reg];
+          } else if (reg.startsWith('aws-') && regionGeo.containsKey(reg.substring(4))) {
+            geoEntry = ['location': regionGeo[reg.substring(4)]['location'], 'name': reg];
+          } else if (!reg.startsWith('aws-') && regionGeo.containsKey('aws-' + reg)) {
+            geoEntry = ['location': regionGeo['aws-' + reg]['location'], 'name': reg];
+          }
+        }
+        if (geoEntry != null) {
+          ctx.cloud.geo = geoEntry;
+        } else {
+          ctx.cloud.geo = ['name': (reg != null && reg != '') ? reg : 'unknown', 'location': ['lon': 135.0, 'lat': 90.0]];
+        }
+
+        ctx.is_onprem = (incomingOnprem || ctx.cloud.provider == 'onprem' || s == 'onprem_node' || depType == 'onprem' || depType == 'ece' || depType == 'eck');
+
+        for (String tmp : ['quantity_value', 'organization_id', 'deployment_type', 'billing_type', 'billing_kind', 'cloud_region']) {
+          ctx.remove(tmp);
+        }
+  - set:
+      field: cost_type
+      value: 'data-transfer'
+      if: ctx.sku != null && ctx.sku =~ /^(?:Cloud-[A-Za-z]+_)?(?:aws|gcp|azure)\.data-transfer.*/
+  - set:
+      field: cost_type
+      value: 'snapshots'
+      if: ctx.sku != null && ctx.sku =~ /^(?:Cloud-[A-Za-z]+_)?(?:aws|gcp|azure)\.snapshot-storage.*/
+  - set:
+      field: cost_type
+      value: 'inference'
+      if: ctx.sku == 'global.inference-chat-input' || (ctx.sku != null && ctx.sku =~ /^(?:Cloud-[A-Za-z]+_)?global\.inference-chat-input$/)
+  - grok:
+      field: sku
+      ignore_failure: true
+      patterns:
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.es\\.(?<cost_type>[^.]+)\\.%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.(?<cost_type>[^._]+)-vcu_%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.(?<cost_type>[^.]+)\\.%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.(?<cost_type>[^._]+)_%{GREEDYDATA}"
+        - "^(?:Cloud-[A-Za-z]+_)?[A-Za-z0-9-]+\\.%{DATA:cost_type}$"
+      description: retrieve a human readable cost type from the sku field
+      if: ctx.cost_type == null && ctx.sku != null
+  - set:
+      field: cost_type
+      value: 'datahot/datacontent'
+      if: ctx.cost_type == 'datahot' || ctx.cost_type == 'datacontent'
+  - set:
+      field: cost_type
+      value: 'onprem'
+      if: ctx.sku == 'onprem_node' || (ctx.is_onprem == true && ctx.cost_type == null)
+  - script:
+      ignore_failure: true
+      lang: painless
+      description: |
+        cost_category: data_tier | platform | transfer | snapshot | support | onprem | other
+        is_allocatable: true for ECH data_tier SKUs, Serverless workload/retained SKUs, and onprem_node (matches billing_realized_pool)
+      source: |
+        String sku = ctx.sku != null ? ctx.sku.toString() : '';
+        String skuLower = sku.toLowerCase(Locale.ROOT);
+        if (skuLower == '' || skuLower == 'none') {
+          ctx.cost_type = 'other';
+          ctx.cost_category = 'other';
+          ctx.is_allocatable = false;
+          return;
+        }
+        if (ctx.sku == 'onprem_node' || ctx.cost_type == 'onprem') {
+          ctx.cost_category = 'onprem';
+          ctx.is_allocatable = true;
+          return;
+        }
+        if (ctx.cost_type == 'data-transfer') {
+          ctx.cost_category = 'transfer';
+          ctx.is_allocatable = false;
+          return;
+        }
+        if (ctx.cost_type == 'snapshots') {
+          ctx.cost_category = 'snapshot';
+          ctx.is_allocatable = false;
+          return;
+        }
+        String depType = ctx.ess?.billing?.deployment_type != null ? ctx.ess.billing.deployment_type.toString() : '';
+        if (sku != '') {
+          if (skuLower.contains('.es.datahot.') || skuLower.contains('.es.datawarm.')
+              || skuLower.contains('.es.datacold.') || skuLower.contains('.es.datafrozen.')
+              || skuLower.contains('.es.datacontent.')) {
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            return;
+          }
+          if (skuLower.startsWith('serverless.support-') || skuLower.contains('support')) {
+            if (skuLower.startsWith('serverless.support-')) {
+              ctx.cost_type = 'serverless_premium_support';
+            }
+            ctx.cost_category = 'support';
+            ctx.is_allocatable = false;
+            return;
+          }
+          if (skuLower.contains('data-transfer') || skuLower.contains('data-out') || skuLower.contains('data-in') || skuLower.contains('egress') || skuLower.contains('ingress')) {
+            ctx.cost_category = 'transfer';
+            ctx.is_allocatable = false;
+            return;
+          }
+          if (skuLower.contains('snapshot')) {
+            ctx.cost_category = 'snapshot';
+            ctx.is_allocatable = false;
+            return;
+          }
+          if (skuLower.contains('ml-vcu') || skuLower.contains('.es.ml.') || skuLower.contains('ml.ecu') || skuLower.contains('ml_ecu') || skuLower.contains('ml.vcu') || skuLower.contains('ml_inference') || skuLower.contains('synthetic')
+              || skuLower.contains('inference') || skuLower.contains('llm') || skuLower.contains('agent-builder')
+              || skuLower.contains('.eis') || skuLower.contains('workflow') || skuLower.contains('cross-project') || skuLower.contains('cps')) {
+            ctx.cost_category = 'platform';
+            ctx.is_allocatable = false;
+            return;
+          }
+          // Serverless workload & storage pool across elasticsearch, observability, security, vectordb, search (matches billing_realized_pool)
+          String normDepType = depType != null ? depType.toLowerCase(Locale.ROOT) : '';
+          if (normDepType == 'oblt') { normDepType = 'observability'; }
+          else if (normDepType == 'sec') { normDepType = 'security'; }
+          else if (normDepType == 'vector') { normDepType = 'vectordb'; }
+          else if (normDepType == 'es') { normDepType = 'elasticsearch'; }
+          else if (normDepType == 'enterprise_search') { normDepType = 'search'; }
+          boolean isSlsProject = (normDepType == 'elasticsearch' || normDepType == 'observability' || normDepType == 'security' || normDepType == 'vectordb' || normDepType == 'search' || normDepType == 'serverless');
+          boolean isSlsAllocSku = (
+            skuLower.contains('search-vcu') || skuLower.contains('ingest-vcu')
+            || skuLower.contains('ingest.ecu') || skuLower.contains('ingest_ecu') || skuLower.contains('ingest.vcu')
+            || skuLower.contains('search.ecu') || skuLower.contains('search_ecu') || skuLower.contains('search.vcu')
+            || skuLower.contains('retained') || skuLower.contains('retention')
+            || skuLower.startsWith('observability.') || skuLower.contains('.observability.')
+            || skuLower.startsWith('oblt.') || skuLower.contains('.oblt.')
+            || skuLower.startsWith('security.') || skuLower.contains('.security.')
+            || skuLower.startsWith('sec.') || skuLower.contains('.sec.')
+            || skuLower.startsWith('vectordb.') || skuLower.contains('.vectordb.')
+            || skuLower.startsWith('serverless.elasticsearch.') || skuLower.startsWith('elasticsearch.') || skuLower.contains('.elasticsearch.')
+            || skuLower.startsWith('serverless.search.') || skuLower.startsWith('search.')
+          );
+          if (isSlsProject && isSlsAllocSku) {
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            return;
+          }
+        }
+        if (ctx.cost_type != null) {
+          if (ctx.cost_type == 'ml' || ctx.cost_type == 'kibana' || ctx.cost_type == 'apm'
+              || ctx.cost_type == 'enterprise_search' || ctx.cost_type == 'enterprisesearch'
+              || ctx.cost_type == 'integrations_server' || ctx.cost_type == 'integrationsserver') {
+            ctx.cost_category = 'platform';
+            ctx.is_allocatable = false;
+            return;
+          }
+        }
+        if (Boolean.TRUE.equals(ctx.is_onprem)) {
+          ctx.cost_category = 'onprem';
+          ctx.is_allocatable = true;
+          return;
+        }
+        ctx.cost_category = 'other';
+        ctx.is_allocatable = false;
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback billing lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup-billing@custom

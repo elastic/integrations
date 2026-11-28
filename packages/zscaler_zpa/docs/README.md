@@ -155,6 +155,42 @@ Sample Response:
 
 **Note: Microsegmentation Flow logs are only produced when Zscaler Microsegmentation is provisioned for the tenant. This data stream is enabled by default, so upgrading adds a listener on port 9021.**
 
+### Private Service Edge Status Logs
+
+Default port: _9022_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-private-service-edge-status-log-fields
+
+Zscaler Private Service Edge Status response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.private_service_edge_status","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"PackageVersion": %j{PackageVersion},"Platform": %j{Platform},"ZEN": %j{ZEN},"ServiceEdge": %j{ServiceEdge},"ServiceEdgeGroup": %j{ServiceEdgeGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostUpTime": %j{HostUpTime},"ServiceEdgeStartTime": %j{ServiceEdgeStartTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"MicroTenantID": %j{MicroTenantID}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.private_service_edge_status","LogTimestamp": "Wed Dec  1 10:38:41 2021","Customer": "Example Corp","SessionID": "Xk3pQ9vLm2Rt7bNc4WzA","SessionType": "ZPN_TUNNEL_CONTROL","SessionStatus": "ZPN_STATUS_AUTHENTICATED","Version": "21.268.1-341-g71d6f30","PackageVersion": "","Platform": "el7","ZEN": "US-CA-1001","ServiceEdge": "Example PSE-1700000000001","ServiceEdgeGroup": "Example PSE Group","PrivateIP": "10.10.20.15","PublicIP": "198.51.100.40","Latitude": 0.000000,"Longitude": 0.000000,"CountryCode": "","TimestampAuthentication": "2021-12-01T10:34:42.067Z","TimestampUnAuthentication": "","CPUUtilization": 0,"MemUtilization": 3,"InterfaceDefRoute": "","DefRouteGW": "10.10.20.1","PrimaryDNSResolver": "10.10.0.2","HostUpTime": "1636416451","ServiceEdgeStartTime": "1638354879","NumOfInterfaces": 2,"BytesRxInterface": 15435341381,"PacketsRxInterface": 144152768,"ErrorsRxInterface": 0,"DiscardsRxInterface": 2058,"BytesTxInterface": 22304497040,"PacketsTxInterface": 149703945,"ErrorsTxInterface": 0,"DiscardsTxInterface": 0,"TotalBytesRx": 5257,"TotalBytesTx": 7543,"MicroTenantID": "216172782113784200"}
+```
+
+**Note: Private Service Edge Status logs are only produced for Private Service Edges deployed in your environment. This data stream is enabled by default, so upgrading adds a listener on port 9022.**
+
+### Private Cloud Controller Status Logs
+
+Default port: _9023_
+
+Vendor documentation: https://help.zscaler.com/zpa/understanding-private-cloud-controller-status-log-fields
+
+Zscaler Private Cloud Controller Status response format (v1):  
+```
+{"version":"v1","sourcetype":"zscaler_zpa.private_cloud_controller_status","LogTimestamp": %j{LogTimestamp:time},"Customer": %j{Customer},"SessionID": %j{SessionID},"SessionType": %j{SessionType},"SessionStatus": %j{SessionStatus},"Version": %j{Version},"PackageVersion": %j{PackageVersion},"Platform": %j{Platform},"ZEN": %j{ZEN},"PrivateCloudController": %j{SiteController},"PrivateCloudControllerGroup": %j{SiteControllerGroup},"PrivateIP": %j{PrivateIP},"PublicIP": %j{PublicIP},"Latitude": %f{Latitude},"Longitude": %f{Longitude},"CountryCode": %j{CountryCode},"TimestampAuthentication": %j{TimestampAuthentication:iso8601},"TimestampUnAuthentication": %j{TimestampUnAuthentication:iso8601},"CPUUtilization": %d{CPUUtilization},"MemUtilization": %d{MemUtilization},"InterfaceDefRoute": %j{InterfaceDefRoute},"DefRouteGW": %j{DefRouteGW},"PrimaryDNSResolver": %j{PrimaryDNSResolver},"HostUpTime": %j{HostUpTime},"PrivateCloudControllerStartTime": %j{SiteControllerStartTime},"NumOfInterfaces": %d{NumOfInterfaces},"BytesRxInterface": %d{BytesRxInterface},"PacketsRxInterface": %d{PacketsRxInterface},"ErrorsRxInterface": %d{ErrorsRxInterface},"DiscardsRxInterface": %d{DiscardsRxInterface},"BytesTxInterface": %d{BytesTxInterface},"PacketsTxInterface": %d{PacketsTxInterface},"ErrorsTxInterface": %d{ErrorsTxInterface},"DiscardsTxInterface": %d{DiscardsTxInterface},"TotalBytesRx": %d{TotalBytesRx},"TotalBytesTx": %d{TotalBytesTx},"MicroTenantID": %j{MicroTenantID}}\n
+```
+
+Sample Response: 
+```json
+{"version":"v1","sourcetype":"zscaler_zpa.private_cloud_controller_status","LogTimestamp": "Wed Aug 21 09:23:34 2024","Customer": "Example Corp","SessionID": "Qm8sTz2Lw5Yc1Hn6Ve0B","SessionType": "ZPN_TUNNEL_CONTROL","SessionStatus": "ZPN_STATUS_AUTHENTICATED","Version": "24.353.4-230-g1d191f1abe","PackageVersion": "","Platform": "el7","ZEN": "unset","PrivateCloudController": "Example PCC-1","PrivateCloudControllerGroup": "Example PCC Group","PrivateIP": "10.18.11.214","PublicIP": "10.18.11.214","Latitude": 12.971599,"Longitude": 77.594563,"CountryCode": "IN","TimestampAuthentication": "2024-08-21T09:23:34.903Z","TimestampUnAuthentication": "","CPUUtilization": 7,"MemUtilization": 4,"InterfaceDefRoute": "eth0","DefRouteGW": "10.18.0.1","PrimaryDNSResolver": "10.18.0.2","HostUpTime": "1718277251","PrivateCloudControllerStartTime": "1724232211","NumOfInterfaces": 5,"BytesRxInterface": 65413384825,"PacketsRxInterface": 654880671,"ErrorsRxInterface": 0,"DiscardsRxInterface": 0,"BytesTxInterface": 59824288939,"PacketsTxInterface": 652135932,"ErrorsTxInterface": 0,"DiscardsTxInterface": 0,"TotalBytesRx": 1835,"TotalBytesTx": 0,"MicroTenantID": "0"}
+```
+
+**Note: Private Cloud Controller Status logs are only produced when Private Cloud Controllers are deployed for ZPA Business Continuity. This data stream is enabled by default, so upgrading adds a listener on port 9023.**
+
 ## Fields and Sample Event
 
 ### App Connector Status Logs
@@ -1462,6 +1498,336 @@ An example event for `microsegmentation_flow` looks as following:
                 45584,
                 45586
             ]
+        }
+    }
+}
+```
+
+### Private Service Edge Status Logs
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| zscaler_zpa.private_service_edge_status.bytes_rx_interface | The bytes received on the interface. | long |
+| zscaler_zpa.private_service_edge_status.bytes_tx_interface | The bytes transmitted on the interface. | long |
+| zscaler_zpa.private_service_edge_status.def_route_gw | The IP address of the gateway to default route. | ip |
+| zscaler_zpa.private_service_edge_status.discards_rx_interface | The discards received on the interface. | long |
+| zscaler_zpa.private_service_edge_status.discards_tx_interface | The discards transmitted on the interface. | long |
+| zscaler_zpa.private_service_edge_status.errors_rx_interface | The errors received on the interface. | long |
+| zscaler_zpa.private_service_edge_status.errors_tx_interface | The errors transmitted on the interface. | long |
+| zscaler_zpa.private_service_edge_status.host_up_time | The time at which the host was started. | date |
+| zscaler_zpa.private_service_edge_status.interface_def_route | The name of the interface to default route. | keyword |
+| zscaler_zpa.private_service_edge_status.mem_utilization | The memory utilization in %. | long |
+| zscaler_zpa.private_service_edge_status.micro_tenant_id | The Microtenant ID of the Private Service Edge. | keyword |
+| zscaler_zpa.private_service_edge_status.num_of_interfaces | The number of interfaces on the Private Service Edge host. | long |
+| zscaler_zpa.private_service_edge_status.package_version | The Private Service Edge package version. | keyword |
+| zscaler_zpa.private_service_edge_status.packets_rx_interface | The packets received on the interface. | long |
+| zscaler_zpa.private_service_edge_status.packets_tx_interface | The packets transmitted on the interface. | long |
+| zscaler_zpa.private_service_edge_status.primary_dns_resolver | The IP address of the primary DNS resolver. | ip |
+| zscaler_zpa.private_service_edge_status.private_ip | The private IP address of the Private Service Edge. | ip |
+| zscaler_zpa.private_service_edge_status.public_ip | The public IP address of the Private Service Edge. | ip |
+| zscaler_zpa.private_service_edge_status.service_edge_group | The Service Edge group name. | keyword |
+| zscaler_zpa.private_service_edge_status.service_edge_start_time | The time at which the Private Service Edge was started. | date |
+| zscaler_zpa.private_service_edge_status.session_id | The TLS session ID. | keyword |
+| zscaler_zpa.private_service_edge_status.session_status | The status of the session: `ZPN_STATUS_AUTHENTICATED` (the Private Service Edge successfully authenticated), `ZPN_STATUS_AUTH_FAILED` (the Private Service Edge failed to authenticate) or `ZPN_STATUS_DISCONNECTED` (the Private Service Edge disconnected from a Service Edge). | keyword |
+| zscaler_zpa.private_service_edge_status.session_type | The type of session, such as `ZPN_TUNNEL_CONTROL` for the session from the Private Service Edge toward the closest Public Service Edge. | keyword |
+| zscaler_zpa.private_service_edge_status.timestamp_authentication | The timestamp when the Private Service Edge was authenticated. | date |
+| zscaler_zpa.private_service_edge_status.timestamp_un_authentication | The timestamp when the Private Service Edge was unauthenticated. | date |
+| zscaler_zpa.private_service_edge_status.total_bytes_rx | The total bytes received. | long |
+| zscaler_zpa.private_service_edge_status.total_bytes_tx | The total bytes transmitted. | long |
+| zscaler_zpa.private_service_edge_status.zen | The Public Service Edge that was selected for the connection. | keyword |
+
+
+An example event for `private_service_edge_status` looks as following:
+
+```json
+{
+    "@timestamp": "2021-12-01T10:38:41.000Z",
+    "agent": {
+        "ephemeral_id": "cdc1a20c-1106-495f-aa30-c8c88362aa82",
+        "id": "7cba15b5-d05c-48cc-a098-ac9ca0e02b4a",
+        "name": "elastic-agent-12622",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "zscaler_zpa.private_service_edge_status",
+        "namespace": "56771",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "7cba15b5-d05c-48cc-a098-ac9ca0e02b4a",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "action": "zpn_status_authenticated",
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "zscaler_zpa.private_service_edge_status",
+        "ingested": "2026-11-19T08:32:05Z",
+        "kind": "event",
+        "original": "{\"version\":\"v1\",\"sourcetype\":\"zscaler_zpa.private_service_edge_status\",\"LogTimestamp\": \"Wed Dec  1 10:38:41 2021\",\"Customer\": \"Example Corp\",\"SessionID\": \"Xk3pQ9vLm2Rt7bNc4WzA\",\"SessionType\": \"ZPN_TUNNEL_CONTROL\",\"SessionStatus\": \"ZPN_STATUS_AUTHENTICATED\",\"Version\": \"21.268.1-341-g71d6f30\",\"PackageVersion\": \"\",\"Platform\": \"el7\",\"ZEN\": \"US-CA-1001\",\"ServiceEdge\": \"Example PSE-1700000000001\",\"ServiceEdgeGroup\": \"Example PSE Group\",\"PrivateIP\": \"10.10.20.15\",\"PublicIP\": \"198.51.100.40\",\"Latitude\": 0.000000,\"Longitude\": 0.000000,\"CountryCode\": \"\",\"TimestampAuthentication\": \"2021-12-01T10:34:42.067Z\",\"TimestampUnAuthentication\": \"\",\"CPUUtilization\": 0,\"MemUtilization\": 3,\"InterfaceDefRoute\": \"\",\"DefRouteGW\": \"10.10.20.1\",\"PrimaryDNSResolver\": \"10.10.0.2\",\"HostUpTime\": \"1636416451\",\"ServiceEdgeStartTime\": \"1638354879\",\"NumOfInterfaces\": 2,\"BytesRxInterface\": 15435341381,\"PacketsRxInterface\": 144152768,\"ErrorsRxInterface\": 0,\"DiscardsRxInterface\": 2058,\"BytesTxInterface\": 22304497040,\"PacketsTxInterface\": 149703945,\"ErrorsTxInterface\": 0,\"DiscardsTxInterface\": 0,\"TotalBytesRx\": 5257,\"TotalBytesTx\": 7543,\"MicroTenantID\": \"216172782113784200\"}",
+        "outcome": "success",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "cpu": {
+            "usage": 0
+        }
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "172.16.6.3:40698"
+        }
+    },
+    "observer": {
+        "ip": [
+            "10.10.20.15",
+            "198.51.100.40"
+        ],
+        "name": "Example PSE-1700000000001",
+        "os": {
+            "platform": "el7"
+        },
+        "product": "Private Service Edge",
+        "vendor": "Zscaler",
+        "version": "21.268.1-341-g71d6f30"
+    },
+    "organization": {
+        "name": "Example Corp"
+    },
+    "related": {
+        "hosts": [
+            "Example PSE-1700000000001"
+        ],
+        "ip": [
+            "10.10.20.15",
+            "198.51.100.40",
+            "10.10.20.1",
+            "10.10.0.2"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "zscaler_zpa-private_service_edge_status"
+    ],
+    "zscaler_zpa": {
+        "private_service_edge_status": {
+            "bytes_rx_interface": 15435341381,
+            "bytes_tx_interface": 22304497040,
+            "def_route_gw": "10.10.20.1",
+            "discards_rx_interface": 2058,
+            "discards_tx_interface": 0,
+            "errors_rx_interface": 0,
+            "errors_tx_interface": 0,
+            "host_up_time": "2021-11-09T00:07:31.000Z",
+            "mem_utilization": 3,
+            "micro_tenant_id": "216172782113784200",
+            "num_of_interfaces": 2,
+            "packets_rx_interface": 144152768,
+            "packets_tx_interface": 149703945,
+            "primary_dns_resolver": "10.10.0.2",
+            "private_ip": "10.10.20.15",
+            "public_ip": "198.51.100.40",
+            "service_edge_group": "Example PSE Group",
+            "service_edge_start_time": "2021-12-01T10:34:39.000Z",
+            "session_id": "Xk3pQ9vLm2Rt7bNc4WzA",
+            "session_status": "ZPN_STATUS_AUTHENTICATED",
+            "session_type": "ZPN_TUNNEL_CONTROL",
+            "timestamp_authentication": "2021-12-01T10:34:42.067Z",
+            "total_bytes_rx": 5257,
+            "total_bytes_tx": 7543,
+            "zen": "US-CA-1001"
+        }
+    }
+}
+```
+
+### Private Cloud Controller Status Logs
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| zscaler_zpa.private_cloud_controller_status.bytes_rx_interface | The bytes received on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.bytes_tx_interface | The bytes transmitted on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.def_route_gw | The IP address of the gateway to default route. | ip |
+| zscaler_zpa.private_cloud_controller_status.discards_rx_interface | The discards received on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.discards_tx_interface | The discards transmitted on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.errors_rx_interface | The errors received on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.errors_tx_interface | The errors transmitted on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.host_up_time | The time at which the host was started. | date |
+| zscaler_zpa.private_cloud_controller_status.interface_def_route | The name of the interface to default route. | keyword |
+| zscaler_zpa.private_cloud_controller_status.mem_utilization | The memory utilization in %. | long |
+| zscaler_zpa.private_cloud_controller_status.micro_tenant_id | The Microtenant ID of the Private Cloud Controller. | keyword |
+| zscaler_zpa.private_cloud_controller_status.num_of_interfaces | The number of interfaces on the Private Cloud Controller host. | long |
+| zscaler_zpa.private_cloud_controller_status.package_version | The package version. | keyword |
+| zscaler_zpa.private_cloud_controller_status.packets_rx_interface | The packets received on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.packets_tx_interface | The packets transmitted on the interface. | long |
+| zscaler_zpa.private_cloud_controller_status.primary_dns_resolver | The IP address of the primary DNS resolver. | ip |
+| zscaler_zpa.private_cloud_controller_status.private_cloud_controller_group | The Private Cloud Controller group name. | keyword |
+| zscaler_zpa.private_cloud_controller_status.private_cloud_controller_start_time | The time at which the Private Cloud Controller was started. | date |
+| zscaler_zpa.private_cloud_controller_status.private_ip | The private IP address of the Private Cloud Controller. | ip |
+| zscaler_zpa.private_cloud_controller_status.public_ip | The public IP address of the Private Cloud Controller. | ip |
+| zscaler_zpa.private_cloud_controller_status.session_id | The TLS session ID. | keyword |
+| zscaler_zpa.private_cloud_controller_status.session_status | The status of the session: `ZPN_STATUS_AUTHENTICATED` (the Private Cloud Controller successfully authenticated), `ZPN_STATUS_AUTH_FAILED` (the Private Cloud Controller failed to authenticate) or `ZPN_STATUS_DISCONNECTED` (the Private Cloud Controller disconnected from a Service Edge). | keyword |
+| zscaler_zpa.private_cloud_controller_status.session_type | The type of session, such as `ZPN_TUNNEL_CONTROL` for the session from the Private Cloud Controller toward the closest Public Service Edge. | keyword |
+| zscaler_zpa.private_cloud_controller_status.timestamp_authentication | The timestamp when the Private Cloud Controller was authenticated. | date |
+| zscaler_zpa.private_cloud_controller_status.timestamp_un_authentication | The timestamp when the Private Cloud Controller was unauthenticated. | date |
+| zscaler_zpa.private_cloud_controller_status.total_bytes_rx | The total bytes received. | long |
+| zscaler_zpa.private_cloud_controller_status.total_bytes_tx | The total bytes transmitted. | long |
+| zscaler_zpa.private_cloud_controller_status.zen | The Public Service Edge that was selected for the connection. | keyword |
+
+
+An example event for `private_cloud_controller_status` looks as following:
+
+```json
+{
+    "@timestamp": "2024-08-21T09:23:34.000Z",
+    "agent": {
+        "ephemeral_id": "2b35c2dc-0d41-409f-b944-f16f880d76ef",
+        "id": "44d0e95c-fd58-43d5-a885-b7cdbb998f5a",
+        "name": "elastic-agent-38733",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "zscaler_zpa.private_cloud_controller_status",
+        "namespace": "30261",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "44d0e95c-fd58-43d5-a885-b7cdbb998f5a",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "action": "zpn_status_authenticated",
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "zscaler_zpa.private_cloud_controller_status",
+        "ingested": "2026-11-19T08:31:16Z",
+        "kind": "event",
+        "original": "{\"version\":\"v1\",\"sourcetype\":\"zscaler_zpa.private_cloud_controller_status\",\"LogTimestamp\": \"Wed Aug 21 09:23:34 2024\",\"Customer\": \"Example Corp\",\"SessionID\": \"Qm8sTz2Lw5Yc1Hn6Ve0B\",\"SessionType\": \"ZPN_TUNNEL_CONTROL\",\"SessionStatus\": \"ZPN_STATUS_AUTHENTICATED\",\"Version\": \"24.353.4-230-g1d191f1abe\",\"PackageVersion\": \"\",\"Platform\": \"el7\",\"ZEN\": \"unset\",\"PrivateCloudController\": \"Example PCC-1\",\"PrivateCloudControllerGroup\": \"Example PCC Group\",\"PrivateIP\": \"10.18.11.214\",\"PublicIP\": \"10.18.11.214\",\"Latitude\": 12.971599,\"Longitude\": 77.594563,\"CountryCode\": \"IN\",\"TimestampAuthentication\": \"2024-08-21T09:23:34.903Z\",\"TimestampUnAuthentication\": \"\",\"CPUUtilization\": 7,\"MemUtilization\": 4,\"InterfaceDefRoute\": \"eth0\",\"DefRouteGW\": \"10.18.0.1\",\"PrimaryDNSResolver\": \"10.18.0.2\",\"HostUpTime\": \"1718277251\",\"PrivateCloudControllerStartTime\": \"1724232211\",\"NumOfInterfaces\": 5,\"BytesRxInterface\": 65413384825,\"PacketsRxInterface\": 654880671,\"ErrorsRxInterface\": 0,\"DiscardsRxInterface\": 0,\"BytesTxInterface\": 59824288939,\"PacketsTxInterface\": 652135932,\"ErrorsTxInterface\": 0,\"DiscardsTxInterface\": 0,\"TotalBytesRx\": 1835,\"TotalBytesTx\": 0,\"MicroTenantID\": \"0\"}",
+        "outcome": "success",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "cpu": {
+            "usage": 0.07
+        }
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "172.16.6.3:47760"
+        }
+    },
+    "observer": {
+        "geo": {
+            "country_iso_code": "IN",
+            "location": {
+                "lat": 12.971599,
+                "lon": 77.594563
+            }
+        },
+        "ip": [
+            "10.18.11.214"
+        ],
+        "name": "Example PCC-1",
+        "os": {
+            "platform": "el7"
+        },
+        "product": "Private Cloud Controller",
+        "vendor": "Zscaler",
+        "version": "24.353.4-230-g1d191f1abe"
+    },
+    "organization": {
+        "name": "Example Corp"
+    },
+    "related": {
+        "hosts": [
+            "Example PCC-1"
+        ],
+        "ip": [
+            "10.18.11.214",
+            "10.18.0.1",
+            "10.18.0.2"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "zscaler_zpa-private_cloud_controller_status"
+    ],
+    "zscaler_zpa": {
+        "private_cloud_controller_status": {
+            "bytes_rx_interface": 65413384825,
+            "bytes_tx_interface": 59824288939,
+            "def_route_gw": "10.18.0.1",
+            "discards_rx_interface": 0,
+            "discards_tx_interface": 0,
+            "errors_rx_interface": 0,
+            "errors_tx_interface": 0,
+            "host_up_time": "2024-06-13T11:14:11.000Z",
+            "interface_def_route": "eth0",
+            "mem_utilization": 4,
+            "micro_tenant_id": "0",
+            "num_of_interfaces": 5,
+            "packets_rx_interface": 654880671,
+            "packets_tx_interface": 652135932,
+            "primary_dns_resolver": "10.18.0.2",
+            "private_cloud_controller_group": "Example PCC Group",
+            "private_cloud_controller_start_time": "2024-08-21T09:23:31.000Z",
+            "private_ip": "10.18.11.214",
+            "public_ip": "10.18.11.214",
+            "session_id": "Qm8sTz2Lw5Yc1Hn6Ve0B",
+            "session_status": "ZPN_STATUS_AUTHENTICATED",
+            "session_type": "ZPN_TUNNEL_CONTROL",
+            "timestamp_authentication": "2024-08-21T09:23:34.903Z",
+            "total_bytes_rx": 1835,
+            "total_bytes_tx": 0,
+            "zen": "unset"
         }
     }
 }

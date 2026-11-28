@@ -1,0 +1,30 @@
+{
+    "id": "chargeback-new-group-detected",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Chargeback] New chargeback group detected",
+        "tags": [
+            "Chargeback"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1h"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "groupBy": "row",
+            "timeWindowSize": 365,
+            "timeWindowUnit": "d",
+            "esqlQuery": {
+                "esql": "FROM chargeback_lookup.billing_cluster_cost\n| WHERE @timestamp IS NOT NULL\n| EVAL b_ts = @timestamp, b_grp = deployment_group, ck = composite_key::keyword\n| DROP @timestamp, composite_key, deployment_id, deployment_name, deployment_group, is_onprem\n| LOOKUP JOIN chargeback_lookup.billing_enrichment ON ck == composite_key\n| EVAL obs_ts = COALESCE(group_first_seen, b_ts)\n| INLINE STATS org_earliest_ts = MIN(b_ts), org_latest_ts = MAX(b_ts), org_latest_obs_ts = MAX(obs_ts)\n| EVAL ref_latest_ts = CASE(org_latest_obs_ts > org_latest_ts, org_latest_obs_ts, org_latest_ts)\n| WHERE b_grp IS NOT NULL AND b_grp != \"\"\n| STATS first_seen = MIN(obs_ts) BY b_grp, org_earliest_ts, ref_latest_ts\n| WHERE ref_latest_ts > org_earliest_ts AND first_seen > org_earliest_ts AND first_seen >= ref_latest_ts - 3 days\n| RENAME b_grp AS deployment_group\n| EVAL first_seen_day = LEFT(TO_STRING(first_seen), 10),\n       result = CONCAT(\"New chargeback group `\", deployment_group, \"` first observed on \", first_seen_day, \".\")\n| SORT deployment_group ASC\n| KEEP result, deployment_group, first_seen_day"
+            },
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
