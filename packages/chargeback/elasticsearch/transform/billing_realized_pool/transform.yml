@@ -1,4 +1,4 @@
-description: Aggregates daily allocatable data-tier capacity (chargeable units) per deployment across Elastic Cloud Hosted, Elastic Cloud Serverless workload pools, and On-Premises nodes.
+description: Aggregates daily allocatable data-tier capacity, AI/ML and Synthetics billing pools, and group first-seen timestamps per deployment across Elastic Cloud Hosted, Elastic Cloud Serverless workload pools, and On-Premises nodes.
 source:
   index:
     - metrics-chargeback.billing-*
@@ -10,7 +10,9 @@ source:
     - -chargeback_lookup.*
   query:
     bool:
-      must:
+      filter:
+        - exists:
+            field: ess.billing.sku
         - range:
             ess.billing.total_ecu:
               gte: 0
@@ -19,222 +21,6 @@ source:
             doc_type:
               - config_snapshot
               - credit_line_item
-      should:
-        - term:
-            ess.billing.sku: onprem_node
-        - bool:
-            must:
-              - term:
-                  ess.billing.type: capacity
-              - term:
-                  ess.billing.kind: elasticsearch
-              - bool:
-                  should:
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.es.datahot.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.es.datawarm.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.es.datacold.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.es.datafrozen.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.es.datacontent.*'
-                          case_insensitive: true
-                  minimum_should_match: 1
-        - bool:
-            must:
-              - terms:
-                  ess.billing.deployment_type:
-                    - elasticsearch
-                    - observability
-                    - security
-                    - vectordb
-                    - search
-                    - serverless
-                    - oblt
-                    - sec
-                    - es
-                    - vector
-                    - enterprise_search
-              - bool:
-                  should:
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*search-vcu*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*ingest-vcu*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*retained*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*retention*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: observability.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.observability.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: oblt.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.oblt.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: security.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.security.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: sec.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.sec.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: vectordb.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.vectordb.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: serverless.search.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: search.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: serverless.elasticsearch.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: elasticsearch.*
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*.elasticsearch.*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*ingest.ecu*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*ingest_ecu*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*ingest.vcu*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*search.ecu*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*search_ecu*'
-                          case_insensitive: true
-                    - wildcard:
-                        ess.billing.sku:
-                          value: '*search.vcu*'
-                          case_insensitive: true
-                  minimum_should_match: 1
-            must_not:
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*ml-vcu*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*synthetic*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*inference*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*llm*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*agent-builder*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*.eis*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*support*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*data-transfer*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*data-out*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*data-in*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*egress*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*ingress*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*snapshot*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*workflow*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*cross-project*'
-                    case_insensitive: true
-              - wildcard:
-                  ess.billing.sku:
-                    value: '*cps*'
-                    case_insensitive: true
-      minimum_should_match: 1
   runtime_mappings:
     cb_sync_ts:
       type: date
@@ -337,13 +123,30 @@ source:
             }
           } catch (Exception e) {}
           emit('unassociated');
+    cb_sku:
+      type: keyword
+      script:
+        source: |
+          for (String sf : ['ess.billing.sku', 'ess.billing.sku.keyword']) {
+            try {
+              if (doc.containsKey(sf) && !doc[sf].empty) {
+                String sv = doc[sf].value.toString();
+                if (sv.trim() != '') { emit(sv); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.ess?.billing?.sku != null && params._source.ess.billing.sku.toString().trim() != '') {
+              emit(params._source.ess.billing.sku.toString());
+            }
+          } catch (Exception e) {}
 dest:
-  index: chargeback_lookup.dest_billing_realized_pool-1
+  index: chargeback_lookup.dest_billing_realized_pool-2
   aliases:
     - alias: chargeback_lookup.billing_realized_pool
       move_on_creation: true
   pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "realized_pool" }}'
-frequency: 60m
+frequency: 5m
 sync:
   time:
     field: cb_sync_ts
@@ -364,12 +167,12 @@ pivot:
   aggregations:
     by_sku:
       terms:
-        field: ess.billing.sku
+        field: cb_sku
         size: 1000
       aggs:
         native:
           scripted_metric:
-            init_script: "state.items = new HashMap();"
+            init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
             map_script: |
               boolean isNat = false;
               try {
@@ -555,8 +358,86 @@ pivot:
               } catch (Exception e) {}
 
               boolean isOnprem = ('onprem_node'.equals(sku) || 'onprem'.equals(depType) || 'ece'.equals(depType) || 'eck'.equals(depType));
+              String skuLower = sku.toLowerCase(Locale.ROOT);
+              String bTypeLower = bType.toLowerCase(Locale.ROOT);
+              String bKindLower = bKind.toLowerCase(Locale.ROOT);
+              String depTypeLower = depType.toLowerCase(Locale.ROOT);
+              boolean isEchDataTier = 'capacity'.equals(bTypeLower) && 'elasticsearch'.equals(bKindLower) && (
+                skuLower.contains('.es.datahot.') || skuLower.contains('.es.datawarm.') ||
+                skuLower.contains('.es.datacold.') || skuLower.contains('.es.datafrozen.') ||
+                skuLower.contains('.es.datacontent.')
+              );
+              boolean isServerlessDep = (
+                'elasticsearch'.equals(depTypeLower) || 'observability'.equals(depTypeLower) ||
+                'security'.equals(depTypeLower) || 'vectordb'.equals(depTypeLower) ||
+                'search'.equals(depTypeLower) || 'serverless'.equals(depTypeLower) ||
+                'oblt'.equals(depTypeLower) || 'sec'.equals(depTypeLower) ||
+                'es'.equals(depTypeLower) || 'vector'.equals(depTypeLower) ||
+                'enterprise_search'.equals(depTypeLower)
+              );
+              boolean isServerlessInc = isServerlessDep && (
+                skuLower.contains('search-vcu') || skuLower.contains('ingest-vcu') ||
+                skuLower.contains('retained') || skuLower.contains('retention') ||
+                skuLower.startsWith('observability.') || skuLower.contains('.observability.') ||
+                skuLower.startsWith('oblt.') || skuLower.contains('.oblt.') ||
+                skuLower.startsWith('security.') || skuLower.contains('.security.') ||
+                skuLower.startsWith('sec.') || skuLower.contains('.sec.') ||
+                skuLower.startsWith('vectordb.') || skuLower.contains('.vectordb.') ||
+                skuLower.startsWith('serverless.search.') || skuLower.startsWith('search.') ||
+                skuLower.startsWith('serverless.elasticsearch.') || skuLower.startsWith('elasticsearch.') ||
+                skuLower.contains('.elasticsearch.') ||
+                skuLower.contains('ingest.ecu') || skuLower.contains('ingest_ecu') || skuLower.contains('ingest.vcu') ||
+                skuLower.contains('search.ecu') || skuLower.contains('search_ecu') || skuLower.contains('search.vcu')
+              );
+              boolean isServerlessExc = (
+                skuLower.contains('ml-vcu') || skuLower.contains('synthetic') ||
+                skuLower.contains('inference') || skuLower.contains('llm') ||
+                skuLower.contains('agent-builder') || skuLower.contains('.eis') ||
+                skuLower.contains('support') || skuLower.contains('data-transfer') ||
+                skuLower.contains('data-out') || skuLower.contains('data-in') ||
+                skuLower.contains('egress') || skuLower.contains('ingress') ||
+                skuLower.contains('snapshot') || skuLower.contains('workflow') ||
+                skuLower.contains('cross-project') || skuLower.contains('cps')
+              );
+              boolean isDataTier = 'onprem_node'.equals(sku) || isEchDataTier || (isServerlessInc && !isServerlessExc);
+              boolean isSyn = skuLower.contains('synthetic');
+              boolean isSynPing = isSyn && skuLower.contains('ping');
+              boolean isSynExec = isSyn && !isSynPing;
+              boolean isAi = !isSyn && (skuLower.contains('.es.ml.') || skuLower.contains('ml-vcu') || skuLower.contains('ml.ecu') || skuLower.contains('ml_ecu') || skuLower.contains('ml.vcu') || skuLower.contains('ml_inference') || skuLower.contains('inference') || skuLower.contains('llm') || skuLower.contains('agent-builder') || skuLower.contains('.eis'));
+
+              long docGfsMs = 0L;
+              try {
+                if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
+                  docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
+                } else if (params._source?.get('group_first_seen') != null) {
+                  def rgfs = params._source.get('group_first_seen');
+                  if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
+                  else {
+                    String gstr = rgfs.toString().trim();
+                    if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); }
+                  }
+                }
+              } catch (Exception e) {}
+
+              if (ingTs > 0L && (state.min_bucket_ing <= 0L || ingTs < state.min_bucket_ing)) {
+                state.min_bucket_ing = ingTs;
+              }
+              if (depGroup != '') {
+                if (ingTs > 0L) {
+                  long curGm = state.grp_min_ing.get(depGroup) instanceof Number ? ((Number)state.grp_min_ing.get(depGroup)).longValue() : 0L;
+                  if (curGm <= 0L || ingTs < curGm) { state.grp_min_ing.put(depGroup, ingTs); }
+                }
+                if (docGfsMs > 0L) {
+                  long curGf = state.grp_min_gfs.get(depGroup) instanceof Number ? ((Number)state.grp_min_gfs.get(depGroup)).longValue() : 0L;
+                  if (curGf <= 0L || docGfsMs < curGf) { state.grp_min_gfs.put(depGroup, docGfsMs); }
+                }
+              }
+
               Map rec = [
                 'ing_ts': ingTs,
+                'gfs': docGfsMs,
+                'min_any_ing': ingTs,
+                'min_grp_ing': ingTs,
                 'ecu': ecu,
                 'has_qty': hasQty,
                 'qty': qty,
@@ -564,7 +445,12 @@ pivot:
                 'ram': ram,
                 'dep_group': depGroup,
                 'dep_name': depName,
-                'is_onprem': isOnprem
+                'is_onprem': isOnprem,
+                'is_data_tier': isDataTier,
+                'is_ai': isAi,
+                'is_syn': isSyn,
+                'is_syn_ping': isSynPing,
+                'is_syn_exec': isSynExec
               ];
               Map ex = (Map)state.items.get(dedupKey);
               if (ex == null) {
@@ -573,15 +459,56 @@ pivot:
                 long exTs = ((Number)ex.get('ing_ts')).longValue();
                 int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
                 int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
-                  state.items.put(dedupKey, rec);
+                long rMinAny = ((Number)rec.get('min_any_ing')).longValue();
+                long eMinAny = ((Number)ex.get('min_any_ing')).longValue();
+                long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+                boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue()))));
+                Map win = recWins ? rec : ex;
+                Map lose = recWins ? ex : rec;
+                win.put('min_any_ing', mergedMinAny);
+                String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+                String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+                if (wGrp != '' && wGrp.equals(lGrp)) {
+                  long wMinG = ((Number)win.get('min_grp_ing')).longValue();
+                  long lMinG = ((Number)lose.get('min_grp_ing')).longValue();
+                  if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+                  long wGfs = ((Number)win.get('gfs')).longValue();
+                  long lGfs = ((Number)lose.get('gfs')).longValue();
+                  if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+                }
+                if (recWins) {
+                  state.items.put(dedupKey, win);
                 }
               }
             combine_script: "return state;"
             reduce_script: |
               Map merged = new HashMap();
+              long mergedMinBucketIng = 0L;
+              Map mergedGrpMinIng = new HashMap();
+              Map mergedGrpMinGfs = new HashMap();
               for (def st : states) {
-                if (st == null || !(st.items instanceof Map)) { continue; }
+                if (st == null) { continue; }
+                long mbi = st.min_bucket_ing instanceof Number ? ((Number)st.min_bucket_ing).longValue() : 0L;
+                if (mbi > 0L && (mergedMinBucketIng <= 0L || mbi < mergedMinBucketIng)) {
+                  mergedMinBucketIng = mbi;
+                }
+                if (st.grp_min_ing instanceof Map) {
+                  for (def ge : ((Map)st.grp_min_ing).entrySet()) {
+                    String gk = ge.getKey().toString();
+                    long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                    long cv = mergedGrpMinIng.get(gk) instanceof Number ? ((Number)mergedGrpMinIng.get(gk)).longValue() : 0L;
+                    if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinIng.put(gk, gv); }
+                  }
+                }
+                if (st.grp_min_gfs instanceof Map) {
+                  for (def ge : ((Map)st.grp_min_gfs).entrySet()) {
+                    String gk = ge.getKey().toString();
+                    long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                    long cv = mergedGrpMinGfs.get(gk) instanceof Number ? ((Number)mergedGrpMinGfs.get(gk)).longValue() : 0L;
+                    if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinGfs.put(gk, gv); }
+                  }
+                }
+                if (!(st.items instanceof Map)) { continue; }
                 for (def e : ((Map)st.items).entrySet()) {
                   String k = e.getKey().toString();
                   Map rec = (Map)e.getValue();
@@ -593,8 +520,25 @@ pivot:
                     long exTs = ((Number)ex.get('ing_ts')).longValue();
                     int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
                     int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                    if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
-                      merged.put(k, rec);
+                    long rMinAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : ingTs;
+                    long eMinAny = ex.get('min_any_ing') instanceof Number ? ((Number)ex.get('min_any_ing')).longValue() : exTs;
+                    long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+                    boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue()))));
+                    Map win = recWins ? rec : ex;
+                    Map lose = recWins ? ex : rec;
+                    win.put('min_any_ing', mergedMinAny);
+                    String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+                    String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+                    if (wGrp != '' && wGrp.equals(lGrp)) {
+                      long wMinG = win.get('min_grp_ing') instanceof Number ? ((Number)win.get('min_grp_ing')).longValue() : ((Number)win.get('ing_ts')).longValue();
+                      long lMinG = lose.get('min_grp_ing') instanceof Number ? ((Number)lose.get('min_grp_ing')).longValue() : ((Number)lose.get('ing_ts')).longValue();
+                      if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+                      long wGfs = win.get('gfs') instanceof Number ? ((Number)win.get('gfs')).longValue() : 0L;
+                      long lGfs = lose.get('gfs') instanceof Number ? ((Number)lose.get('gfs')).longValue() : 0L;
+                      if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+                    }
+                    if (recWins) {
+                      merged.put(k, win);
                     }
                   }
                 }
@@ -603,6 +547,10 @@ pivot:
                 return ['doc_cnt': 0L];
               }
               double sumEcu = 0.0;
+              double sumAi = 0.0;
+              double sumSyn = 0.0;
+              double sumSynPing = 0.0;
+              double sumSynExec = 0.0;
               boolean hasQty = false;
               double maxQty = 0.0;
               boolean hasRam = false;
@@ -615,16 +563,22 @@ pivot:
               for (def recObj : merged.values()) {
                 Map rec = (Map)recObj;
                 double recEcu = ((Number)rec.get('ecu')).doubleValue();
-                sumEcu += recEcu;
+                if (Boolean.TRUE.equals(rec.get('is_data_tier'))) {
+                  sumEcu += recEcu;
+                  if (Boolean.TRUE.equals(rec.get('has_qty'))) {
+                    double q = ((Number)rec.get('qty')).doubleValue();
+                    if (!hasQty || q > maxQty) { maxQty = q; hasQty = true; }
+                  }
+                  if (Boolean.TRUE.equals(rec.get('has_ram'))) {
+                    long r = ((Number)rec.get('ram')).longValue();
+                    if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
+                  }
+                }
+                if (Boolean.TRUE.equals(rec.get('is_ai'))) { sumAi += recEcu; }
+                if (Boolean.TRUE.equals(rec.get('is_syn'))) { sumSyn += recEcu; }
+                if (Boolean.TRUE.equals(rec.get('is_syn_ping'))) { sumSynPing += recEcu; }
+                if (Boolean.TRUE.equals(rec.get('is_syn_exec'))) { sumSynExec += recEcu; }
                 if (Boolean.TRUE.equals(rec.get('is_onprem'))) { anyOnprem = true; }
-                if (Boolean.TRUE.equals(rec.get('has_qty'))) {
-                  double q = ((Number)rec.get('qty')).doubleValue();
-                  if (!hasQty || q > maxQty) { maxQty = q; hasQty = true; }
-                }
-                if (Boolean.TRUE.equals(rec.get('has_ram'))) {
-                  long r = ((Number)rec.get('ram')).longValue();
-                  if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
-                }
                 long rTs = ((Number)rec.get('ing_ts')).longValue();
                 String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
                 if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
@@ -635,11 +589,26 @@ pivot:
                 if (isNewer) { bestTs = rTs; }
                 if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
               }
+              long resolvedGfs = 0L;
+              if (depGroup != '') {
+                long bestExplicitGfs = mergedGrpMinGfs.get(depGroup) instanceof Number ? ((Number)mergedGrpMinGfs.get(depGroup)).longValue() : 0L;
+                long grpMinIng = mergedGrpMinIng.get(depGroup) instanceof Number ? ((Number)mergedGrpMinIng.get(depGroup)).longValue() : 0L;
+                long bestReplayIng = (mergedMinBucketIng > 0L && grpMinIng > mergedMinBucketIng) ? grpMinIng : 0L;
+                resolvedGfs = bestReplayIng > bestExplicitGfs ? bestReplayIng : bestExplicitGfs;
+              }
               Map res = [
                 'doc_cnt': (long)merged.size(),
                 'ing_ts': bestTs,
+                'min_bucket_ing': mergedMinBucketIng,
+                'grp_min_ing': mergedGrpMinIng,
+                'grp_min_gfs': mergedGrpMinGfs,
                 'data_tier_capacity_ecu': sumEcu,
+                'ai_chargeable_units': sumAi,
+                'synthetics_chargeable_units': sumSyn,
+                'synthetics_pings_units': sumSynPing,
+                'synthetics_executions_units': sumSynExec,
                 'deployment_group': depGroup,
+                'group_first_seen': resolvedGfs > 0L ? resolvedGfs : null,
                 'deployment_name': depName,
                 'is_onprem': anyOnprem
               ];
@@ -648,7 +617,7 @@ pivot:
               return res;
         legacy:
           scripted_metric:
-            init_script: "state.items = new HashMap();"
+            init_script: "state.items = new HashMap(); state.min_bucket_ing = 0L; state.grp_min_ing = new HashMap(); state.grp_min_gfs = new HashMap();"
             map_script: |
               boolean isNat = false;
               try {
@@ -834,8 +803,86 @@ pivot:
               } catch (Exception e) {}
 
               boolean isOnprem = ('onprem_node'.equals(sku) || 'onprem'.equals(depType) || 'ece'.equals(depType) || 'eck'.equals(depType));
+              String skuLower = sku.toLowerCase(Locale.ROOT);
+              String bTypeLower = bType.toLowerCase(Locale.ROOT);
+              String bKindLower = bKind.toLowerCase(Locale.ROOT);
+              String depTypeLower = depType.toLowerCase(Locale.ROOT);
+              boolean isEchDataTier = 'capacity'.equals(bTypeLower) && 'elasticsearch'.equals(bKindLower) && (
+                skuLower.contains('.es.datahot.') || skuLower.contains('.es.datawarm.') ||
+                skuLower.contains('.es.datacold.') || skuLower.contains('.es.datafrozen.') ||
+                skuLower.contains('.es.datacontent.')
+              );
+              boolean isServerlessDep = (
+                'elasticsearch'.equals(depTypeLower) || 'observability'.equals(depTypeLower) ||
+                'security'.equals(depTypeLower) || 'vectordb'.equals(depTypeLower) ||
+                'search'.equals(depTypeLower) || 'serverless'.equals(depTypeLower) ||
+                'oblt'.equals(depTypeLower) || 'sec'.equals(depTypeLower) ||
+                'es'.equals(depTypeLower) || 'vector'.equals(depTypeLower) ||
+                'enterprise_search'.equals(depTypeLower)
+              );
+              boolean isServerlessInc = isServerlessDep && (
+                skuLower.contains('search-vcu') || skuLower.contains('ingest-vcu') ||
+                skuLower.contains('retained') || skuLower.contains('retention') ||
+                skuLower.startsWith('observability.') || skuLower.contains('.observability.') ||
+                skuLower.startsWith('oblt.') || skuLower.contains('.oblt.') ||
+                skuLower.startsWith('security.') || skuLower.contains('.security.') ||
+                skuLower.startsWith('sec.') || skuLower.contains('.sec.') ||
+                skuLower.startsWith('vectordb.') || skuLower.contains('.vectordb.') ||
+                skuLower.startsWith('serverless.search.') || skuLower.startsWith('search.') ||
+                skuLower.startsWith('serverless.elasticsearch.') || skuLower.startsWith('elasticsearch.') ||
+                skuLower.contains('.elasticsearch.') ||
+                skuLower.contains('ingest.ecu') || skuLower.contains('ingest_ecu') || skuLower.contains('ingest.vcu') ||
+                skuLower.contains('search.ecu') || skuLower.contains('search_ecu') || skuLower.contains('search.vcu')
+              );
+              boolean isServerlessExc = (
+                skuLower.contains('ml-vcu') || skuLower.contains('synthetic') ||
+                skuLower.contains('inference') || skuLower.contains('llm') ||
+                skuLower.contains('agent-builder') || skuLower.contains('.eis') ||
+                skuLower.contains('support') || skuLower.contains('data-transfer') ||
+                skuLower.contains('data-out') || skuLower.contains('data-in') ||
+                skuLower.contains('egress') || skuLower.contains('ingress') ||
+                skuLower.contains('snapshot') || skuLower.contains('workflow') ||
+                skuLower.contains('cross-project') || skuLower.contains('cps')
+              );
+              boolean isDataTier = 'onprem_node'.equals(sku) || isEchDataTier || (isServerlessInc && !isServerlessExc);
+              boolean isSyn = skuLower.contains('synthetic');
+              boolean isSynPing = isSyn && skuLower.contains('ping');
+              boolean isSynExec = isSyn && !isSynPing;
+              boolean isAi = !isSyn && (skuLower.contains('.es.ml.') || skuLower.contains('ml-vcu') || skuLower.contains('ml.ecu') || skuLower.contains('ml_ecu') || skuLower.contains('ml.vcu') || skuLower.contains('ml_inference') || skuLower.contains('inference') || skuLower.contains('llm') || skuLower.contains('agent-builder') || skuLower.contains('.eis'));
+
+              long docGfsMs = 0L;
+              try {
+                if (doc.containsKey('group_first_seen') && !doc['group_first_seen'].empty) {
+                  docGfsMs = doc['group_first_seen'].value.toInstant().toEpochMilli();
+                } else if (params._source?.get('group_first_seen') != null) {
+                  def rgfs = params._source.get('group_first_seen');
+                  if (rgfs instanceof Number) { docGfsMs = ((Number)rgfs).longValue(); }
+                  else {
+                    String gstr = rgfs.toString().trim();
+                    if (gstr != '') { docGfsMs = ZonedDateTime.parse(gstr).toInstant().toEpochMilli(); }
+                  }
+                }
+              } catch (Exception e) {}
+
+              if (ingTs > 0L && (state.min_bucket_ing <= 0L || ingTs < state.min_bucket_ing)) {
+                state.min_bucket_ing = ingTs;
+              }
+              if (depGroup != '') {
+                if (ingTs > 0L) {
+                  long curGm = state.grp_min_ing.get(depGroup) instanceof Number ? ((Number)state.grp_min_ing.get(depGroup)).longValue() : 0L;
+                  if (curGm <= 0L || ingTs < curGm) { state.grp_min_ing.put(depGroup, ingTs); }
+                }
+                if (docGfsMs > 0L) {
+                  long curGf = state.grp_min_gfs.get(depGroup) instanceof Number ? ((Number)state.grp_min_gfs.get(depGroup)).longValue() : 0L;
+                  if (curGf <= 0L || docGfsMs < curGf) { state.grp_min_gfs.put(depGroup, docGfsMs); }
+                }
+              }
+
               Map rec = [
                 'ing_ts': ingTs,
+                'gfs': docGfsMs,
+                'min_any_ing': ingTs,
+                'min_grp_ing': ingTs,
                 'ecu': ecu,
                 'has_qty': hasQty,
                 'qty': qty,
@@ -843,7 +890,12 @@ pivot:
                 'ram': ram,
                 'dep_group': depGroup,
                 'dep_name': depName,
-                'is_onprem': isOnprem
+                'is_onprem': isOnprem,
+                'is_data_tier': isDataTier,
+                'is_ai': isAi,
+                'is_syn': isSyn,
+                'is_syn_ping': isSynPing,
+                'is_syn_exec': isSynExec
               ];
               Map ex = (Map)state.items.get(dedupKey);
               if (ex == null) {
@@ -852,15 +904,56 @@ pivot:
                 long exTs = ((Number)ex.get('ing_ts')).longValue();
                 int newMeta = (depGroup != '' ? 2 : 0) + (depName != '' ? 1 : 0);
                 int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue())))) {
-                  state.items.put(dedupKey, rec);
+                long rMinAny = ((Number)rec.get('min_any_ing')).longValue();
+                long eMinAny = ((Number)ex.get('min_any_ing')).longValue();
+                long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+                boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ecu >= ((Number)ex.get('ecu')).doubleValue()))));
+                Map win = recWins ? rec : ex;
+                Map lose = recWins ? ex : rec;
+                win.put('min_any_ing', mergedMinAny);
+                String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+                String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+                if (wGrp != '' && wGrp.equals(lGrp)) {
+                  long wMinG = ((Number)win.get('min_grp_ing')).longValue();
+                  long lMinG = ((Number)lose.get('min_grp_ing')).longValue();
+                  if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+                  long wGfs = ((Number)win.get('gfs')).longValue();
+                  long lGfs = ((Number)lose.get('gfs')).longValue();
+                  if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+                }
+                if (recWins) {
+                  state.items.put(dedupKey, win);
                 }
               }
             combine_script: "return state;"
             reduce_script: |
               Map merged = new HashMap();
+              long mergedMinBucketIng = 0L;
+              Map mergedGrpMinIng = new HashMap();
+              Map mergedGrpMinGfs = new HashMap();
               for (def st : states) {
-                if (st == null || !(st.items instanceof Map)) { continue; }
+                if (st == null) { continue; }
+                long mbi = st.min_bucket_ing instanceof Number ? ((Number)st.min_bucket_ing).longValue() : 0L;
+                if (mbi > 0L && (mergedMinBucketIng <= 0L || mbi < mergedMinBucketIng)) {
+                  mergedMinBucketIng = mbi;
+                }
+                if (st.grp_min_ing instanceof Map) {
+                  for (def ge : ((Map)st.grp_min_ing).entrySet()) {
+                    String gk = ge.getKey().toString();
+                    long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                    long cv = mergedGrpMinIng.get(gk) instanceof Number ? ((Number)mergedGrpMinIng.get(gk)).longValue() : 0L;
+                    if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinIng.put(gk, gv); }
+                  }
+                }
+                if (st.grp_min_gfs instanceof Map) {
+                  for (def ge : ((Map)st.grp_min_gfs).entrySet()) {
+                    String gk = ge.getKey().toString();
+                    long gv = ge.getValue() instanceof Number ? ((Number)ge.getValue()).longValue() : 0L;
+                    long cv = mergedGrpMinGfs.get(gk) instanceof Number ? ((Number)mergedGrpMinGfs.get(gk)).longValue() : 0L;
+                    if (gv > 0L && (cv <= 0L || gv < cv)) { mergedGrpMinGfs.put(gk, gv); }
+                  }
+                }
+                if (!(st.items instanceof Map)) { continue; }
                 for (def e : ((Map)st.items).entrySet()) {
                   String k = e.getKey().toString();
                   Map rec = (Map)e.getValue();
@@ -872,8 +965,25 @@ pivot:
                     long exTs = ((Number)ex.get('ing_ts')).longValue();
                     int newMeta = (rec.get('dep_group') != '' ? 2 : 0) + (rec.get('dep_name') != '' ? 1 : 0);
                     int oldMeta = (ex.get('dep_group') != '' ? 2 : 0) + (ex.get('dep_name') != '' ? 1 : 0);
-                    if (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue())))) {
-                      merged.put(k, rec);
+                    long rMinAny = rec.get('min_any_ing') instanceof Number ? ((Number)rec.get('min_any_ing')).longValue() : ingTs;
+                    long eMinAny = ex.get('min_any_ing') instanceof Number ? ((Number)ex.get('min_any_ing')).longValue() : exTs;
+                    long mergedMinAny = (rMinAny > 0L && (eMinAny <= 0L || rMinAny < eMinAny)) ? rMinAny : eMinAny;
+                    boolean recWins = (ingTs > exTs || (ingTs == exTs && (newMeta > oldMeta || (newMeta == oldMeta && ((Number)rec.get('ecu')).doubleValue() >= ((Number)ex.get('ecu')).doubleValue()))));
+                    Map win = recWins ? rec : ex;
+                    Map lose = recWins ? ex : rec;
+                    win.put('min_any_ing', mergedMinAny);
+                    String wGrp = win.get('dep_group') != null ? win.get('dep_group').toString() : '';
+                    String lGrp = lose.get('dep_group') != null ? lose.get('dep_group').toString() : '';
+                    if (wGrp != '' && wGrp.equals(lGrp)) {
+                      long wMinG = win.get('min_grp_ing') instanceof Number ? ((Number)win.get('min_grp_ing')).longValue() : ((Number)win.get('ing_ts')).longValue();
+                      long lMinG = lose.get('min_grp_ing') instanceof Number ? ((Number)lose.get('min_grp_ing')).longValue() : ((Number)lose.get('ing_ts')).longValue();
+                      if (lMinG > 0L && (wMinG <= 0L || lMinG < wMinG)) { win.put('min_grp_ing', lMinG); }
+                      long wGfs = win.get('gfs') instanceof Number ? ((Number)win.get('gfs')).longValue() : 0L;
+                      long lGfs = lose.get('gfs') instanceof Number ? ((Number)lose.get('gfs')).longValue() : 0L;
+                      if (lGfs > 0L && (wGfs <= 0L || lGfs < wGfs)) { win.put('gfs', lGfs); }
+                    }
+                    if (recWins) {
+                      merged.put(k, win);
                     }
                   }
                 }
@@ -882,6 +992,10 @@ pivot:
                 return ['doc_cnt': 0L];
               }
               double sumEcu = 0.0;
+              double sumAi = 0.0;
+              double sumSyn = 0.0;
+              double sumSynPing = 0.0;
+              double sumSynExec = 0.0;
               boolean hasQty = false;
               double maxQty = 0.0;
               boolean hasRam = false;
@@ -894,16 +1008,22 @@ pivot:
               for (def recObj : merged.values()) {
                 Map rec = (Map)recObj;
                 double recEcu = ((Number)rec.get('ecu')).doubleValue();
-                sumEcu += recEcu;
+                if (Boolean.TRUE.equals(rec.get('is_data_tier'))) {
+                  sumEcu += recEcu;
+                  if (Boolean.TRUE.equals(rec.get('has_qty'))) {
+                    double q = ((Number)rec.get('qty')).doubleValue();
+                    if (!hasQty || q > maxQty) { maxQty = q; hasQty = true; }
+                  }
+                  if (Boolean.TRUE.equals(rec.get('has_ram'))) {
+                    long r = ((Number)rec.get('ram')).longValue();
+                    if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
+                  }
+                }
+                if (Boolean.TRUE.equals(rec.get('is_ai'))) { sumAi += recEcu; }
+                if (Boolean.TRUE.equals(rec.get('is_syn'))) { sumSyn += recEcu; }
+                if (Boolean.TRUE.equals(rec.get('is_syn_ping'))) { sumSynPing += recEcu; }
+                if (Boolean.TRUE.equals(rec.get('is_syn_exec'))) { sumSynExec += recEcu; }
                 if (Boolean.TRUE.equals(rec.get('is_onprem'))) { anyOnprem = true; }
-                if (Boolean.TRUE.equals(rec.get('has_qty'))) {
-                  double q = ((Number)rec.get('qty')).doubleValue();
-                  if (!hasQty || q > maxQty) { maxQty = q; hasQty = true; }
-                }
-                if (Boolean.TRUE.equals(rec.get('has_ram'))) {
-                  long r = ((Number)rec.get('ram')).longValue();
-                  if (!hasRam || r > maxRam) { maxRam = r; hasRam = true; }
-                }
                 long rTs = ((Number)rec.get('ing_ts')).longValue();
                 String rGroup = rec.get('dep_group') != null ? rec.get('dep_group').toString() : '';
                 if (rTs > bestGroupTs || (rTs == bestGroupTs && rGroup != '')) {
@@ -914,11 +1034,26 @@ pivot:
                 if (isNewer) { bestTs = rTs; }
                 if (rec.get('dep_name') != '' && (depName == '' || isNewer)) { depName = rec.get('dep_name').toString(); }
               }
+              long resolvedGfs = 0L;
+              if (depGroup != '') {
+                long bestExplicitGfs = mergedGrpMinGfs.get(depGroup) instanceof Number ? ((Number)mergedGrpMinGfs.get(depGroup)).longValue() : 0L;
+                long grpMinIng = mergedGrpMinIng.get(depGroup) instanceof Number ? ((Number)mergedGrpMinIng.get(depGroup)).longValue() : 0L;
+                long bestReplayIng = (mergedMinBucketIng > 0L && grpMinIng > mergedMinBucketIng) ? grpMinIng : 0L;
+                resolvedGfs = bestReplayIng > bestExplicitGfs ? bestReplayIng : bestExplicitGfs;
+              }
               Map res = [
                 'doc_cnt': (long)merged.size(),
                 'ing_ts': bestTs,
+                'min_bucket_ing': mergedMinBucketIng,
+                'grp_min_ing': mergedGrpMinIng,
+                'grp_min_gfs': mergedGrpMinGfs,
                 'data_tier_capacity_ecu': sumEcu,
+                'ai_chargeable_units': sumAi,
+                'synthetics_chargeable_units': sumSyn,
+                'synthetics_pings_units': sumSynPing,
+                'synthetics_executions_units': sumSynExec,
                 'deployment_group': depGroup,
+                'group_first_seen': resolvedGfs > 0L ? resolvedGfs : null,
                 'deployment_name': depName,
                 'is_onprem': anyOnprem
               ];
@@ -930,6 +1065,6 @@ settings:
   unattended: true
 _meta:
   managed: true
-  order: 4
+  order: 3
   run_as_kibana_system: false
-  fleet_transform_version: 0.7.0
+  fleet_transform_version: 0.8.0
