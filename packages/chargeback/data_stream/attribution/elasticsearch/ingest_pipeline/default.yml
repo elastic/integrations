@@ -140,6 +140,36 @@ processors:
         - _cb_fp_key
         - period_obs_ts
       ignore_missing: true
+  - script:
+      tag: drop_null_and_empty_values
+      lang: painless
+      description: Recursively removes null values, empty strings, and empty containers while preserving an explicit empty deployment_group clearing signal.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0);
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0);
+          });
+        }
+        boolean preserveEmptyGroup = ctx.containsKey('deployment_group') && ctx.deployment_group instanceof String && ctx.deployment_group == '';
+        handleMap(ctx);
+        if (preserveEmptyGroup) {
+          ctx.deployment_group = '';
+        }
 on_failure:
   - set:
       field: event.kind
