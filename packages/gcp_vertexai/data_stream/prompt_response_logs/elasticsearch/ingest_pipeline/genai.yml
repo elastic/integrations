@@ -1,0 +1,423 @@
+---
+description: Map parsed Vertex AI prompt response logs to ECS gen_ai fields.
+processors:
+  - set:
+      tag: set_gen_ai_provider_name
+      field: gen_ai.provider.name
+      value: gcp.vertex_ai
+  - script:
+      tag: script_set_gen_ai_operation_name
+      description: Map Vertex AI content-generation methods to gen_ai.operation.name. Other methods leave the field unset. event.action already holds the Vertex method.
+      lang: painless
+      if: ctx.event?.action instanceof String
+      params:
+        operations:
+          GenerateContent: generate_content
+          StreamGenerateContent: generate_content
+          BidiGenerateContent: generate_content
+          generateContent: generate_content
+          streamGenerateContent: generate_content
+          bidiGenerateContent: generate_content
+      source: |
+        def op = params.operations.get(ctx.event.action);
+        if (op != null) {
+          ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+          ctx.gen_ai.operation = ['name': op];
+        }
+  - script:
+      tag: script_set_gen_ai_request_model
+      description: Copy the model id after the last /models/ segment. A value without that segment is kept as-is.
+      lang: painless
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.model instanceof String
+      source: |
+        def r = ctx.gcp.vertexai.prompt_response_logs.model;
+        int i = r.lastIndexOf('/models/');
+        def m = i >= 0 ? r.substring(i + 8) : r;
+        if (m != '') {
+          ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+          ctx.gen_ai.request = ctx.gen_ai.request ?: new HashMap();
+          ctx.gen_ai.request.model = m;
+        }
+  - set:
+      tag: set_gen_ai_response_model
+      field: gen_ai.response.model
+      copy_from: gcp.vertexai.prompt_response_logs.full_response.model_version
+      ignore_empty_value: true
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.full_response?.model_version != null
+  - set:
+      tag: set_gen_ai_response_id
+      field: gen_ai.response.id
+      copy_from: gcp.vertexai.prompt_response_logs.full_response.response_id
+      ignore_empty_value: true
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.full_response?.response_id != null
+  - convert:
+      tag: convert_gen_ai_request_max_tokens
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.max_output_tokens
+      target_field: gen_ai.request.max_tokens
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_max_output_tokens_on_convert_failure
+            field: gcp.vertexai.prompt_response_logs.full_request.generation_config.max_output_tokens
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_gen_ai_request_temperature
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.temperature
+      target_field: gen_ai.request.temperature
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_temperature_on_convert_failure
+            field: gcp.vertexai.prompt_response_logs.full_request.generation_config.temperature
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_gen_ai_request_top_p
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.top_p
+      target_field: gen_ai.request.top_p
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_top_p_on_convert_failure
+            field: gcp.vertexai.prompt_response_logs.full_request.generation_config.top_p
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_gen_ai_request_top_k
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.top_k
+      target_field: gen_ai.request.top_k
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_top_k_on_convert_failure
+            field: gcp.vertexai.prompt_response_logs.full_request.generation_config.top_k
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_gen_ai_request_seed
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.seed
+      target_field: gen_ai.request.seed
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_seed_on_convert_failure
+            field: gcp.vertexai.prompt_response_logs.full_request.generation_config.seed
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_gen_ai_request_choice_count
+      field: gcp.vertexai.prompt_response_logs.full_request.generation_config.candidate_count
+      target_field: gen_ai.request.choice.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_candidate_count_on_convert_failure
+            field: gcp.vertexai.prompt_response_logs.full_request.generation_config.candidate_count
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_set_gen_ai_request_stop_sequences
+      description: Copy Vertex stopSequences to gen_ai.request.stop_sequences. A string becomes a one-element array.
+      lang: painless
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.full_request?.generation_config?.stop_sequences != null
+      source: |
+        def s = ctx.gcp.vertexai.prompt_response_logs.full_request.generation_config.stop_sequences;
+        List out = s instanceof List ? new ArrayList(s) : [s.toString()];
+        if (!out.isEmpty()) {
+          ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+          ctx.gen_ai.request = ctx.gen_ai.request ?: new HashMap();
+          ctx.gen_ai.request.stop_sequences = out;
+        }
+  - script:
+      tag: script_set_gen_ai_output_type
+      description: Map generationConfig.responseMimeType to gen_ai.output.type when it is text or JSON.
+      lang: painless
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.full_request?.generation_config?.response_mime_type instanceof String
+      source: |
+        def t = ctx.gcp.vertexai.prompt_response_logs.full_request.generation_config.response_mime_type.toLowerCase();
+        def mapped = null;
+        if (t.contains('json')) { mapped = 'json'; }
+        else if (t.startsWith('text/')) { mapped = 'text'; }
+        if (mapped != null) {
+          ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+          ctx.gen_ai.output = ctx.gen_ai.output ?: new HashMap();
+          ctx.gen_ai.output.type = mapped;
+        }
+  - script:
+      tag: script_set_gen_ai_usage_tokens
+      description: >-
+        Copy Gemini promptTokenCount to gen_ai.usage.input_tokens. Output tokens are
+        candidatesTokenCount plus thoughtsTokenCount.
+      lang: painless
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.full_response?.usage_metadata instanceof Map
+      source: |
+        def u = ctx.gcp.vertexai.prompt_response_logs.full_response.usage_metadata;
+        ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+        ctx.gen_ai.usage = ctx.gen_ai.usage ?: new HashMap();
+        if (u.prompt_token_count instanceof Number) {
+          ctx.gen_ai.usage.input_tokens = ((Number) u.prompt_token_count).longValue();
+        }
+        long out = 0;
+        boolean has = false;
+        if (u.candidates_token_count instanceof Number) {
+          out += ((Number) u.candidates_token_count).longValue();
+          has = true;
+        }
+        if (u.thoughts_token_count instanceof Number) {
+          out += ((Number) u.thoughts_token_count).longValue();
+          has = true;
+        }
+        if (has) { ctx.gen_ai.usage.output_tokens = out; }
+  - script:
+      tag: script_normalize_gemini_messages
+      description: >-
+        Normalize Gemini contents and candidates into the OTel GenAI message shape.
+        systemInstruction becomes gen_ai.system_instructions. Role model becomes assistant.
+        thought parts become reasoning. Function responses become role tool messages.
+        Tool name, type, and call id arrays list only the response function calls.
+      lang: painless
+      if: ctx.gcp?.vertexai?.prompt_response_logs?.full_request?.contents instanceof List || ctx.gcp?.vertexai?.prompt_response_logs?.full_response?.candidates instanceof List || ctx.gcp?.vertexai?.prompt_response_logs?.full_request?.system_instruction != null
+      params:
+        finish_reasons:
+          STOP: stop
+          MAX_TOKENS: length
+          SAFETY: content_filter
+          RECITATION: content_filter
+          BLOCKLIST: content_filter
+          PROHIBITED_CONTENT: content_filter
+          SPII: content_filter
+          MALFORMED_FUNCTION_CALL: error
+      source: |
+        List textParts(def parts) {
+          List out = new ArrayList();
+          if (!(parts instanceof List)) { return out; }
+          for (def p : parts) {
+            if (!(p instanceof Map)) { continue; }
+            if (p.thought == true && p.text != null) {
+              out.add(['type': 'reasoning', 'content': p.text]);
+            } else if (p.text != null) {
+              out.add(['type': 'text', 'content': p.text]);
+            }
+          }
+          return out;
+        }
+        Map toolCall(def fc) {
+          Map p = ['type': 'tool_call', 'name': fc.name];
+          if (fc.id != null) { p.id = fc.id; }
+          if (fc.args != null) { p.arguments = fc.args; }
+          return p;
+        }
+        Map g = ctx.gen_ai instanceof Map ? ctx.gen_ai : new HashMap();
+        def req = ctx.gcp?.vertexai?.prompt_response_logs?.full_request;
+        def resp = ctx.gcp?.vertexai?.prompt_response_logs?.full_response;
+        if (req?.system_instruction?.parts instanceof List) {
+          List sys = textParts(req.system_instruction.parts);
+          if (!sys.isEmpty()) { g.system_instructions = sys; }
+        }
+        List defs = new ArrayList();
+        for (def tool : req?.tools ?: []) {
+          if (!(tool instanceof Map)) { continue; }
+          for (def fd : tool.function_declarations ?: []) {
+            if (!(fd instanceof Map) || fd.name == null) { continue; }
+            Map d = ['type': 'function', 'name': fd.name];
+            if (fd.description != null) { d.description = fd.description; }
+            if (fd.parameters != null) { d.parameters = fd.parameters; }
+            defs.add(d);
+          }
+        }
+        if (!defs.isEmpty()) {
+          g.tool = g.tool instanceof Map ? g.tool : new HashMap();
+          g.tool.definitions = defs;
+        }
+        List input = new ArrayList();
+        for (def c : req?.contents ?: []) {
+          if (!(c instanceof Map)) { continue; }
+          String role = c.role == 'model' ? 'assistant' : (c.role == null || c.role == '' ? 'user' : c.role);
+          List parts = new ArrayList();
+          List toolParts = new ArrayList();
+          for (def p : c.parts ?: []) {
+            if (!(p instanceof Map)) { continue; }
+            if (p.function_response instanceof Map) {
+              def fr = p.function_response;
+              Map rp = ['type': 'tool_call_response', 'name': fr.name];
+              if (fr.id != null) { rp.id = fr.id; }
+              if (fr.response != null) { rp.response = fr.response; }
+              toolParts.add(rp);
+            } else if (p.function_call instanceof Map) {
+              parts.add(toolCall(p.function_call));
+            } else if (p.thought == true && p.text != null) {
+              parts.add(['type': 'reasoning', 'content': p.text]);
+            } else if (p.text != null) {
+              parts.add(['type': 'text', 'content': p.text]);
+            }
+          }
+          if (role != null && !parts.isEmpty()) { input.add(['role': role, 'parts': parts]); }
+          if (!toolParts.isEmpty()) { input.add(['role': 'tool', 'parts': toolParts]); }
+        }
+        if (!input.isEmpty()) { g.input = ['messages': input]; }
+        List output = new ArrayList();
+        List reasons = new ArrayList();
+        List toolNames = new ArrayList();
+        List toolIds = new ArrayList();
+        for (def cand : resp?.candidates ?: []) {
+          if (!(cand instanceof Map)) { continue; }
+          def content = cand.content instanceof Map ? cand.content : new HashMap();
+          String role = content.role == 'model' || content.role == null ? 'assistant' : content.role;
+          List parts = new ArrayList();
+          for (def p : content.parts ?: []) {
+            if (!(p instanceof Map)) { continue; }
+            if (p.function_call instanceof Map) {
+              parts.add(toolCall(p.function_call));
+              if (p.function_call.name != null) { toolNames.add(p.function_call.name); }
+              if (p.function_call.id != null) { toolIds.add(p.function_call.id); }
+            } else if (p.thought == true && p.text != null) {
+              parts.add(['type': 'reasoning', 'content': p.text]);
+            } else if (p.text != null) {
+              parts.add(['type': 'text', 'content': p.text]);
+            }
+          }
+          Map om = ['role': role, 'parts': parts];
+          if (cand.finish_reason != null) {
+            om.finish_reason = params.finish_reasons.getOrDefault(cand.finish_reason, cand.finish_reason);
+            reasons.add(om.finish_reason);
+          }
+          output.add(om);
+        }
+        if (!output.isEmpty()) {
+          def outputType = g.output instanceof Map ? g.output.type : null;
+          g.output = ['messages': output];
+          if (outputType != null) { g.output.type = outputType; }
+        }
+        if (!reasons.isEmpty()) {
+          g.response = g.response instanceof Map ? g.response : new HashMap();
+          g.response.finish_reasons = reasons;
+        }
+        if (!toolNames.isEmpty()) {
+          g.tool = g.tool instanceof Map ? g.tool : new HashMap();
+          g.tool.name = toolNames;
+          List toolTypes = new ArrayList();
+          for (def n : toolNames) { toolTypes.add('function'); }
+          g.tool.type = toolTypes;
+          if (toolIds.size() == toolNames.size()) { g.tool.call = ['id': toolIds]; }
+        }
+        if (!g.isEmpty()) { ctx.gen_ai = g; }
+  - script:
+      tag: script_drop_empty_values_keep_tool_definitions
+      description: >-
+        Drop null and empty values recursively. gen_ai.tool.definitions is left
+        out, because empty and null values in a tool's parameter schema are
+        part of the tool interface.
+      lang: painless
+      source: |
+        boolean opaque(def key) {
+          return key == 'args' || key == 'arguments' || key == 'response' || key == 'parameters' || key == 'parametersJsonSchema' || key == 'parameters_json_schema' || key == 'responseJsonSchema' || key == 'response_json_schema';
+        }
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            Map m = (Map) o;
+            for (def key : new ArrayList(m.keySet())) {
+              if (opaque(key)) { continue; }
+              if (drop(m.get(key))) { m.remove(key); }
+            }
+            return m.size() == 0;
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return ((List) o).size() == 0;
+          }
+          return false;
+        }
+        def defs = null;
+        if (ctx.gen_ai?.tool instanceof Map && ctx.gen_ai.tool.definitions != null) {
+          defs = ctx.gen_ai.tool.remove('definitions');
+        }
+        drop(ctx);
+        if (defs != null) {
+          if (!(ctx.gen_ai instanceof Map)) { ctx.gen_ai = new HashMap(); }
+          if (!(ctx.gen_ai.tool instanceof Map)) { ctx.gen_ai.tool = new HashMap(); }
+          ctx.gen_ai.tool.definitions = defs;
+        }
+  - script:
+      tag: script_cap_flattened_depth
+      description: >-
+        A flattened field rejects the whole document when an object is nested
+        more than 20 levels deep. Store any object below max_depth levels as a
+        JSON string. Values within the limit are unchanged.
+      lang: painless
+      params:
+        max_depth: 20
+        fields:
+          - [gen_ai, input, messages]
+          - [gen_ai, output, messages]
+          - [gen_ai, system_instructions]
+          - [gen_ai, tool, definitions]
+          - [gcp, vertexai, prompt_response_logs, full_request, tools]
+          - [gcp, vertexai, prompt_response_logs, full_request, contents, parts, function_call]
+          - [gcp, vertexai, prompt_response_logs, full_request, contents, parts, function_response]
+          - [gcp, vertexai, prompt_response_logs, full_response, candidates, content, parts, function_call]
+      source: |
+        int objectDepth(def v) {
+          int d = 0;
+          if (v instanceof Map) {
+            for (def x : v.values()) { d = (int) Math.max(d, objectDepth(x)); }
+            return d + 1;
+          }
+          if (v instanceof List) {
+            for (def x : v) { d = (int) Math.max(d, objectDepth(x)); }
+          }
+          return d;
+        }
+        def cap(def v, int level, int maxDepth) {
+          if (v instanceof Map) {
+            if (level > maxDepth) { return Json.dump(v); }
+            Map out = new HashMap();
+            for (def e : v.entrySet()) { out.put(e.getKey(), cap(e.getValue(), level + 1, maxDepth)); }
+            return out;
+          }
+          if (v instanceof List) {
+            List out = new ArrayList();
+            for (def x : v) { out.add(cap(x, level, maxDepth)); }
+            return out;
+          }
+          return v;
+        }
+        boolean applyCap(def current, List path, int index, int maxDepth) {
+          if (current == null || index >= path.size()) { return false; }
+          if (current instanceof List) {
+            for (def item : (List) current) { applyCap(item, path, index, maxDepth); }
+            return false;
+          }
+          if (!(current instanceof Map)) { return false; }
+          Map cur = (Map) current;
+          String key = path.get(index);
+          if (index == path.size() - 1) {
+            def v = cur.get(key);
+            if (v != null && objectDepth(v) > maxDepth) {
+              cur.put(key, cap(v, 1, maxDepth));
+            }
+            return false;
+          }
+          applyCap(cur.get(key), path, index + 1, maxDepth);
+          return false;
+        }
+        for (def path : params.fields) { applyCap(ctx, path, 0, params.max_depth); }
