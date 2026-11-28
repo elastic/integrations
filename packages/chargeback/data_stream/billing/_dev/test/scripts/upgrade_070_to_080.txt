@@ -1,0 +1,268 @@
+# End-to-end 0.7.0 -> 0.8.0 Fleet registry upgrade test verifying:
+# - All three additive 0.7.0 transforms (chargeback_currency_lookup, billing_enrichment,
+#   usage_deployment_metadata) exist on 0.7.0 prior to upgrade and are removed after
+#   upgrading in place to 0.8.0.
+# - Historical enrichment (AI/Synthetics pools, group_first_seen) and usage deployment
+#   labels (deployment_name, deployment_group) seeded in 0.7.0 dest_*-1 indices are
+#   preserved in consolidated dest_*-2 indices via the documented _reindex + enrich-merge
+#   migration by composite_key.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:sh] skip 'Skipping test requiring absent sh command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+exec sh scripts/cleanup.sh
+
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} cb-mock
+
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 0.7.0
+
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 0.7.0 test_config.yaml DATA_STREAM_NAME
+
+# Wait for initial 0.7.0 billing + config_snapshot ingestion, then clear the 60s
+# transform sync.time.delay so _schedule_now processes the ingested documents.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+sleep 65s
+
+# Confirm all three 0.7.0 additive transforms exist and seed historical lookup/enrichment/metadata rows.
+exec sh scripts/prepare_070.sh
+
+# Upgrade package + policy in place to local 0.8.0 build.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+# Verify removal of the three retired 0.7.0 transforms and historical enrichment/metadata preservation.
+exec sh scripts/verify_080_from_070.sh
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down cb-mock
+
+# Final stack cleanup and restore the local 0.8.0 package so subsequent test suites can run against it.
+exec sh scripts/cleanup.sh
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+-- scripts/cleanup.sh --
+#!/bin/sh
+set -e
+CA="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+KBN="https://localhost:5601"
+ES="https://localhost:9200"
+
+POLS=$(curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" "$KBN/api/fleet/package_policies?perPage=100" | jq -r '[.items[]? | select(.package.name == "chargeback") | .id] | @json')
+if [ "$POLS" != "[]" ] && [ -n "$POLS" ]; then
+  curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" -H "Content-Type: application/json" -X POST "$KBN/api/fleet/package_policies/delete" -d "{\"packagePolicyIds\":$POLS}" >/dev/null || true
+fi
+
+VER=$(curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" "$KBN/api/fleet/epm/packages/chargeback" | jq -r 'if .item.status == "installed" then .item.version else "" end')
+if [ -n "$VER" ]; then
+  curl -sS -u elastic:changeme --cacert "$CA" -H "kbn-xsrf: true" -X DELETE "$KBN/api/fleet/epm/packages/chargeback-${VER}" >/dev/null || true
+fi
+
+for tid in $(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.*" | jq -r '.transforms[]?.id'); do
+  curl -sS -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${tid}/_stop?force=true&wait_for_completion=true" >/dev/null || true
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_transform/${tid}" >/dev/null || true
+done
+
+for p in cb-migrate-billing-enrichment cb-migrate-usage-metadata; do
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_ingest/pipeline/${p}" >/dev/null || true
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_enrich/policy/${p}" >/dev/null || true
+done
+
+for ds in $(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_data_stream/logs-chargeback.*,metrics-chargeback.*" | jq -r '.data_streams[]?.name'); do
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_data_stream/${ds}" >/dev/null || true
+done
+for idx in $(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_cat/indices/chargeback_lookup.*,cluster_capacity_utilization_lookup?format=json" | jq -r 'if type=="array" then .[]?.index else empty end'); do
+  curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/${idx}" >/dev/null || true
+done
+
+-- scripts/prepare_070.sh --
+#!/bin/sh
+set -e
+CA="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+ES="https://localhost:9200"
+
+# Confirm all three additive 0.7.0 transforms exist prior to upgrade.
+for name in chargeback_currency_lookup billing_enrichment usage_deployment_metadata; do
+  TID=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.${name}-default-*" | jq -r '.transforms[0].id')
+  [ -n "$TID" ] && [ "$TID" != "null" ]
+done
+
+# Seed historical (expired raw ILM) 0.7.0 rows in primary and additive -1 lookup indices.
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_billing_realized_pool-1/_doc/aged_pool?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","deployment_id":"dep-aged","deployment_name":"aged-existing","deployment_group":"team-existing","is_onprem":false,"data_tier_capacity_ecu":100.0,"realized_chargeable_units":100.0,"total_chargeable_units":100.0}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_billing_enrichment-1/_doc/aged_enr?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","deployment_id":"dep-aged","deployment_name":"aged-existing","deployment_group":"team-existing","ai_chargeable_units":4.5,"synthetics_chargeable_units":1.2,"synthetics_pings_units":1.2,"synthetics_executions_units":0.0,"group_first_seen":"2026-01-15T00:00:00Z"}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_cluster_deployment_contribution-1/_doc/aged_dep?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","cluster_name":"dep-aged","deployment_id":"dep-aged","usage_source":"native","deployment_sum_indexing_time":120,"deployment_sum_query_time":240,"deployment_sum_store_size":4096,"deployment_sum_data_set_store_size":2048}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_usage_deployment_metadata-1/_doc/aged_meta?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","cluster_name":"dep-aged","deployment_id":"dep-aged","deployment_name":"aged-existing","deployment_group":"team-existing"}' >/dev/null
+
+-- scripts/verify_080_from_070.sh --
+#!/bin/sh
+set -e
+CA="${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem"
+ES="https://localhost:9200"
+
+# 1. Verify all three retired 0.7.0 transforms were removed on upgrade to 0.8.0.
+for retired in chargeback_currency_lookup billing_enrichment usage_deployment_metadata; do
+  RC=$(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.${retired}-default-*" | jq -r '.transforms | length // 0')
+  [ "$RC" = "0" ]
+done
+
+# 2. Materialize consolidated dest_*-2 indices via transforms (or managed templates when billing-only).
+TID_POOL=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.billing_realized_pool-default-*" | jq -r '.transforms[0].id')
+TID_DEP=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_deployment_contribution-default-*" | jq -r '.transforms[0].id')
+[ -n "$TID_POOL" ] && [ "$TID_POOL" != "null" ]
+[ -n "$TID_DEP" ] && [ "$TID_DEP" != "null" ]
+
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_POOL}/_schedule_now" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_transform/${TID_DEP}/_schedule_now" >/dev/null
+
+i=0
+all_ok="0"
+while [ "$i" -lt 45 ]; do
+  a_pool=$(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.billing_realized_pool" | jq -c 'keys | sort' 2>/dev/null || echo '[]')
+  if [ "$a_pool" = '["chargeback_lookup.dest_billing_realized_pool-2"]' ]; then
+    all_ok="1"
+    break
+  fi
+  i=$((i + 1))
+  sleep 2
+done
+[ "$all_ok" = "1" ]
+
+DEP2_CODE=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2/_mapping")
+if [ "$DEP2_CODE" != "200" ]; then
+  curl -sSf -u elastic:changeme --cacert "$CA" -X PUT "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2" >/dev/null
+  curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_aliases" -d '{"actions":[{"add":{"index":"chargeback_lookup.dest_cluster_deployment_contribution-2","alias":"chargeback_lookup.cluster_deployment_contribution"}}]}' >/dev/null
+fi
+
+# 3. Execute documented 0.7.0 -> 0.8.0 _reindex + enrich-merge migration by composite_key.
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_reindex?refresh=true" -d '{"source":{"index":"chargeback_lookup.dest_billing_realized_pool-1","query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}},"dest":{"index":"chargeback_lookup.dest_billing_realized_pool-2","op_type":"create"},"conflicts":"proceed"}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_reindex?refresh=true" -d '{"source":{"index":"chargeback_lookup.dest_cluster_deployment_contribution-1","query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}},"dest":{"index":"chargeback_lookup.dest_cluster_deployment_contribution-2","op_type":"create"},"conflicts":"proceed"}' >/dev/null
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_enrich/policy/cb-migrate-billing-enrichment" -d '{"match":{"indices":"chargeback_lookup.dest_billing_enrichment-1","match_field":"composite_key","enrich_fields":["ai_chargeable_units","synthetics_chargeable_units","synthetics_pings_units","synthetics_executions_units","group_first_seen"]}}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_enrich/policy/cb-migrate-billing-enrichment/_execute" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_ingest/pipeline/cb-migrate-billing-enrichment" -d '{"processors":[{"enrich":{"policy_name":"cb-migrate-billing-enrichment","field":"composite_key","target_field":"_enr","ignore_missing":true}},{"script":{"lang":"painless","source":"if (ctx._enr instanceof Map) { for (String k : [\u0027ai_chargeable_units\u0027, \u0027synthetics_chargeable_units\u0027, \u0027synthetics_pings_units\u0027, \u0027synthetics_executions_units\u0027, \u0027group_first_seen\u0027]) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove(\u0027_enr\u0027); }"}}]}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/chargeback_lookup.dest_billing_realized_pool-2/_update_by_query?pipeline=cb-migrate-billing-enrichment&refresh=true" -d '{"query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}}' >/dev/null
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_enrich/policy/cb-migrate-usage-metadata" -d '{"match":{"indices":"chargeback_lookup.dest_usage_deployment_metadata-1","match_field":"composite_key","enrich_fields":["deployment_name","deployment_group"]}}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_enrich/policy/cb-migrate-usage-metadata/_execute" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_ingest/pipeline/cb-migrate-usage-metadata" -d '{"processors":[{"enrich":{"policy_name":"cb-migrate-usage-metadata","field":"composite_key","target_field":"_enr","ignore_missing":true}},{"script":{"lang":"painless","source":"if (ctx._enr instanceof Map) { for (String k : [\u0027deployment_name\u0027, \u0027deployment_group\u0027]) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove(\u0027_enr\u0027); }"}}]}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2/_update_by_query?pipeline=cb-migrate-usage-metadata&refresh=true" -d '{"query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}}' >/dev/null
+
+# 4. Verify historical enrichment & usage metadata are preserved on the migrated -2 rows.
+curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_realized_pool-2/_doc/aged_pool" > pool_doc.json
+jq -e '._source.ai_chargeable_units == 4.5 and ._source.synthetics_chargeable_units == 1.2 and ._source.synthetics_pings_units == 1.2 and ._source.group_first_seen == "2026-01-15T00:00:00Z"' pool_doc.json >/dev/null || { cat pool_doc.json >&2; exit 1; }
+
+curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2/_doc/aged_dep" > dep_doc.json
+jq -e '._source.deployment_name == "aged-existing" and ._source.deployment_group == "team-existing" and ._source.deployment_sum_indexing_time == 120' dep_doc.json >/dev/null || { cat dep_doc.json >&2; exit 1; }
+
+# 5. Clean up temporary migration pipelines and enrich policies.
+for p in cb-migrate-billing-enrichment cb-migrate-usage-metadata; do
+  curl -sSf -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_ingest/pipeline/${p}" >/dev/null
+  curl -sSf -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_enrich/policy/${p}" >/dev/null
+done
+
+-- test_config.yaml --
+input: cel
+vars:
+  organization_id: "1111"
+  cloud_api_key: cloud-key
+  billing_api_base: http://cb-mock:8080
+  cloud_api_base: http://cb-mock:8080
+  sync_fleet_config: false
+  enable_request_tracer: false
+data_stream:
+  vars:
+    lookbehind: 1
+    collect_ess_credits: false
+    unit_rate: "0.85"
+    currency_unit: EUR
+-- cb-mock/docker-compose.yml --
+version: '2.3'
+services:
+  cb-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: cb-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- cb-mock/config.yml --
+rules:
+  - path: /api/v1/deployments/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"deployments":[{"id":"dep-ech-01","name":"prod-observability","metadata":{"tags":[{"key":"chargeback_group","value":"team-existing"}]}}],"total":1}
+
+  - path: /api/v1/serverless/projects/elasticsearch
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/observability
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/security
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v1/serverless/projects/vectordb
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"items":[],"next_page":""}
+
+  - path: /api/v2/billing/organizations/1111/costs/instances
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"total_ecu":7.3728,"instances":[{"id":"dep-ech-01","name":"prod-observability","type":"deployment","total_ecu":7.3728,"product_line_items":[{"sku":"aws.es.datahot.c6gd_us-east-1_4096_2","type":"capacity","kind":"elasticsearch","total_ecu":7.3728,"quantity":{"value":24.0}}]}]}

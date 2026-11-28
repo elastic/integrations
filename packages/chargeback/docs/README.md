@@ -334,6 +334,102 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
    ```
 
    Run the same range-filtered `_reindex` from `chargeback_lookup.dest_billing_realized_pool-1` to `chargeback_lookup.dest_billing_realized_pool-2` (filtering `@timestamp` earlier than your earliest retained raw billing timestamp) if raw billing retention is shorter than your lookup history.
+
+   If you are upgrading from **0.7.0** with raw history older than your ILM retention, merge the historical `0.7.0` enrichment fields (`ai_chargeable_units`, `synthetics_chargeable_units`, `synthetics_pings_units`, `synthetics_executions_units`, `group_first_seen`) from `chargeback_lookup.dest_billing_enrichment-1` into `chargeback_lookup.dest_billing_realized_pool-2` and the historical usage deployment labels (`deployment_name`, `deployment_group`) from `chargeback_lookup.dest_usage_deployment_metadata-1` into `chargeback_lookup.dest_cluster_deployment_contribution-2` by `composite_key` before deleting the `-1` indices:
+
+   ```json
+   PUT /_enrich/policy/cb-migrate-billing-enrichment
+   {
+     "match": {
+       "indices": "chargeback_lookup.dest_billing_enrichment-1",
+       "match_field": "composite_key",
+       "enrich_fields": [
+         "ai_chargeable_units",
+         "synthetics_chargeable_units",
+         "synthetics_pings_units",
+         "synthetics_executions_units",
+         "group_first_seen"
+       ]
+     }
+   }
+
+   POST /_enrich/policy/cb-migrate-billing-enrichment/_execute
+
+   PUT /_ingest/pipeline/cb-migrate-billing-enrichment
+   {
+     "processors": [
+       {
+         "enrich": {
+           "policy_name": "cb-migrate-billing-enrichment",
+           "field": "composite_key",
+           "target_field": "_enr",
+           "ignore_missing": true
+         }
+       },
+       {
+         "script": {
+           "lang": "painless",
+           "source": "if (ctx._enr instanceof Map) { for (String k : ['ai_chargeable_units', 'synthetics_chargeable_units', 'synthetics_pings_units', 'synthetics_executions_units', 'group_first_seen']) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove('_enr'); }"
+         }
+       }
+     ]
+   }
+
+   POST /chargeback_lookup.dest_billing_realized_pool-2/_update_by_query?pipeline=cb-migrate-billing-enrichment&refresh=true
+   {
+     "query": {
+       "range": {
+         "@timestamp": {
+           "lt": "<earliest-retained-raw-billing-timestamp>"
+         }
+       }
+     }
+   }
+
+   PUT /_enrich/policy/cb-migrate-usage-metadata
+   {
+     "match": {
+       "indices": "chargeback_lookup.dest_usage_deployment_metadata-1",
+       "match_field": "composite_key",
+       "enrich_fields": ["deployment_name", "deployment_group"]
+     }
+   }
+
+   POST /_enrich/policy/cb-migrate-usage-metadata/_execute
+
+   PUT /_ingest/pipeline/cb-migrate-usage-metadata
+   {
+     "processors": [
+       {
+         "enrich": {
+           "policy_name": "cb-migrate-usage-metadata",
+           "field": "composite_key",
+           "target_field": "_enr",
+           "ignore_missing": true
+         }
+       },
+       {
+         "script": {
+           "lang": "painless",
+           "source": "if (ctx._enr instanceof Map) { for (String k : ['deployment_name', 'deployment_group']) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove('_enr'); }"
+         }
+       }
+     ]
+   }
+
+   POST /chargeback_lookup.dest_cluster_deployment_contribution-2/_update_by_query?pipeline=cb-migrate-usage-metadata&refresh=true
+   {
+     "query": {
+       "range": {
+         "@timestamp": {
+           "lt": "<earliest-retained-raw-usage-timestamp>"
+         }
+       }
+     }
+   }
+   ```
+
+   After verifying the merged rows in `-2`, remove the temporary migration pipelines and enrich policies (`DELETE /_ingest/pipeline/cb-migrate-billing-enrichment`, `DELETE /_enrich/policy/cb-migrate-billing-enrichment`, `DELETE /_ingest/pipeline/cb-migrate-usage-metadata`, `DELETE /_enrich/policy/cb-migrate-usage-metadata`).
 5. **Post-upgrade cleanup:** After verifying that `chargeback_lookup.chargeback_conf`, `chargeback_lookup.billing_realized_pool`, and `chargeback_lookup.cluster_deployment_contribution` point to their `-2` indices and contain your expected configuration and historical rows, delete the retired `-1` indices (`chargeback_lookup.dest_chargeback_conf-1`, `chargeback_lookup.dest_billing_realized_pool-1`, `chargeback_lookup.dest_cluster_deployment_contribution-1`, and if upgrading from `0.7.0`, `chargeback_lookup.dest_chargeback_currency-1`, `chargeback_lookup.dest_billing_enrichment-1`, and `chargeback_lookup.dest_usage_deployment_metadata-1`) to reclaim cluster shards.
 
 ### Upgrading to 0.7.0
