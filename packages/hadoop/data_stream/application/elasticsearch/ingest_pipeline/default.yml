@@ -2,86 +2,110 @@
 description: Pipeline for parsing Hadoop Application metrics
 processors:
   - set:
+      tag: set_ecs_version_c06323ef
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_type_3a3c6868
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_c42602af
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_bab7baaa
       field: event.module
       value: httpjson
   - set:
+      tag: set_event_category_1865ff50
       field: event.category
       value: [database]
   - rename:
+      tag: rename_message_cbae1d24
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_7fcee32a
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_0b7534b6
       field: event.original
       target_field: json
       ignore_failure: true
   - rename:
+      tag: rename_json_id_20ee9b93
       field: json.id
       target_field: hadoop.application.id
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_progress_d40cc014
       field: json.progress
       target_field: hadoop.application.progress
       ignore_missing: true
       ignore_failure: true
   - date:
+      tag: date_json_startedTime_b7d79f4a
       field: json.startedTime
       target_field: hadoop.application.time.started
       formats:
         - UNIX_MS
       ignore_failure: true
   - date:
+      tag: date_json_finishedTime_62d5c5a6
       field: json.finishedTime
       target_field: hadoop.application.time.finished
       formats:
         - UNIX_MS
       ignore_failure: true
   - rename:
+      tag: rename_json_elapsedTime_74422691
       field: json.elapsedTime
       target_field: hadoop.application.time.elapsed
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_allocatedMB_40c33a58
       field: json.allocatedMB
       target_field: hadoop.application.allocated.mb
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_allocatedVCores_e93366f5
       field: json.allocatedVCores
       target_field: hadoop.application.allocated.v_cores
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_runningContainers_ce2a900f
       field: json.runningContainers
       target_field: hadoop.application.running_containers
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_memorySeconds_73f6b7ee
       field: json.memorySeconds
       target_field: hadoop.application.memory_seconds
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_vcoreSeconds_44ca0841
       field: json.vcoreSeconds
       target_field: hadoop.application.vcore_seconds
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_json_d872337b
       field: json
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_e4fe1036
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -100,5 +124,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_5093e1db
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_b18a6b86
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

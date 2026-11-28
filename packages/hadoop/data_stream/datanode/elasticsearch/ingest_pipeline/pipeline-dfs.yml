@@ -2,16 +2,27 @@
 description: Pipeline for parsing Hadoop Datanode Dfs metrics
 processors:
   - rename:
+      tag: rename_hadoop_datanode_temp_BytesRead_346e6e9f
       field: hadoop.datanode.temp.BytesRead
       target_field: hadoop.datanode.bytes.read
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_hadoop_datanode_temp_BytesWritten_ff9d4572
       field: hadoop.datanode.temp.BytesWritten
       target_field: hadoop.datanode.bytes.written
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_45e903ce
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_75028f71
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

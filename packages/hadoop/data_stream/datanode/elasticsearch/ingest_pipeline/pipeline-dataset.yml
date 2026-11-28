@@ -2,56 +2,67 @@
 description: Pipeline for parsing Hadoop Datanode Dataset metrics
 processors:
   - rename: 
+      tag: rename_hadoop_datanode_temp_CacheCapacity_df668002
       field: hadoop.datanode.temp.CacheCapacity
       target_field: hadoop.datanode.cache.capacity
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_CacheUsed_c5beacd2
       field: hadoop.datanode.temp.CacheUsed
       target_field: hadoop.datanode.cache.used
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_NumBlocksCached_e64263c8
       field: hadoop.datanode.temp.NumBlocksCached
       target_field: hadoop.datanode.blocks.cached
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_EstimatedCapacityLostTotal_fd65e6c7
       field: hadoop.datanode.temp.EstimatedCapacityLostTotal
       target_field: hadoop.datanode.estimated_capacity_lost_total
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_Capacity_4ad12374
       field: hadoop.datanode.temp.Capacity
       target_field: hadoop.datanode.disk_space.capacity
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_Remaining_6e66a28d
       field: hadoop.datanode.temp.Remaining
       target_field: hadoop.datanode.disk_space.remaining
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_DfsUsed_d983e6bd
       field: hadoop.datanode.temp.DfsUsed
       target_field: hadoop.datanode.dfs_used
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_NumBlocksFailedToCache_38342f41
       field: hadoop.datanode.temp.NumBlocksFailedToCache
       target_field: hadoop.datanode.blocks.failed.to_cache
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_NumBlocksFailedToUnCache_59a49ad3
       field: hadoop.datanode.temp.NumBlocksFailedToUnCache
       target_field: hadoop.datanode.blocks.failed.to_uncache
       ignore_missing: true
       ignore_failure: true
   - rename: 
+      tag: rename_hadoop_datanode_temp_NumFailedVolumes_ed8317f9
       field: hadoop.datanode.temp.NumFailedVolumes
       target_field: hadoop.datanode.volumes.failed
       ignore_missing: true
       ignore_failure: true
   - date: 
+      tag: date_hadoop_datanode_temp_LastVolumeFailureDate_f2c34677
       field: hadoop.datanode.temp.LastVolumeFailureDate
       target_field: hadoop.datanode.last_volume_failure_date
       formats:
@@ -59,5 +70,14 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_9754165a
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_789d7ade
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

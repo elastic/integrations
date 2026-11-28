@@ -2,29 +2,37 @@
 description: Pipeline for parsing Hadoop Cluster metrics
 processors:
   - set:
+      tag: set_ecs_version_8e606f2c
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_type_a634001e
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_f67aeb77
       field: event.kind
       value: metric
   - set:
+      tag: set_event_category_4cd917d3
       field: event.category
       value: [database]
   - rename:
+      tag: rename_http_35da98b0
       field: http
       target_field: hadoop
       ignore_missing: true
       ignore_failure: true
   - pipeline:
+      tag: pipeline_75233570
       if: ctx.hadoop.cluster.containsKey('beans')
       name: '{{ IngestPipeline "pipeline-cluster" }}' 
   - pipeline:
+      tag: pipeline_8d7440c9
       if: ctx.hadoop.cluster.containsKey('clusterMetrics')
       name: '{{ IngestPipeline "pipeline-expanded-cluster" }}'
   - script:
+      tag: script_8f2a83af
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -43,5 +51,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_45910b9f
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_25401d30
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
