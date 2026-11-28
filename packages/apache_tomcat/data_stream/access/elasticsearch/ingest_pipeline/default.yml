@@ -2,39 +2,53 @@
 description: Pipeline for processing Apache Tomcat Access logs.
 processors:
   - set:
+      tag: set_ecs_version_cfa87635
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_88c64aac
       field: event.kind
       value: event
   - set:
+      tag: set_event_module_76b29b17
       field: event.module
       value: apache_tomcat
   - set:
+      tag: set_event_category_cf2be8de
       field: event.category
       value: [web]
   - set:
+      tag: set_event_type_8fc081b6
       field: event.type
       value: [access]
   - rename:
+      tag: rename_message_8339294c
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_c5847fec
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - dissect:
       field: event.original
       tag: 'dissect_event_original'
       pattern: '%{_tmp.sourceorusername} %{apache_tomcat.access.http.ident} %{apache_tomcat.access.http.useragent} [%{_tmp.timestamp}] "%{_tmp.dissect_request}" %{_tmp.dissectgrok}'
       on_failure:
         - append:
+            tag: append_error_message_481e29e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dissect:
+      tag: dissect_tmp_dissect_request_a6fa46f6
       field: _tmp.dissect_request
       pattern: '%{http.request.method} %{url.original} HTTP/%{http.version}'
       if: ctx._tmp?.dissect_request != null && ctx._tmp.dissect_request != '-' && ctx._tmp.dissect_request.contains('HTTP/')
       on_failure:
         - append:
+            tag: append_error_message_49c676c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
@@ -44,6 +58,7 @@ processors:
         - '^(%{IP:source.ip}|%{DATA:source.user.name})$'
       on_failure:
         - append:
+            tag: append_error_message_487c50a3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
@@ -53,6 +68,7 @@ processors:
         - '^%{NUMBER:http.response.status_code} (-|%{POSINT:destination.bytes})(?: ms:%{NUMBER:apache_tomcat.access.request_process_time})?(?: %{GREEDYDATA:_tmp.grok})?$'
       on_failure:
         - append:
+            tag: append_error_message_de430f83
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
@@ -66,19 +82,23 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_da6cd334
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_ed0b5ede
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_fb8b0a24
       field: related.ip
       value: '{{{apache_tomcat.access.ip.local}}}'
       if: ctx.apache_tomcat?.access?.ip?.local != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_d930d94c
       field: related.user
       value: '{{{source.user.name}}}'
       if: ctx.source?.user?.name != null
@@ -91,6 +111,7 @@ processors:
         - dd/MMM/yyyy:HH:mm:ss ZZZ
       on_failure:
         - append:
+            tag: append_error_message_5d722a9c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -100,6 +121,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5955f913
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -109,17 +131,21 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_93f5edce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_outcome_71d63bc1
       field: event.outcome
       value: success
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
   - set:
+      tag: set_event_outcome_8e85c682
       field: event.outcome
       value: failure
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - remove:
+      tag: remove_destination_bytes_ee11bc1b
       if: ctx.destination?.bytes == '-'
       field: destination.bytes
       ignore_missing: true
@@ -130,6 +156,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4709b31b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -139,6 +166,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d54e8bc5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - user_agent:
@@ -147,6 +175,7 @@ processors:
       tag: 'user_agent_processor'
       on_failure:
         - append:
+            tag: append_error_message_38752f51
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uri_parts:
@@ -162,6 +191,7 @@ processors:
       target_field: client.ip
       separator: ',\s?'
   - foreach:
+      tag: foreach_client_ip_1d6c50cc
       field: client.ip
       if: ctx.client?.ip instanceof List
       processor:
@@ -176,6 +206,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - foreach:
+      tag: foreach_client_ip_f6d0b19d
       field: client.ip
       if: ctx.client?.ip instanceof List
       processor:
@@ -185,10 +216,12 @@ processors:
           allow_duplicates: false
       ignore_missing: true
   - remove:
+      tag: remove_tmp_09de0f63
       field:
         - _tmp
       ignore_missing: true
   - script:
+      tag: script_551cd821
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -206,14 +239,20 @@ processors:
         drop(ctx);
       description: Drops null/empty values recursively.
   - set:
+      tag: set_event_kind_bd710129
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
+      tag: set_event_kind_6b8c3683
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_6f58428e
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

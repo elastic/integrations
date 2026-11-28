@@ -2,89 +2,112 @@
 description: Pipeline for processing Apache Tomcat Memory metrics.
 processors:
   - set:
+      tag: set_ecs_version_9fa88270
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_09f30be4
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_13159999
       field: event.module
       value: apache_tomcat
   - set:
+      tag: set_event_type_5078d26c
       field: event.type
       value: [info]
   - set:
+      tag: set_event_category_12e71bcb
       field: event.category
       value: [web]
   - set:
+      tag: set_apache_tomcat_memory_verbose_dd3d9cc2
       field: apache_tomcat.memory.verbose
       value: true
       if: ctx.prometheus?.metrics?.java_lang_Memory_Verbose == 1
   - set:
+      tag: set_apache_tomcat_memory_verbose_b23b3ba9
       field: apache_tomcat.memory.verbose
       value: false
       if: ctx.prometheus?.metrics?.java_lang_Memory_Verbose == 0
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_HeapMemoryUsage_max_b6cb0c10
       field: prometheus.metrics.java_lang_Memory_HeapMemoryUsage_max
       target_field: apache_tomcat.memory.heap.max.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_HeapMemoryUsage_init_38baf1d2
       field: prometheus.metrics.java_lang_Memory_HeapMemoryUsage_init
       target_field: apache_tomcat.memory.heap.init.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_HeapMemoryUsage_used_b0f1cc07
       field: prometheus.metrics.java_lang_Memory_HeapMemoryUsage_used
       target_field: apache_tomcat.memory.heap.used.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_HeapMemoryUsage_committed_ece1a581
       field: prometheus.metrics.java_lang_Memory_HeapMemoryUsage_committed
       target_field: apache_tomcat.memory.heap.committed.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_NonHeapMemoryUsage_max_131e2823
       field: prometheus.metrics.java_lang_Memory_NonHeapMemoryUsage_max
       target_field: apache_tomcat.memory.non_heap.max.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_NonHeapMemoryUsage_init_deffbb40
       field: prometheus.metrics.java_lang_Memory_NonHeapMemoryUsage_init
       target_field: apache_tomcat.memory.non_heap.init.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_NonHeapMemoryUsage_used_73baed72
       field: prometheus.metrics.java_lang_Memory_NonHeapMemoryUsage_used
       target_field: apache_tomcat.memory.non_heap.used.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_NonHeapMemoryUsage_committed_05ead0b7
       field: prometheus.metrics.java_lang_Memory_NonHeapMemoryUsage_committed
       target_field: apache_tomcat.memory.non_heap.committed.bytes
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_Memory_ObjectPendingFinalizationCount_5656df6c
       field: prometheus.metrics.java_lang_Memory_ObjectPendingFinalizationCount
       target_field: apache_tomcat.memory.object_pending_finalization.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_G1_Old_Generation_CollectionCount_8eb541ff
       field: prometheus.metrics.java_lang_G1_Old_Generation_CollectionCount
       target_field: apache_tomcat.memory.gc.collection.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_G1_Old_Generation_CollectionTime_3a469b16
       field: prometheus.metrics.java_lang_G1_Old_Generation_CollectionTime
       target_field: apache_tomcat.memory.gc.collection.time.ms
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_java_lang_G1_Old_Generation_Valid_2fe0e57f
       field: prometheus.metrics.java_lang_G1_Old_Generation_Valid
       target_field: apache_tomcat.memory.gc.valid
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_memory_doc_type_6a2a59e6
       field: apache_tomcat.memory.doc_type
       value: memory
       if: ctx.apache_tomcat?.memory?.heap != null || ctx.apache_tomcat?.memory?.non_heap != null
   - set:
+      tag: set_apache_tomcat_memory_doc_type_ba6fb7ed
       field: apache_tomcat.memory.doc_type
       value: gc
       if: ctx.apache_tomcat?.memory?.gc != null
   - remove:
+      tag: remove_prometheus_d026a868
       field:
         - prometheus
       ignore_missing: true
   - script:
+      tag: script_aaf1138d
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -103,9 +126,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_d893a3af
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_0787164e
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

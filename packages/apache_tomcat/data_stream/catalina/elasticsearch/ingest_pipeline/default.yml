@@ -2,25 +2,36 @@
 description: Pipeline for processing Apache Tomcat Catalina logs.
 processors:
   - set:
+      tag: set_ecs_version_9ed88240
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_6b9191db
       field: event.kind
       value: event
   - set:
+      tag: set_event_module_ccb11045
       field: event.module
       value: apache_tomcat
   - set:
+      tag: set_event_category_fee92791
       field: event.category
       value: [web]
   - set:
+      tag: set_event_type_13f5ab2a
       field: event.type
       value: [info]
   - rename:
+      tag: rename_message_2a8ee179
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_879ae23d
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
       field: event.original
       tag: 'grok_parse_log'
@@ -32,18 +43,22 @@ processors:
         - '^%{CATALINA_TIMESTAMP:_tmp.timestamp} %{DATA:log.level} \[%{DATA:apache_tomcat.catalina.subsystem}\] %{GREEDYDATA:message}$'
       on_failure:
         - append:
+            tag: append_error_message_f03f4854
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_type_36bf30b6
       field: event.type
       value: [error]
       if: ctx.error?.stack_trace != ''
   - rename:
+      tag: rename_conf_tz_offset_62ba91cb
       field: _conf.tz_offset
       target_field: event.timezone
       if: ctx._conf?.tz_offset != null
       ignore_missing: true
   - set:
+      tag: set_event_timezone_acd82558
       field: event.timezone
       value: UTC
       override: false
@@ -56,16 +71,20 @@ processors:
         - dd-MMM-yyyy HH:mm:ss.SSS
       on_failure:
         - append:
+            tag: append_error_message_e0130320
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
+      tag: lowercase_log_level_c5cf5e0c
       field: log.level
       ignore_missing: true
   - remove:
+      tag: remove_tmp_edd54d16
       field:
         - _tmp
       ignore_missing: true
   - script:
+      tag: script_bfcbe1e8
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -83,15 +102,21 @@ processors:
         drop(ctx);
       description: Drops null/empty values recursively.
   - append:
+      tag: append_event_kind_aea18ecb
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
-  - append:
+  - set:
+      tag: set_event_kind_e1b31bf0
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_7abe000a
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

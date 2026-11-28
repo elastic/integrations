@@ -2,53 +2,67 @@
 description: Pipeline for processing Apache Tomcat Cache metrics.
 processors:
   - set:
+      tag: set_ecs_version_d1a33aa9
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_0baf7b58
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_c22493fe
       field: event.module
       value: apache_tomcat
   - set:
+      tag: set_event_type_1e381251
       field: event.type
       value: [info]
   - set:
+      tag: set_event_category_f9a0992d
       field: event.category
       value: [web]
   - rename:
+      tag: rename_prometheus_labels_context_1b34e88f
       field: prometheus.labels.context
       target_field: apache_tomcat.cache.application_name
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_WebResourceRoot_objectMaxSize_4a46eb64
       field: prometheus.metrics.Catalina_WebResourceRoot_objectMaxSize
       target_field: apache_tomcat.cache.object.size.max.kb
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_WebResourceRoot_hitCount_fcd18523
       field: prometheus.metrics.Catalina_WebResourceRoot_hitCount
       target_field: apache_tomcat.cache.hit.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_WebResourceRoot_lookupCount_7cb306de
       field: prometheus.metrics.Catalina_WebResourceRoot_lookupCount
       target_field: apache_tomcat.cache.lookup.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_WebResourceRoot_ttl_04ebe9b3
       field: prometheus.metrics.Catalina_WebResourceRoot_ttl
       target_field: apache_tomcat.cache.ttl.ms
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_WebResourceRoot_maxSize_e8a66de6
       field: prometheus.metrics.Catalina_WebResourceRoot_maxSize
       target_field: apache_tomcat.cache.size.max.kb
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_WebResourceRoot_size_a5a2d346
       field: prometheus.metrics.Catalina_WebResourceRoot_size
       target_field: apache_tomcat.cache.size.current.kb
       ignore_missing: true
   - remove:
+      tag: remove_prometheus_fcda65c1
       field:
       - prometheus
       ignore_missing: true
   - script:
+      tag: script_253bef82
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -66,14 +80,20 @@ processors:
           }
           drop(ctx);
   - set:
+      tag: set_event_kind_d4f9ef4f
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_0d038b87
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_d4666ecf
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

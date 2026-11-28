@@ -2,241 +2,302 @@
 description: Pipeline for processing Connection Pool metrics.
 processors:
   - set:
+      tag: set_ecs_version_5604199d
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_26a9c522
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_a1d0b7ad
       field: event.module
       value: apache_tomcat
   - set:
+      tag: set_event_type_bd06c87a
       field: event.type
       value: [info]
   - set:
+      tag: set_event_category_4873fb53
       field: event.category
       value: [web]
   - rename:
+      tag: rename_prometheus_labels_context_9d74dde2
       field: prometheus.labels.context
       target_field: apache_tomcat.connection_pool.application_name
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_access_to_underlying_connection_allowed_c3816692
       field: apache_tomcat.connection_pool.access_to_underlying_connection_allowed
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_accessToUnderlyingConnectionAllowed == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_access_to_underlying_connection_allowed_435da962
       field: apache_tomcat.connection_pool.access_to_underlying_connection_allowed
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_accessToUnderlyingConnectionAllowed == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_cacheState_7e9cf87b
       field: prometheus.metrics.Catalina_DataSource_cacheState
       target_field: apache_tomcat.connection_pool.cache.state
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_remove_abandoned_on_borrow_8cac88c8
       field: apache_tomcat.connection_pool.connection.remove_abandoned_on_borrow
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_removeAbandonedOnBorrow == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_remove_abandoned_on_borrow_3844ce0b
       field: apache_tomcat.connection_pool.connection.remove_abandoned_on_borrow
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_removeAbandonedOnBorrow == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_abandoned_usage_tracking_a9f88865
       field: apache_tomcat.connection_pool.connection.abandoned_usage_tracking
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_abandonedUsageTracking == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_abandoned_usage_tracking_7a178062
       field: apache_tomcat.connection_pool.connection.abandoned_usage_tracking
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_abandonedUsageTracking == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_autocommit_on_return_caaa74fb
       field: apache_tomcat.connection_pool.connection.autocommit_on_return
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_autoCommitOnReturn == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_autocommit_on_return_fd6e2d92
       field: apache_tomcat.connection_pool.connection.autocommit_on_return
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_autoCommitOnReturn == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_closed_792bc8bf
       field: apache_tomcat.connection_pool.connection.closed
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_closed == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_closed_b852339b
       field: apache_tomcat.connection_pool.connection.closed
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_closed == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_numActive_76cfff02
       field: prometheus.metrics.Catalina_DataSource_numActive
       target_field: apache_tomcat.connection_pool.connection.active.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_defaultTransactionIsolation_2620308a
       field: prometheus.metrics.Catalina_DataSource_defaultTransactionIsolation
       target_field: apache_tomcat.connection_pool.connection.default_transaction_isolation
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_enable_autocommit_on_return_87748ed3
       field: apache_tomcat.connection_pool.connection.enable_autocommit_on_return
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_enableAutoCommitOnReturn == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_enable_autocommit_on_return_4695ecbe
       field: apache_tomcat.connection_pool.connection.enable_autocommit_on_return
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_enableAutoCommitOnReturn == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_fast_fail_validation_e5c71c5b
       field: apache_tomcat.connection_pool.connection.fast_fail_validation
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_fastFailValidation == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_fast_fail_validation_c9443ac4
       field: apache_tomcat.connection_pool.connection.fast_fail_validation
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_fastFailValidation == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_numIdle_5b26e34e
       field: prometheus.metrics.Catalina_DataSource_numIdle
       target_field: apache_tomcat.connection_pool.connection.idle.count
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_idle_exists_49b5c78c
       field: apache_tomcat.connection_pool.connection.idle.exists
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_logAbandoned == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_idle_exists_8400b6fc
       field: apache_tomcat.connection_pool.connection.idle.exists
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_logAbandoned == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_maxOpenPreparedStatements_505e43a0
       field: prometheus.metrics.Catalina_DataSource_maxOpenPreparedStatements
       target_field: apache_tomcat.connection_pool.connection.idle.max.size
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_maxIdle_0447ba6e
       field: prometheus.metrics.Catalina_DataSource_maxIdle
       target_field: apache_tomcat.connection_pool.connection.idle.max.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_minIdle_47d43c2c
       field: prometheus.metrics.Catalina_DataSource_minIdle
       target_field: apache_tomcat.connection_pool.connection.idle.min.size
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_softMinEvictableIdleTimeMillis_357dffaf
       field: prometheus.metrics.Catalina_DataSource_softMinEvictableIdleTimeMillis
       target_field: apache_tomcat.connection_pool.connection.idle.min.time.ms
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_numTestsPerEvictionRun_b8995055
       field: prometheus.metrics.Catalina_DataSource_numTestsPerEvictionRun
       target_field: apache_tomcat.connection_pool.connection.idle.max.time.ms
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_initialSize_4f6d467b
       field: prometheus.metrics.Catalina_DataSource_initialSize
       target_field: apache_tomcat.connection_pool.connection.initial_size.count
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_maxConnLifetimeMillis_d35fd0fc
       field: prometheus.metrics.Catalina_DataSource_maxConnLifetimeMillis
       target_field: apache_tomcat.connection_pool.connection.lifetime.max.ms
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_maxWaitMillis_6b6f8b6f
       field: prometheus.metrics.Catalina_DataSource_maxWaitMillis
       target_field: apache_tomcat.connection_pool.connection.database.time.max.ms
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_log_expired_b112ce69
       field: apache_tomcat.connection_pool.connection.log_expired
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_logExpiredConnections == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_log_expired_12430e52
       field: apache_tomcat.connection_pool.connection.log_expired
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_logExpiredConnections == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_minEvictableIdleTimeMillis_ee291604
       field: prometheus.metrics.Catalina_DataSource_minEvictableIdleTimeMillis
       target_field: apache_tomcat.connection_pool.connection.min_evictable_idle.time
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_remove_abandoned_on_maintenance_973eba45
       field: apache_tomcat.connection_pool.connection.remove_abandoned_on_maintenance
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_removeAbandonedOnMaintenance == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_remove_abandoned_on_maintenance_043b7b0f
       field: apache_tomcat.connection_pool.connection.remove_abandoned_on_maintenance
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_removeAbandonedOnMaintenance == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_removeAbandonedTimeout_62196c0c
       field: prometheus.metrics.Catalina_DataSource_removeAbandonedTimeout
       target_field: apache_tomcat.connection_pool.connection.remove_abandoned_timeout
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_rollback_on_return_d5c99395
       field: apache_tomcat.connection_pool.connection.rollback_on_return
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_rollbackOnReturn == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_rollback_on_return_dbb1cc2b
       field: apache_tomcat.connection_pool.connection.rollback_on_return
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_rollbackOnReturn == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_test_on_return_9a235e39
       field: apache_tomcat.connection_pool.connection.test_on_return
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testOnReturn == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_test_on_return_61547098
       field: apache_tomcat.connection_pool.connection.test_on_return
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testOnReturn == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_test_while_idle_169647ff
       field: apache_tomcat.connection_pool.connection.test_while_idle
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testWhileIdle == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_test_while_idle_0fc02572
       field: apache_tomcat.connection_pool.connection.test_while_idle
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testWhileIdle == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_timeBetweenEvictionRunsMillis_25fdd760
       field: prometheus.metrics.Catalina_DataSource_timeBetweenEvictionRunsMillis
       target_field: apache_tomcat.connection_pool.connection.time_betwen_eviction_run.time.ms
       ignore_missing: true
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_validationQueryTimeout_38264168
       field: prometheus.metrics.Catalina_DataSource_validationQueryTimeout
       target_field: apache_tomcat.connection_pool.connection.validate
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_clear_statement_pool_on_return_3c4fb4b7
       field: apache_tomcat.connection_pool.connection.clear_statement_pool_on_return
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_clearStatementPoolOnReturn == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_connection_clear_statement_pool_on_return_15ac89d0
       field: apache_tomcat.connection_pool.connection.clear_statement_pool_on_return
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_clearStatementPoolOnReturn == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_lifo_e71c5c29
       field: apache_tomcat.connection_pool.lifo
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_lifo == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_lifo_3029325b
       field: apache_tomcat.connection_pool.lifo
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_lifo == 0
   - rename:
+      tag: rename_prometheus_metrics_Catalina_DataSource_maxTotal_8f20b94a
       field: prometheus.metrics.Catalina_DataSource_maxTotal
       target_field: apache_tomcat.connection_pool.max.total
       ignore_missing: true
   - set:
+      tag: set_apache_tomcat_connection_pool_prepared_statements_5328ea60
       field: apache_tomcat.connection_pool.prepared_statements
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_poolPreparedStatements == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_prepared_statements_cceaf903
       field: apache_tomcat.connection_pool.prepared_statements
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_poolPreparedStatements == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_test_on_borrow_fcbd4369
       field: apache_tomcat.connection_pool.test_on_borrow
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testOnBorrow == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_test_on_borrow_717341a9
       field: apache_tomcat.connection_pool.test_on_borrow
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testOnBorrow == 0
   - set:
+      tag: set_apache_tomcat_connection_pool_test_on_create_6b82ea4b
       field: apache_tomcat.connection_pool.test_on_create
       value: true
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testOnCreate == 1
   - set:
+      tag: set_apache_tomcat_connection_pool_test_on_create_e8d0819b
       field: apache_tomcat.connection_pool.test_on_create
       value: false
       if: ctx.prometheus?.metrics?.Catalina_DataSource_testOnCreate == 0
   - remove:
+      tag: remove_prometheus_ab887be3
       field:
       - prometheus
       ignore_missing: true
   - script:
+      tag: script_d393a2fe
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -254,14 +315,20 @@ processors:
           }
           drop(ctx);
   - set:
+      tag: set_event_kind_d8a486c2
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - set:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+      tag: set_event_kind_9419c07b
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_17a4da1a
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
