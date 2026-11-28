@@ -2,41 +2,49 @@
 description: Pipeline for parsing Cassandra metrics.
 processors:
   - set:
+      tag: set_ecs_version_f6ebe604
       field: ecs.version
       value: 8.11.0
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_module_3c52f42d
       field: event.module
       value: cassandra
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_kind_6e43905b
       field: event.kind
       value: event
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_category_57b52a24
       field: event.category
       value: [database]
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_type_8acb3cd0
       field: event.type
       value: [info]
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_created_285bec19
       field: event.created
       copy_from: "@timestamp"
       ignore_empty_value: true
       ignore_failure: true
   - rename:
+      tag: rename_jolokia_9cf18c61
       field: jolokia
       target_field: cassandra
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_49693ea3
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -55,5 +63,14 @@ processors:
           drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_57d01fdf
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_29d71ab5
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

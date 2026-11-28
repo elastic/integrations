@@ -2,26 +2,36 @@
 description: Pipeline for parsing Cassandra System logs
 processors:
   - set:
+      tag: set_event_ingested_57d9bcce
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_ecs_version_51f0db03
       field: ecs.version
       value: 8.11.0
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_module_3ab58a13
       field: event.module
       value: cassandra
       ignore_empty_value: true
       ignore_failure: true
   - rename:
+      tag: rename_message_9b4625cf
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_8d6a308f
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_48783ff9
       field: event.original
       pattern_definitions:
         GREEDYMULTILINE: "(.|\\n|\\t)*"
@@ -29,23 +39,28 @@ processors:
               - "%{LOGLEVEL:log.level}%{SPACE}\\[%{GREEDYDATA:process.thread.name}\\]%{SPACE}%{TIMESTAMP_ISO8601:cassandra.log.timestamp}%{SPACE}%{DATA:log.origin.file.name}\\:%{INT:log.origin.file.line:long}%{SPACE}\\-%{SPACE}%{GREEDYDATA:message}%{GREEDYMULTILINE:cassandra.log.meta}"
       ignore_missing: true
   - date:
+      tag: date_cassandra_log_timestamp_0e012f9e
       field: cassandra.log.timestamp
       target_field: "@timestamp"
       formats: ["yyyy-MM-dd HH:mm:ss,SSS"]
   - remove:
+      tag: remove_cassandra_log_timestamp_058b6e9e
       field:
         - cassandra.log.timestamp
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_kind_93bb8e33
       field: event.kind
       value: event
       ignore_empty_value: true
       ignore_failure: true
   - append:
+      tag: append_event_category_e48bd4e0
       field: event.category
       value: database
   - script:
+      tag: script_0d6a067d
       if: "ctx.log?.level != null"
       lang: painless
       source: >-
@@ -56,6 +71,7 @@ processors:
           ctx.event.type = ["info"];
         }
   - script:
+      tag: script_6bc58782
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -73,6 +89,15 @@ processors:
           }
           drop(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_event_kind_70863afa
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_3fd3860d
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
