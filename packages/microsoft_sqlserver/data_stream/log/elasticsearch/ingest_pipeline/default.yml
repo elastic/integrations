@@ -2,22 +2,27 @@
 description: Pipeline to parse Microsoft SQL Server logs
 processors:
 - rename:
+    tag: rename_message_82939518
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
 - remove:
+    tag: remove_message_292b704e
     field: message
     ignore_missing: true
     if: 'ctx.event?.original != null'
     description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - set:
+    tag: set_ecs_version_5b615da8
     field: ecs.version
     value: '8.11.0'
 - set:
+    tag: set_event_ingested_906131c6
     field: event.ingested
     value: '{{_ingest.timestamp}}'
 - grok:
+    tag: grok_event_original_fcb93d78
     field: event.original
     patterns:
     - '%{MSSQL_DATE:date} %{DATA:microsoft_sqlserver.log.origin} [ ]*%{GREEDYDATA:message}'
@@ -27,15 +32,18 @@ processors:
       MSSQL_DATE: '%{DATA} %{DATA}'
       GREEDYDATA: '(.|\n)*'
 - date:
+    tag: date_date_6c0fbcfb
     if: ctx.event.timezone == null
     field: date
     formats:
     - yyyy-MM-dd HH:mm:ss.SS
     on_failure:
     - append:
+        tag: append_error_message_caa02ac3
         field: error.message
         value: '{{ _ingest.on_failure_message }}'
 - remove:
+    tag: remove_date_1cfd1290
     field: date
     ignore_missing: true
 ##
@@ -43,28 +51,43 @@ processors:
 # as per ECS recommendation
 ##
 - gsub:
+    tag: gsub_host_mac_b611d0e5
     field: host.mac
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
 - gsub:
+    tag: gsub_host_mac_fc53f9b0
     field: host.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
 - uppercase:
+    tag: uppercase_host_mac_77a6c4bd
     field: host.mac
     ignore_missing: true
 - set:
+    tag: set_event_kind_dd03749c
     field: event.kind
     value: event
 - append:
+    tag: append_event_category_30afd975
     field: event.category
     value: database
 - append:
+    tag: append_event_type_01d0156d
     field: event.type
     value: info
 on_failure:
-- append:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_8ca2d712
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_588264cc
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

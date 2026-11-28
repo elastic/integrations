@@ -2,74 +2,88 @@
 description: Pipeline for processing mssql transaction_log
 processors:
 - remove:
+    tag: remove_sql_driver_4365ef3d
     field: sql.driver
     ignore_failure: true
     ignore_missing: true
 - rename:
+    tag: rename_sql_8a42401b
     field: sql
     target_field: mssql
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_mssql_metrics_log_since_last_checkpoint_mb_02992223
     field: mssql.metrics.log_since_last_checkpoint_mb
     target_field: mssql.metrics.log_since_last_checkpoint
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_mssql_metrics_log_recovery_size_mb_7b2f93a5
     field: mssql.metrics.log_recovery_size_mb
     target_field: mssql.metrics.log_recovery_size
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_mssql_metrics_total_log_size_mb_276789a1
     field: mssql.metrics.total_log_size_mb
     target_field: mssql.metrics.total_log_size
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_mssql_metrics_active_log_size_mb_54cdda5a
     field: mssql.metrics.active_log_size_mb
     target_field: mssql.metrics.active_log_size
     ignore_missing: true
     ignore_failure: true
 - rename:
+    tag: rename_mssql_metrics_log_since_last_log_backup_mb_172ec63d
     field: mssql.metrics.log_since_last_log_backup_mb
     target_field: mssql.metrics.log_since_last_log_backup
     ignore_missing: true
     ignore_failure: true
 - fingerprint:
+    tag: fingerprint_c8e22a5f
     fields: ["mssql.query"]
     target_field: mssql.metrics.query_id
     ignore_failure: true
     ignore_missing: true
 - remove:
+    tag: remove_mssql_query_794dd0d5
     field: mssql.query
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_sql_queries'))"
     ignore_missing: true
     ignore_failure: true
 - script:
+    tag: script_4e5c3947
     lang: painless
     source: ctx.mssql.metrics.log_since_last_checkpoint = Math.round(ctx.mssql.metrics.log_since_last_checkpoint * params.scale)
     params:
         scale: 1048576
     if: ctx.mssql.metrics.log_since_last_checkpoint != null
 - script:
+    tag: script_f0307f32
     lang: painless
     source: ctx.mssql.metrics.log_recovery_size = Math.round(ctx.mssql.metrics.log_recovery_size * params.scale)
     params:
       scale: 1048576
     if: ctx.mssql.metrics.log_recovery_size != null
 - script:
+    tag: script_d8c43ac6
     lang: painless
     source: ctx.mssql.metrics.total_log_size = Math.round(ctx.mssql.metrics.total_log_size * params.scale)
     params:
       scale: 1048576
     if: ctx.mssql.metrics.total_log_size != null
 - script:
+    tag: script_b54a76c1
     lang: painless
     source: ctx.mssql.metrics.active_log_size = Math.round(ctx.mssql.metrics.active_log_size * params.scale)
     params:
       scale: 1048576
     if: ctx.mssql.metrics.active_log_size != null
 - script:
+    tag: script_93b9d5d7
     lang: painless
     source: ctx.mssql.metrics.log_since_last_log_backup = Math.round(ctx.mssql.metrics.log_since_last_log_backup * params.scale)
     params:
@@ -80,19 +94,31 @@ processors:
 # as per ECS recommendation
 ##
 - gsub:
+    tag: gsub_host_mac_46407334
     field: host.mac
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
 - gsub:
+    tag: gsub_host_mac_e403518b
     field: host.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
 - uppercase:
+    tag: uppercase_host_mac_ba1e4bcd
     field: host.mac
     ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_c21a7cf9
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_95f65209
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
