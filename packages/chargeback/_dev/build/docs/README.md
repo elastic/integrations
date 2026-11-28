@@ -56,7 +56,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Data flow:**
 
 1. Elastic Agent collects billing into `metrics-chargeback.billing-*`, index/tier usage into `metrics-chargeback.usage-*`, and node stats into `metrics-chargeback.node_stats-*` (alongside On-Premises Billing or any existing monitoring streams).
-2. Chargeback continuous transforms (`5m` configuration and additive `0.7.0` lookup sync, and `60m` billing, credit commitment, core usage, and utilization rollups) aggregate and enrich this telemetry into fourteen `lookup`-mode indices.
+2. Chargeback continuous transforms (`5m` configuration and realized-pool sync, and `60m` billing, credit commitment, usage, and utilization rollups) aggregate and enrich this telemetry into eleven `lookup`-mode indices.
 3. Chargeback dashboards (and optional stock dashboards) query the lookup indices via ES|QL and Lens.
 
 ## Configuration
@@ -289,11 +289,52 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 ### Upgrading to 0.8.0
 
 1. Upgrade the Fleet package to **0.8.0**. Kibana requirement remains `^9.2.0`.
-2. **Consolidated transforms (14 → 11):** To reduce synchronous Fleet package installation work and prevent reverse-proxy timeouts on Elastic Cloud Hosted, the three additive `0.7.0` transforms are merged into their matching primary transforms:
+2. **Consolidated transforms (14 → 11):** To reduce synchronous Fleet package installation work and prevent reverse-proxy timeouts on Elastic Cloud Hosted, the three additive `0.7.0` transforms are merged into their matching primary transforms with versioned `dest_*-2` destination indices (`move_on_creation: true`):
    - `billing_enrichment` → `billing_realized_pool` (`chargeback_lookup.dest_billing_realized_pool-2`, aliased as `chargeback_lookup.billing_realized_pool`)
    - `chargeback_currency_lookup` → `chargeback_conf_lookup` (`chargeback_lookup.dest_chargeback_conf-2`, aliased as `chargeback_lookup.chargeback_conf`)
    - `usage_deployment_metadata` → `cluster_deployment_contribution` (`chargeback_lookup.dest_cluster_deployment_contribution-2`, aliased as `chargeback_lookup.cluster_deployment_contribution`)
-3. If you previously customized `chargeback_lookup.chargeback_currency` manually with `sync_fleet_config: false`, re-apply your `conf_currency_unit` / `conf_currency_symbol` values on `chargeback_lookup.chargeback_conf` (`_id: config` / `_id: config_onprem`).
+3. **Preserve manual configuration and historical rate periods (`dest_chargeback_conf-1` → `dest_chargeback_conf-2`):** Moving the `chargeback_lookup.chargeback_conf` alias to `chargeback_lookup.dest_chargeback_conf-2` does not copy existing documents from `chargeback_lookup.dest_chargeback_conf-1`. If you manage rates or weights manually (`sync_fleet_config: false`) or maintain historical rate period documents (for example, prior-year rows with custom `conf_start_date` and `conf_end_date` bounds), reindex those rows into `chargeback_lookup.dest_chargeback_conf-2` immediately after upgrade (preserving all document `_id`s and date bounds; if `sync_fleet_config: false` prevented the transform from materializing the `-2` index yet, run `PUT chargeback_lookup.dest_chargeback_conf-2` and move the `chargeback_lookup.chargeback_conf` alias from `chargeback_lookup.dest_chargeback_conf-1` to `chargeback_lookup.dest_chargeback_conf-2` via `POST _aliases` first):
+
+   ```json
+   POST _reindex?refresh=true
+   {
+     "source": {
+       "index": "chargeback_lookup.dest_chargeback_conf-1"
+     },
+     "dest": {
+       "index": "chargeback_lookup.dest_chargeback_conf-2",
+       "op_type": "create"
+     },
+     "conflicts": "proceed"
+   }
+   ```
+
+   If `sync_fleet_config` is `false` and you want your manual `_id: config` / `_id: config_onprem` rows from `-1` to take precedence over any default document written to `-2`, omit `"op_type": "create"` and `"conflicts": "proceed"`. If you also customized `chargeback_lookup.dest_chargeback_currency-1` manually with `sync_fleet_config: false`, re-apply your `conf_currency_unit` and `conf_currency_symbol` values on `chargeback_lookup.chargeback_conf` (`POST chargeback_lookup.chargeback_conf/_update/config` or `_update/config_onprem`).
+4. **Carry forward historical usage and realized-pool rows older than raw ILM retention:** The `cluster_deployment_contribution` and `billing_realized_pool` transforms automatically backfill retained history from `metrics-chargeback.*`, `monitoring-indices*`, and `metrics-ess_billing.*` into their `-2` destination indices. If your raw monitoring or billing streams use shorter ILM retention than your lookup indices (including historical rows previously imported during a `0.6.0` upgrade), reindex older daily rows (earlier than the oldest retained raw source timestamp) from `-1` into `-2` so historical cost attribution is preserved:
+
+   ```json
+   POST _reindex?refresh=true
+   {
+     "source": {
+       "index": "chargeback_lookup.dest_cluster_deployment_contribution-1",
+       "query": {
+         "range": {
+           "@timestamp": {
+             "lt": "<earliest-retained-raw-usage-timestamp>"
+           }
+         }
+       }
+     },
+     "dest": {
+       "index": "chargeback_lookup.dest_cluster_deployment_contribution-2",
+       "op_type": "create"
+     },
+     "conflicts": "proceed"
+   }
+   ```
+
+   Run the same range-filtered `_reindex` from `chargeback_lookup.dest_billing_realized_pool-1` to `chargeback_lookup.dest_billing_realized_pool-2` (filtering `@timestamp` earlier than your earliest retained raw billing timestamp) if raw billing retention is shorter than your lookup history.
+5. **Post-upgrade cleanup:** After verifying that `chargeback_lookup.chargeback_conf`, `chargeback_lookup.billing_realized_pool`, and `chargeback_lookup.cluster_deployment_contribution` point to their `-2` indices and contain your expected configuration and historical rows, delete the retired `-1` indices (`chargeback_lookup.dest_chargeback_conf-1`, `chargeback_lookup.dest_billing_realized_pool-1`, `chargeback_lookup.dest_cluster_deployment_contribution-1`, and if upgrading from `0.7.0`, `chargeback_lookup.dest_chargeback_currency-1`, `chargeback_lookup.dest_billing_enrichment-1`, and `chargeback_lookup.dest_usage_deployment_metadata-1`) to reclaim cluster shards.
 
 ### Upgrading to 0.7.0
 
