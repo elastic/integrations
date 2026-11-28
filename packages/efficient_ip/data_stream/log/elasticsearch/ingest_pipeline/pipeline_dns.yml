@@ -9,7 +9,7 @@ processors:
       tag: grok_dns_message
       field: message
       patterns:
-        - "^%{CLIENT}\\s*\\(%{GREEDYDATA}.\\)\\:\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} \\(%{IP:server.ip}\\) -> %{WORD:dns.response_code}(\\s+%{GREEDYDATA:dns_answers_data})?$"
+        - "^%{CLIENT}\\s*\\(%{GREEDYDATA}.\\)\\:\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} \\(%{IP:server.ip}\\) -> %{WORD:dns.response_code}(\\s+%{GREEDYDATA:_tmp.dns_answers_data})?$"
         - "^%{CLIENT}\\s+(\\(%{GREEDYDATA}.\\))?\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type}\\s+\\(%{IP:server.ip}\\)$"
         - "^%{CLIENT}\\s+update '%{DATA:dns.question.name}/%{WORD:dns.question.class}' %{GREEDYDATA:efficient_ip.log.dns.category}$"
         - "^%{CLIENT}\\s+\\(%{DATA}\\):\\s+transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}$"
@@ -21,11 +21,11 @@ processors:
   - script:
       tag: parse_dns_answers
       lang: painless
-      if: "ctx.dns_answers_data != null && ctx.dns_answers_data != ''"
+      if: "ctx._tmp?.dns_answers_data != null && ctx._tmp.dns_answers_data != ''"
       description: "Parse DNS answer records"
       source: |
         def answers = new ArrayList();
-        def text = ctx.dns_answers_data.trim();
+        def text = ctx._tmp.dns_answers_data.trim();
         def validTypes = new HashSet(['A','AAAA','CNAME','SOA','SRV','PTR','MX','NS','TXT','CAA','DS','DNSKEY','RRSIG','NSEC','NSEC3','NAPTR','DNAME','TLSA','SSHFP','HTTPS','SVCB','SPF','HINFO','LOC','CERT','OPENPGPKEY','URI']);
         def tokens = new ArrayList();
         boolean inQuotes = false;
@@ -100,7 +100,7 @@ processors:
           ctx.dns = new HashMap();
         }
         ctx.dns.put('answers', answers);
-        ctx.remove('dns_answers_data');
+        ctx._tmp.remove('dns_answers_data');
   - convert:
       tag: convert_server_ip
       field: server.ip

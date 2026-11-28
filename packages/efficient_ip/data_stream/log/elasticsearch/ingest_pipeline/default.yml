@@ -1,11 +1,19 @@
 ---
 description: Pipeline for parsing EfficientIP DDI logs.
 processors:
-  - set:
-      tag: copy_message_to_event_original
-      field: event.original
-      copy_from: message
-      if: ctx.event?.original == null && ctx.message != null
+  - rename:
+      tag: rename_message_to_event_original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original`. Leaves an existing `event.original` untouched.
+      if: ctx.event?.original == null
+  - remove:
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      description: The `message` field is rebuilt from `event.original` by the syslog grok below.
+      if: ctx.event?.original != null
   - set:
       tag: set_ecs_version
       field: ecs.version
