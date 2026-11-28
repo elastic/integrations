@@ -2,11 +2,13 @@
 description: Pipeline for parsing MySQL performance metrics
 processors:
 - gsub:
+    tag: gsub_mysql_performance_events_statements_last_seen_7fff864b
     field: mysql.performance.events_statements.last.seen
     pattern: ' '
     replacement: "T"
     ignore_missing: true
 - script:
+    tag: script_40c59be4
     lang: painless
     description: This script extracts sql query.
     source: |
@@ -17,6 +19,7 @@ processors:
         ctx.mysql.performance.events_statements.query = digest.text;
 
 - fingerprint:
+    tag: fingerprint_2ba185ac
     fields: 
       - mysql.performance.events_statements.query
       - mysql.performance.events_statements.schemaname
@@ -24,11 +27,21 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - remove:
+    tag: remove_mysql_performance_events_statements_query_1b591e8d
     field: mysql.performance.events_statements.query
     ignore_failure: true
     ignore_missing: true
 
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_9ce710f2
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_f8ace50f
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
