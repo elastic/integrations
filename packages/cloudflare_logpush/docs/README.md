@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, Audit Logs v2, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, SSH Logs, WARP Config Changes, WARP Toggle Changes, Zaraz Events, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -67,6 +67,7 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `sinkhole_http`: HTTP traffic captured by Cloudflare sinkholes. See [Sinkhole HTTP logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 - `spectrum_event`: Cloudflare Spectrum events for TCP/UDP applications proxied through Cloudflare. See [Spectrum Events schema](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
 - `workers_trace`: Cloudflare Workers Trace Events with execution logs and exceptions for Workers scripts. See [Workers Trace Events schema](https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/).
+- `zaraz_events`: Cloudflare Zaraz events for third-party tools loaded through Zaraz, including the incoming request URL, client IP, headers and body, and the Zaraz event type and details. See [Zaraz Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/zone/zaraz_events/).
 
 ### Supported use cases
 
@@ -78,6 +79,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`, `audit_logs_v2`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
+- Auditing third-party tools, tags, and analytics requests loaded through Cloudflare Zaraz (`zaraz_events`).
 
 ## What do I need to use this integration?
 
@@ -93,7 +95,7 @@ To use this integration, you must be able to create and manage [Cloudflare Logpu
 
 Creating and managing Logpush jobs requires an API token or user role with the `Logs Write` permission (or a role that includes it, such as **Super Administrator**, **Administrator**, or **Log Share** with edit permissions). Refer to [Cloudflare Logpush permissions](https://developers.cloudflare.com/logs/logpush/permissions/) for details.
 
-- **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`) require a **zone-scoped token**.
+- **Zone-scoped datasets** (for example, `http_requests`, `firewall_events`, `dns_logs`, `spectrum_events`, `nel_reports`, `page_shield_events`, `zaraz_events`) require a **zone-scoped token**.
 - **Account-scoped datasets** (for example, `audit_logs`, `audit_logs_v2`, `access_requests`, `casb_findings`, `device_posture_results`, `dlp_forensic_copies`, `email_security_alerts`, `gateway_*`, `dns_firewall_logs`, `magic_ids_detections`, `network_analytics_logs`, `sinkhole_http_logs`, `ssh_logs`, `workers_trace_events`, `zero_trust_network_sessions`) require an **account-scoped token**.
 - Zero Trust datasets (Access, Gateway, DEX) additionally require `Zero Trust: PII Read`.
 
@@ -152,6 +154,7 @@ Configure one of the following delivery pipelines before enabling the integratio
   | WARP Config Changes        | warp_config_changes     |
   | WARP Toggle Changes        | warp_toggle_changes     |
   | Workers Trace Events       | workers_trace           |
+  | Zaraz Events               | zaraz_events            |
 
 **Note:** Upgrading the integration does not change a Bucket Prefix that is already saved in a policy. Before version 2.3.0, the default prefix of the Audit Logs data stream was `audit_logs`, which also matches `audit_logs_v2/` objects. If your existing policy uses `audit_logs` and you enable Audit Logs v2 on the same bucket, set the **[S3] Bucket Prefix** of the Audit Logs data stream to `audit_logs/` first, so that Audit Logs v2 objects are not collected twice.
 
@@ -6097,6 +6100,179 @@ An example event for `workers_trace` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### zaraz_events
+
+This is the `zaraz_events` dataset.
+
+##### Example
+
+An example event for `zaraz_events` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-04T10:15:30.000Z",
+    "agent": {
+        "ephemeral_id": "b198c4a5-d2ba-42e6-8281-2d3e6805549b",
+        "id": "0e7669c8-fc31-4fdb-a015-fba5c3605cab",
+        "name": "elastic-agent-38521",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloudflare_logpush": {
+        "zaraz_events": {
+            "body": {
+                "events": [
+                    {
+                        "client": {
+                            "__zarazTrack": "Pageview"
+                        },
+                        "system": {
+                            "device": {
+                                "language": "en-US",
+                                "resolution": "1920x1080",
+                                "viewport": "1536x730"
+                            },
+                            "page": {
+                                "referrer": "https://search.example.org/",
+                                "title": "Example Store",
+                                "url": "https://www.example.com/"
+                            }
+                        }
+                    }
+                ]
+            },
+            "event_details": {
+                "tools": [
+                    "Google Analytics 4",
+                    "Facebook Pixel"
+                ],
+                "trigger": "Pageview"
+            },
+            "request": {
+                "headers": {
+                    "accept": "*/*",
+                    "accept-language": "en-US,en;q=0.9",
+                    "content-type": "application/json"
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.zaraz_events",
+        "namespace": "33568",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "0e7669c8-fc31-4fdb-a015-fba5c3605cab",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "action": "client_request",
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "cloudflare_logpush.zaraz_events",
+        "ingested": "2026-11-24T12:29:09Z",
+        "kind": "event",
+        "original": "{\"Body\":{\"events\":[{\"client\":{\"__zarazTrack\":\"Pageview\"},\"system\":{\"device\":{\"language\":\"en-US\",\"resolution\":\"1920x1080\",\"viewport\":\"1536x730\"},\"page\":{\"referrer\":\"https://search.example.org/\",\"title\":\"Example Store\",\"url\":\"https://www.example.com/\"}}}]},\"EventDetails\":{\"tools\":[\"Google Analytics 4\",\"Facebook Pixel\"],\"trigger\":\"Pageview\"},\"EventType\":\"client_request\",\"IP\":\"89.160.20.128\",\"RequestHeaders\":{\"accept\":\"*/*\",\"accept-language\":\"en-US,en;q=0.9\",\"content-type\":\"application/json\",\"referer\":\"https://www.example.com/\",\"user-agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36\"},\"TimestampStart\":\"2025-03-04T10:15:30Z\",\"URL\":\"https://www.example.com/cdn-cgi/zaraz/t\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "http": {
+        "request": {
+            "referrer": "https://www.example.com/"
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.128"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.128"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-zaraz_events"
+    ],
+    "url": {
+        "domain": "www.example.com",
+        "full": "https://www.example.com/cdn-cgi/zaraz/t",
+        "original": "https://www.example.com/cdn-cgi/zaraz/t",
+        "path": "/cdn-cgi/zaraz/t",
+        "scheme": "https"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        },
+        "version": "130.0.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| cloudflare_logpush.zaraz_events.body | Zaraz incoming request body. | flattened |
+| cloudflare_logpush.zaraz_events.event_details | Zaraz log event details. | flattened |
+| cloudflare_logpush.zaraz_events.request.headers | Zaraz incoming request headers, keyed by lowercased header name. The Referer and User-Agent headers are mapped to `http.request.referrer` and `user_agent.original`. | flattened |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
 
 
 ### Inputs used
