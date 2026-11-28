@@ -1,0 +1,186 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+resource.headers:
+  Accept:
+    - application/json
+# The /v1/asset/enumerate/contents endpoint allows 30 requests per minute.
+resource.rate_limit:
+  limit: 0.5
+  burst: 1
+# A full pass over a large tenant can take thousands of pages (about 1,400 pages,
+# or 46 minutes, for 137,000 assets); an unfinished pass resumes from the stored
+# offset on the next interval.
+max_executions: 2000
+state:
+  api_key: {{api_key}}
+{{#if team_id}}
+  team_id: {{team_id}}
+{{/if}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - api_key
+    - team_id
+program: |-
+  state.?cursor.pass.orValue(
+    state.?cursor.last_updated_at.orValue(
+      (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
+    ).as(pass_boundary,
+      {
+        "boundary": pass_boundary,
+        "offset": 0,
+        "newest_updated_at": pass_boundary,
+      }
+    )
+  ).as(pass,
+    // The API silently caps limit at 100, so a larger page size would end the pass early.
+    // A page size below 1 would never advance the offset, so it is raised to 1.
+    min(max(int(state.batch_size), 1), 100).as(page_size,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/v1/asset/enumerate/contents?" + {
+            "limit": [string(page_size)],
+            "offset": [string(int(pass.offset))],
+            "sort_desc": ["updated_at"],
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "X-API-Key": [state.api_key],
+              ?"X-Team-Id": state.?team_id.optMap(id, [id]),
+            },
+          }
+        ).do_request().as(response,
+          (response.StatusCode == 200) ?
+            response.Body.decode_json().as(response_body,
+              is_error(response_body) ?
+                {
+                  "error": {
+                    "code": string(response.StatusCode),
+                    "id": response.Status,
+                    "message": "GET " + state.url.trim_right("/") + "/v1/asset/enumerate/contents: invalid JSON response: " + try(response_body),
+                  },
+                }
+              :
+                // Only a data list (possibly empty) is a valid envelope; anything else is an error so the
+                // in-progress pass is kept and retried instead of being committed as finished.
+                (type(response_body) == map && type(response_body.?data.orValue(null)) == list) ?
+                  {
+                    "assets": response_body.data,
+                  }
+                :
+                  {
+                    "error": {
+                      "code": string(response.StatusCode),
+                      "id": response.Status,
+                      "message": "GET " + state.url.trim_right("/") + "/v1/asset/enumerate/contents: unexpected response shape: data is not a list: " + try(response_body),
+                    },
+                  }
+            )
+          :
+            {
+              "error": {
+                "code": string(response.StatusCode),
+                "id": response.Status,
+                "message": "GET " + state.url.trim_right("/") + "/v1/asset/enumerate/contents: " + (
+                  (size(response.Body) != 0) ?
+                    string(response.Body)
+                  :
+                    response.Status + " (" + string(response.StatusCode) + ")"
+                ),
+              },
+            }
+        ).as(page_result,
+          has(page_result.error) ?
+            {
+              "events": {
+                "error": page_result.error,
+              },
+              "want_more": false,
+            }
+          :
+            page_result.assets.map(asset,
+              {
+                "asset": asset,
+                // Records without a valid updated_at are kept and do not move the cursor.
+                "updated_at": asset.?updated_at.orValue("").parse_time(["2006-01-02T15:04:05.999999999Z07:00", "2006-01-02T15:04:05.999999999"]).as(parsed_updated_at,
+                  is_error(parsed_updated_at) ?
+                    timestamp(pass.boundary)
+                  :
+                    parsed_updated_at
+                ),
+              }
+            ).as(page_assets,
+              page_assets.filter(dated_asset, dated_asset.updated_at >= timestamp(pass.boundary)).as(kept_assets,
+                {
+                  "kept_assets": kept_assets,
+                  "pass_newest_updated_at": ([timestamp(pass.newest_updated_at)] + kept_assets.map(dated_asset, dated_asset.updated_at)).max().format(time_layout.RFC3339Nano),
+                  "more_pages": size(page_assets) >= page_size && size(kept_assets) == size(page_assets),
+                  "next_offset": int(pass.offset) + size(page_assets),
+                }
+              )
+            ).as(page,
+              {
+                "events": (size(page.kept_assets) > 0) ?
+                  page.kept_assets.map(dated_asset,
+                    {
+                      "message": dated_asset.asset.encode_json(),
+                    }
+                  )
+                :
+                  // Placeholder so the cursor is persisted when nothing new was found.
+                  dyn([{"retry": true}]),
+                "cursor": page.more_pages ?
+                  {
+                    ?"last_updated_at": state.?cursor.last_updated_at,
+                    "pass": {
+                      "boundary": pass.boundary,
+                      "offset": page.next_offset,
+                      "newest_updated_at": page.pass_newest_updated_at,
+                    },
+                  }
+                :
+                  {
+                    "last_updated_at": page.pass_newest_updated_at,
+                  },
+                "want_more": page.more_pages,
+              }
+            )
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event:
+      when:
+        equals:
+          retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
