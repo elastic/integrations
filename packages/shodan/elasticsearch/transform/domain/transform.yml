@@ -1,0 +1,42 @@
+source:
+  index:
+    - "logs-shodan.domain*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "logs-shodan_latest.domain-1"
+  aliases:
+    - alias: "logs-shodan_latest.domain"
+      move_on_creation: true
+latest:
+  unique_key:
+    - threat.indicator.reference
+    - data_stream.namespace
+  sort: "@timestamp"
+description: >-
+  Latest state of each Shodan certificate transparency indicator, unique by
+  indicator reference (the certificate's crt.sh URL, keyed on its SHA-256
+  hash) and namespace. Namespace keeps policies in different Fleet
+  namespaces from overwriting each other's observations. Keeps only the
+  most recently seen document per certificate, and drops indicators not
+  re-confirmed within the retention window, so this index reflects current
+  exposure rather than accumulating unbounded history.
+frequency: 30s
+settings:
+  deduce_mappings: false
+  num_failure_retries: -1
+sync:
+  time:
+    field: "event.ingested"
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 7d
+_meta:
+  managed: false
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
