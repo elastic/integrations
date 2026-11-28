@@ -411,6 +411,124 @@ processors:
       value: '{{{microsoft_intune.managed_device.properties.wifi_mac_address}}}'
       allow_duplicates: false
       if: ctx.microsoft_intune?.managed_device?.properties?.wifi_mac_address != null
+  # The properties below are only present in device compliance records
+  # (DeviceComplianceOrg category). The numeric codes are kept as keywords
+  # next to their display values.
+  - rename:
+      field: json.properties.AccountId
+      tag: rename_properties_AccountId_3b0e61a7
+      target_field: microsoft_intune.managed_device.properties.account_id
+      ignore_missing: true
+  - convert:
+      field: json.properties.ComplianceState
+      tag: convert_properties_ComplianceState_to_string_a41c7d92
+      target_field: microsoft_intune.managed_device.properties.compliance_state_code
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_0e5b93c1
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.ComplianceState_loc
+      tag: rename_properties_ComplianceState_loc_3f1c2a10
+      target_field: microsoft_intune.managed_device.properties.compliance_state
+      ignore_missing: true
+  - convert:
+      field: json.properties.DeviceHealthThreatLevel
+      tag: convert_properties_DeviceHealthThreatLevel_to_string_c92e6b14
+      target_field: microsoft_intune.managed_device.properties.device_health_threat_level_code
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_71af0d3e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.DeviceHealthThreatLevel_loc
+      tag: rename_properties_DeviceHealthThreatLevel_loc_5d7a9c02
+      target_field: microsoft_intune.managed_device.properties.device_health_threat_level
+      ignore_missing: true
+  - convert:
+      field: json.properties.DeviceType
+      tag: convert_properties_DeviceType_to_string_e07b51c8
+      target_field: microsoft_intune.managed_device.properties.device_type
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_4c6d2f9a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.properties.ManagementAgents
+      tag: convert_properties_ManagementAgents_to_string_92d4f3b6
+      target_field: microsoft_intune.managed_device.properties.management_agents_code
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_b85e1a07
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.ManagementAgents_loc
+      tag: rename_properties_ManagementAgents_loc_6a2c8e15
+      target_field: microsoft_intune.managed_device.properties.management_agents
+      ignore_missing: true
+  - rename:
+      field: json.properties.OSDescription
+      tag: rename_properties_OSDescription_d13f7a48
+      target_field: microsoft_intune.managed_device.properties.os_description
+      ignore_missing: true
+  - convert:
+      field: json.properties.OwnerType
+      tag: convert_properties_OwnerType_to_string_7be9042d
+      target_field: microsoft_intune.managed_device.properties.owner_type_code
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_2f8c6b51
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.OwnerType_loc
+      tag: rename_properties_OwnerType_loc_8b2e4d71
+      target_field: microsoft_intune.managed_device.properties.owner_type
+      ignore_missing: true
+  - date:
+      field: json.properties.RetireAfterDatetime
+      tag: date_properties_RetireAfterDatetime_1c5e9f83
+      target_field: microsoft_intune.managed_device.properties.retire_after_datetime
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSSS'
+        - ISO8601
+      if: ctx.json?.properties?.RetireAfterDatetime != null && ctx.json.properties.RetireAfterDatetime != ''
+      on_failure:
+        - append:
+            tag: append_error_message_9d04b7e2
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.properties.UserId
+      tag: rename_properties_UserId_f26a8c30
+      target_field: microsoft_intune.managed_device.properties.user_id
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_device_UserId_a9c14e67
+      copy_from: microsoft_intune.managed_device.properties.user_id
+      ignore_empty_value: true
+      if: ctx.user?.id == null
+  - append:
+      field: related.user
+      tag: append_device_UserId_into_related_user_4e7d1b96
+      value: '{{{microsoft_intune.managed_device.properties.user_id}}}'
+      allow_duplicates: false
+      if: ctx.microsoft_intune?.managed_device?.properties?.user_id != null
   - rename:
       field: json.category
       tag: rename_category_5b3e06af
@@ -495,13 +613,13 @@ processors:
         - microsoft_intune.managed_device.properties.serial_number
         - microsoft_intune.managed_device.properties.upn
         - microsoft_intune.managed_device.properties.user_email
+        - microsoft_intune.managed_device.properties.user_id
         - microsoft_intune.managed_device.properties.user_name
         - microsoft_intune.managed_device.operation_name
         - microsoft_intune.managed_device.tenant_id
         - microsoft_intune.managed_device.time
       tag: remove_custom_duplicate_fields_73738179
       ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json

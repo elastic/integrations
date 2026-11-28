@@ -1,4 +1,30 @@
 # newer versions go on top
+- version: "0.4.0"
+  changes:
+    - description: >-
+        The Audit and Managed Device Event Hub inputs are replaced by one input that routes events
+        to the audit and managed_device data streams by log category. The Event Hub settings move to
+        the integration settings, so existing policies keep running the previous version until you
+        edit them. To upgrade a policy, enter the Event Hub settings, the Consumer Group (it resets
+        to $Default), your optional settings and custom Tags again. Keep the same Consumer Group and
+        Storage Account Container to continue from the existing checkpoints and avoid duplicate
+        events. If the two inputs read from different Event Hubs, send both log categories to one
+        Event Hub or add a second policy. The Preserve duplicate custom fields setting is also
+        removed: vendor fields that are copied to ECS fields are always removed, so use the ECS
+        fields instead.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/22747
+    - description: >-
+        Parse the compliance fields of device compliance records (DeviceComplianceOrg log category)
+        in the managed_device data stream, such as compliance state, owner type and device health
+        threat level.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/22747
+    - description: >-
+        Select the Devices log category by default in the Managed Device dashboard, so that device
+        compliance records are not counted as devices.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/22747
 - version: "0.3.0"
   changes:
     - description: Add WebSocket transport, processor version, and related settings to Event Hub data streams for proxy support.

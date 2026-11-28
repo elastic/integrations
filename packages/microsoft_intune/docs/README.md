@@ -12,7 +12,15 @@ The Microsoft Intune integration uses Azure Event Hub to collect audit and manag
 
 ### How it works
 
-This integration collects audit and managed device logs from Microsoft Intune by consuming events from an Azure Event Hub. Intune audit and managed device logs are forwarded to the Event Hub, and the Elastic Agent reads these events in real-time, processes them through ingest pipelines, and indexes them in Elasticsearch.
+This integration collects audit and managed device logs from Microsoft Intune by consuming events from an Azure Event Hub. Intune sends all its log categories to the Event Hub, and the Elastic Agent reads the Event Hub once with a single input. The events arrive in the `microsoft_intune.events` data stream, and the ingest pipeline routes each event by its log category:
+
+| Log category | Data stream |
+| --- | --- |
+| `AuditLogs` | `microsoft_intune.audit` |
+| `Devices`, `DeviceComplianceOrg` | `microsoft_intune.managed_device` |
+| Any other category | `microsoft_intune.events` (not parsed) |
+
+The `audit` and `managed_device` data streams have no input of their own. They only receive events routed from `microsoft_intune.events`.
 
 ### Proxy support
 
@@ -47,10 +55,10 @@ Integrating device inventory data and Microsoft Intune audit logs into SIEM dash
 
 ### Collect data from Microsoft Azure Event Hub
 
--  Set up Azure Event Hub for Intune Audit Logs and Managed device logs and send audit logs and managed device logs from Intune to Azure Event Hub. For more detail, refer to the link [here](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
-- **Note:**
-   - Audit: Select LOG > AuditLogs.
-   - Managed Device: Select LOG > IntuneDevices.
+- Set up an Azure Event Hub and add an Intune diagnostic setting that sends the logs to it. For more detail, refer to [Send Intune log data to Azure Storage, Event Hubs, or Log Analytics](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/review-logs-using-azure-monitor).
+- In the diagnostic setting, select the log categories to collect. All categories can go to the same Event Hub:
+   - Audit: Select LOG → AuditLogs.
+   - Managed Device: Select LOG → IntuneDevices, and LOG → DeviceComplianceOrg to also collect device compliance records.
 
 ## How do I deploy this integration?
 
@@ -65,15 +73,53 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Microsoft Intune**.
 3. Select the **Microsoft Intune** integration and add it.
-4. While adding the integration, to collect logs via **Azure Event Hub**, enter the following details:
-   - eventhub
-   - consumer_group
-   - connection_string
-   - storage_account
-   - storage_account_key
-   - storage_account_container (optional)
-   - resource_manager_endpoint (optional)
-5. Select **Save and continue** to save the integration.
+4. While adding the integration, enter the following Event Hub settings. They apply to the whole integration:
+   - Azure Event Hub
+   - Consumer Group
+   - Connection String
+   - Storage Account
+   - Storage Account Key
+   - Resource Manager Endpoint (optional)
+5. Under **Collect Microsoft Intune logs via Azure Event Hub**, optionally set the **Storage Account Container**.
+6. Select **Save and continue** to save the integration.
+
+### Upgrading from version 0.3.x
+
+Version 0.4.0 replaces the two Event Hub inputs (one for `audit` and one for `managed_device`) with a single input, and moves the Event Hub settings from the inputs to the integration settings. Fleet cannot carry the old values over, so existing integration policies are not upgraded automatically. They keep running version 0.3.x until you edit them.
+
+To upgrade an integration policy:
+
+1. In Kibana, go to **Management** → **Integrations** → **Installed integrations** → **Microsoft Intune** → **Integration policies**.
+2. Select **Upgrade** for the policy.
+3. Enter the **Azure Event Hub**, **Consumer Group**, **Connection String**, **Storage Account** and **Storage Account Key** again, and any advanced Event Hub settings you had changed. **Consumer Group** resets to `$Default`, so enter your own consumer group again if you used one.
+4. Under **Collect Microsoft Intune logs via Azure Event Hub**, reapply any options you had changed on the old inputs, such as **Preserve original event**, **Tags** or **Processors**. These options now apply to all log categories. If the old Audit and Managed Device inputs had different custom tags, enter the combined list. Keep the default `forwarded` and `microsoft_intune-events` tags, and do not add `microsoft_intune-audit` or `microsoft_intune-managed_device`. The integration replaces `microsoft_intune-events` with the tag of the data stream that each event is routed to.
+
+   For example, if the old inputs had these tags:
+
+   ```
+   Audit:          forwarded, microsoft_intune-audit, team-secops
+   Managed Device: forwarded, microsoft_intune-managed_device, cmdb
+   ```
+
+   enter this list on the new input:
+
+   ```
+   forwarded
+   microsoft_intune-events
+   team-secops
+   cmdb
+   ```
+
+   Audit events are then tagged `forwarded`, `microsoft_intune-audit`, `team-secops` and `cmdb`, and managed device events `forwarded`, `microsoft_intune-managed_device`, `team-secops` and `cmdb`.
+5. Select **Upgrade integration**.
+
+The default checkpoint container name (`azure-eventhub-input-<eventhub>`) has not changed. If you set a custom **Storage Account Container** on one of the old inputs, set the same value on the new input. With the same consumer group and container, the agent continues from the existing checkpoints.
+
+If the agent finds no checkpoints, for example because the consumer group or container is different, it starts reading from the earliest event still retained in the Event Hub. Events that were already collected are then read again. Both the `audit` and `managed_device` pipelines set a document ID from the event contents, so most of these events are not indexed twice. Events whose earlier copy is in an older backing index of the data stream, after a rollover, are indexed again as duplicates. To avoid reading old events, set **Processor start position** to **latest** before you upgrade the policy. The agent then starts from new events only, and events that arrive while the policy is being upgraded are not collected. **Processor start position** applies only to processor v2.
+
+If the old Audit and Managed Device inputs read from different Event Hubs, the upgraded policy reads only the Event Hub you enter, and the log category sent to the other Event Hub is no longer collected. To keep collecting it, either change the Intune diagnostic settings so that both log categories go to the same Event Hub, or add a second Microsoft Intune integration policy for the second Event Hub. Events are routed by log category, so both policies deliver events to the correct data streams.
+
+Version 0.4.0 also removes the **Preserve duplicate custom fields** setting. Vendor fields that are copied to ECS fields, such as `microsoft_intune.audit.identity` (copied to `user.email`), are now always removed from the event. Update saved searches, visualizations and rules that use these vendor fields to use the ECS fields instead.
 
 ### Validation
 
@@ -83,15 +129,47 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 2. In the search bar, type **Microsoft Intune**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
+The **Managed Device** dashboard shows the device inventory (`Devices` log category). Its **Category** control selects `Devices` by default, so that device compliance records are not counted as devices. To look at the compliance records, change the **Category** control to `DeviceComplianceOrg`, or search the `microsoft_intune.managed_device` data stream in Discover.
+
 ## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
+## Troubleshooting
+
+- **Events are missing from `audit` or `managed_device`:** check the `logs-microsoft_intune.events-*` data stream. Events whose log category is not `AuditLogs`, `Devices` or `DeviceComplianceOrg` stay there, with the category in `microsoft_intune.events.category`. Events that are not valid JSON also stay there, with `event.kind` set to `pipeline_error`.
+
 ## Reference
+
+### events
+
+The `events` data stream receives all events from the Event Hub and routes them to the other data streams. It keeps the events whose log category is not routed. These events are not parsed: the raw event is in `message`, and also in `event.original` when **Preserve original event** is enabled or when the event is not valid JSON.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| microsoft_intune.events.category | Azure Monitor log category of an event that is not routed to another data stream of this package. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| tags | User defined tags. | keyword |
+
 
 ### managed_device
 
-This is the `managed_device` dataset.
+The `managed_device` data stream holds two kinds of records, which you can tell apart by `microsoft_intune.managed_device.category`:
+
+- `Devices`: the device inventory, with fields such as `properties.compliant_state`, `properties.ownership` and `properties.manufacturer`.
+- `DeviceComplianceOrg`: device compliance records, with fields such as `properties.compliance_state`, `properties.owner_type` and `properties.device_health_threat_level`.
+
+Both kinds have the common device and user fields, such as `device.id`, `host.name`, `host.os.name` and `user.email`.
 
 **Exported fields**
 
@@ -105,18 +183,20 @@ This is the `managed_device` dataset.
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| microsoft_intune.managed_device.category | Diagnostic category indicating the type of Intune data (Devices). | keyword |
-| microsoft_intune.managed_device.operation_name | Name of the operation producing the device record. | keyword |
+| microsoft_intune.managed_device.category | Diagnostic category indicating the type of Intune data (Devices or DeviceComplianceOrg). | keyword |
 | microsoft_intune.managed_device.properties.aad_tenant_id | Azure Active Directory tenant identifier associated with the device. | keyword |
+| microsoft_intune.managed_device.properties.account_id | Identifier of the Intune account, as reported in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.android_patch_level | Android security patch level installed on the device. | keyword |
 | microsoft_intune.managed_device.properties.batch_id | Identifier of the batch in which the device record was exported. | keyword |
 | microsoft_intune.managed_device.properties.category_name | Category name assigned to the device in Intune. | keyword |
+| microsoft_intune.managed_device.properties.compliance_state | Compliance state of the device as reported in device compliance records (DeviceComplianceOrg), for example Compliant. | keyword |
+| microsoft_intune.managed_device.properties.compliance_state_code | Numeric code of the compliance state in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.compliant_state | Compliance status of the device as evaluated by Intune. | keyword |
-| microsoft_intune.managed_device.properties.created_date | Date and time when the device object was created in Intune. | date |
-| microsoft_intune.managed_device.properties.device_id | Unique identifier of the managed device in Intune. | keyword |
-| microsoft_intune.managed_device.properties.device_name | Human-readable name assigned to the device. | keyword |
+| microsoft_intune.managed_device.properties.device_health_threat_level | Device health threat level as reported in device compliance records. | keyword |
+| microsoft_intune.managed_device.properties.device_health_threat_level_code | Numeric code of the device health threat level in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.device_registration_state | Registration state of the device with Intune. | keyword |
 | microsoft_intune.managed_device.properties.device_state | Current management state of the device. | keyword |
+| microsoft_intune.managed_device.properties.device_type | Numeric code of the device type in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.eas_id | Exchange ActiveSync identifier associated with the device. | keyword |
 | microsoft_intune.managed_device.properties.encryption_status_string | Indicates whether the device storage is encrypted. | keyword |
 | microsoft_intune.managed_device.properties.graph_device_is_managed | Indicates whether the device is managed according to Microsoft Graph. | boolean |
@@ -128,28 +208,24 @@ This is the `managed_device` dataset.
 | microsoft_intune.managed_device.properties.last_contact | Date and time when the device last communicated with Intune. | date |
 | microsoft_intune.managed_device.properties.managed_by | Management authority responsible for the device. | keyword |
 | microsoft_intune.managed_device.properties.managed_device_name | Managed device name generated by Intune. | keyword |
+| microsoft_intune.managed_device.properties.management_agents | Management agents of the device as reported in device compliance records. | keyword |
+| microsoft_intune.managed_device.properties.management_agents_code | Numeric code of the management agents in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.manufacturer | Name of the device manufacturer. | keyword |
 | microsoft_intune.managed_device.properties.meid | Mobile Equipment Identifier of the device, if applicable. | keyword |
-| microsoft_intune.managed_device.properties.model | Hardware model identifier reported by the device. | keyword |
-| microsoft_intune.managed_device.properties.os | Operating system platform of the device. | keyword |
-| microsoft_intune.managed_device.properties.os_version | Version of the operating system installed on the device. | keyword |
+| microsoft_intune.managed_device.properties.os_description | Operating system description as reported in device compliance records. | keyword |
+| microsoft_intune.managed_device.properties.owner_type | Ownership type of the device as reported in device compliance records, for example Company or Personal. | keyword |
+| microsoft_intune.managed_device.properties.owner_type_code | Numeric code of the ownership type in device compliance records. | keyword |
 | microsoft_intune.managed_device.properties.ownership | Ownership type of the device (Corporate or Personal). | keyword |
 | microsoft_intune.managed_device.properties.phone_number | Phone number associated with the device, if available. | keyword |
-| microsoft_intune.managed_device.properties.primary_user | Identifier of the primary user object linked to the device. | keyword |
 | microsoft_intune.managed_device.properties.reference_id | Azure Active Directory device identifier. | keyword |
-| microsoft_intune.managed_device.properties.serial_number | Serial number assigned by the device manufacturer. | keyword |
+| microsoft_intune.managed_device.properties.retire_after_datetime | Date and time after which the device is retired, as reported in device compliance records. | date |
 | microsoft_intune.managed_device.properties.sku_family | Stock-keeping unit family associated with the device. | keyword |
 | microsoft_intune.managed_device.properties.storage_free | Available free storage capacity on the device. | long |
 | microsoft_intune.managed_device.properties.storage_total | Total storage capacity available on the device. | long |
 | microsoft_intune.managed_device.properties.subscriber_carrier_network | Subscriber carrier network information for cellular devices. | keyword |
 | microsoft_intune.managed_device.properties.supervised_status_string | Indicates whether the device is supervised. | keyword |
-| microsoft_intune.managed_device.properties.upn | User Principal Name of the user associated with the device. | keyword |
-| microsoft_intune.managed_device.properties.user_email | Email address of the primary user associated with the device. | keyword |
-| microsoft_intune.managed_device.properties.user_name | Display name of the primary user associated with the device. | keyword |
 | microsoft_intune.managed_device.properties.wifi_mac_address | Wi-Fi MAC address of the device network interface. | keyword |
 | microsoft_intune.managed_device.result_type | Result of the operation associated with the device record. | keyword |
-| microsoft_intune.managed_device.tenant_id | Unique identifier of the Microsoft Entra tenant associated with the device. | keyword |
-| microsoft_intune.managed_device.time | Timestamp when the device record was emitted to Azure Event Hub. | date |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | tags | User defined tags. | keyword |
@@ -173,17 +249,12 @@ This is the `audit` dataset.
 | log.offset | Log offset. | long |
 | microsoft_intune.audit.category | Log category indicating the type of diagnostic data (always AuditLogs for Intune audit events). | keyword |
 | microsoft_intune.audit.correlation_id | Correlation identifier used to link related operations across services. | keyword |
-| microsoft_intune.audit.identity | Identity (UPN or app identity) that initiated the Intune operation. | keyword |
-| microsoft_intune.audit.operation_name | Name of the Intune operation that was performed. | keyword |
 | microsoft_intune.audit.properties.activity_date | Date and time when the audited Intune activity occurred. | date |
 | microsoft_intune.audit.properties.activity_result_status | Numeric status code representing the outcome of the activity. | keyword |
 | microsoft_intune.audit.properties.activity_type | Numeric code representing the type of activity performed. | keyword |
 | microsoft_intune.audit.properties.actor.actor_type | Numeric code indicating the type of actor that initiated the action (user or application). | keyword |
 | microsoft_intune.audit.properties.actor.application | Application (client) identifier used when the action was initiated by an app. | keyword |
-| microsoft_intune.audit.properties.actor.application_name | Human-readable name of the application that initiated the action. | keyword |
 | microsoft_intune.audit.properties.actor.is_delegated_admin | Indicates whether the action was performed by a delegated administrator. | boolean |
-| microsoft_intune.audit.properties.actor.name | Display name of the actor who initiated the operation, if available. | keyword |
-| microsoft_intune.audit.properties.actor.object_id | Object ID of the user or application that initiated the action. | keyword |
 | microsoft_intune.audit.properties.actor.partner_tenant_id | Tenant ID of the partner tenant if the action was performed by a delegated partner. | keyword |
 | microsoft_intune.audit.properties.actor.upn | User Principal Name (UPN) of the user who initiated the operation. | keyword |
 | microsoft_intune.audit.properties.actor.user_permissions | List of permissions associated with the actor at the time of the operation. | keyword |
@@ -191,20 +262,13 @@ This is the `audit` dataset.
 | microsoft_intune.audit.properties.additional_detail.parsed |  | flattened |
 | microsoft_intune.audit.properties.additional_details.key | Key name of additional contextual information associated with the audit event. | keyword |
 | microsoft_intune.audit.properties.additional_details.value | Value corresponding to the additional contextual information key. | keyword |
-| microsoft_intune.audit.properties.audit_event_id | Unique identifier of the audit event generated by Intune. | keyword |
 | microsoft_intune.audit.properties.category | Numeric category code used internally by Intune for audit classification. | keyword |
-| microsoft_intune.audit.properties.logged_by_service | Name of the Microsoft service that generated the audit log entry. | keyword |
 | microsoft_intune.audit.properties.relation_id | Identifier used to relate multiple audit events generated as part of a single operation. | keyword |
 | microsoft_intune.audit.properties.target_display_names | Display names of the Intune resources that were targeted by the operation. | keyword |
 | microsoft_intune.audit.properties.target_object_ids | Object IDs of the Intune resources that were targeted by the operation. | keyword |
 | microsoft_intune.audit.properties.targets.modified_properties.name | Name of the property that was modified on the target resource. | keyword |
 | microsoft_intune.audit.properties.targets.modified_properties.new | New value of the modified property after the change. | keyword |
 | microsoft_intune.audit.properties.targets.modified_properties.old | Previous value of the modified property before the change. | keyword |
-| microsoft_intune.audit.properties.targets.name | Name of the individual target resource affected by the operation. | keyword |
-| microsoft_intune.audit.result_description | Textual description of the operation result, if available. | keyword |
-| microsoft_intune.audit.result_type | High-level result status of the operation (Success or Failure). | keyword |
-| microsoft_intune.audit.tenant_id | Unique identifier of the Microsoft Entra tenant where the Intune action occurred. | keyword |
-| microsoft_intune.audit.time | Timestamp when the audit event was generated and emitted to Azure Monitor / Event Hub. | date |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | tags | User defined tags. | keyword |
