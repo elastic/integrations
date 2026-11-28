@@ -2,17 +2,26 @@
 description: Pipeline for parsing nats log logs
 processors:
   - set:
+      tag: set_event_ingested_4e7f6dc8
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - set:
+      tag: set_ecs_version_0394551f
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_1df82074
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_ab8e7d9a
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_b3eeccc9
       field: event.original
       patterns:
       - \[%{POSINT:process.pid}\]( %{NATSTIME:nats.log.timestamp})? \[%{NATSLOGLEVEL:log.level}\]
@@ -22,6 +31,7 @@ processors:
         NATSLOGLEVEL: (INF|DBG|WRN|ERR|FTL|TRC)
       ignore_missing: true
   - grok:
+      tag: grok_nats_log_info_ba6b099f
       field: nats.log.info
       patterns:
       - '%{IPV4:client.ip}:%{POSINT:client.port} - cid:%{POSINT:nats.log.client.id}
@@ -29,6 +39,7 @@ processors:
       - '%{GREEDYDATA:nats.log.msg.data}'
       ignore_missing: true
   - grok:
+      tag: grok_nats_log_msg_info_d14bb501
       field: nats.log.msg.info
       patterns:
       - '%{NATSDIRECTION:network.direction} %{NATSPAYLOAD:nats.log.msg.type}: \[%{GREEDYDATA:nats.log.msg.payload}\]'
@@ -57,18 +68,23 @@ processors:
         NATSNOINFO: (?:%{NATSPING}|%{NATSPONG}|%{NATSOK})
       ignore_missing: true
   - remove:
+      tag: remove_nats_log_info_e64355fb
       field: nats.log.info
   - remove:
+      tag: remove_nats_log_msg_info_dffac7c3
       field: nats.log.msg.info
       ignore_missing: true
   - remove:
+      tag: remove_nats_log_msg_payload_b6b96df0
       field: nats.log.msg.payload
       ignore_missing: true
   - rename:
+      tag: rename_nats_log_msg_data_0dc4ee34
       field: nats.log.msg.data
       target_field: message
       ignore_missing: true
   - script:
+      tag: script_3f2b0cdd
       lang: painless
       source: |-
         if (ctx.log.level == params.inf) {
@@ -98,6 +114,7 @@ processors:
         trc: TRC
         trace: trace
   - script:
+      tag: script_afbab610
       lang: painless
       source: |-
         if (ctx.nats.log.msg.type == params.msg) {
@@ -148,6 +165,7 @@ processors:
         information: information
       if: ctx.nats.log.msg?.type != null
   - script:
+      tag: script_1c46455b
       lang: painless
       source: |-
         if (ctx.network.direction == params.in) {
@@ -162,42 +180,61 @@ processors:
         outbound: outbound
       if: ctx.network?.direction != null
   - rename:
+      tag: rename_timestamp_f891917d
       field: '@timestamp'
       target_field: event.created
   - date:
+      tag: date_nats_log_timestamp_afa9d710
       field: nats.log.timestamp
       target_field: '@timestamp'
       formats:
       - yyyy/MM/dd HH:mm:ss.SSSSSS
   - remove:
+      tag: remove_nats_log_timestamp_651dfd32
       field: nats.log.timestamp
   - set:
+      tag: set_event_kind_0ee9a0b1
       field: event.kind
       value: event
   - append:
+      tag: append_event_type_f196a386
       field: event.type
       value: info
   - append:
+      tag: append_event_type_5e529773
       field: event.type
       value: error
       if: "ctx?.log?.level != null && (ctx.log.level == 'error' || ctx.log.level == 'fatal')"
   - append:
+      tag: append_related_ip_dd4deb32
       field: related.ip
       value: "{{client.ip}}"
       if: "ctx?.client?.ip != null"
   - convert:
+      tag: convert_process_pid_4cce8879
       ignore_missing: true
       field: process.pid
       type: long
   - convert:
+      tag: convert_client_port_5619fed2
       ignore_missing: true
       field: client.port
       type: long
   - convert:
+      tag: convert_nats_log_msg_bytes_6b5e7303
       ignore_missing: true
       field: nats.log.msg.bytes
       type: long
 on_failure:
   - set:
+      tag: set_event_kind_6770e5c9
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_39532668
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
