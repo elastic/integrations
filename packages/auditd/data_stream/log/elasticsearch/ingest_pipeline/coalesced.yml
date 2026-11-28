@@ -1,0 +1,343 @@
+---
+description: >-
+  Sub-pipeline for coalesced auditd documents produced by the filestream auditd
+  parser in coalesce mode. Invoked last from default.yml so that geoip and
+  related.user appends run while root user.* fields are still at their original
+  locations. Ported from packages/auditd_manager with the divergences documented
+  inline.
+processors:
+  # auditd_manager renames event.original → auditd.messages then joins it back.
+  # We skip that: the parser writes auditd.messages directly (include_raw_message),
+  # and default.yml already renamed message → event.original from msg.Content.
+
+  # auditd_manager renames error.message → auditd.warnings. We skip that: the
+  # parser never sets error.message, and any error.message at this point came
+  # from a default.yml on_failure handler — renaming it would launder a real
+  # failure into a benign-looking warning.
+  - join:
+      tag: join_auditd_warnings_to_error_message_c66ad5c8
+      field: auditd.warnings
+      separator: "\n"
+      target_field: error.message
+      if: |
+        ctx.auditd?.warnings != null &&
+        ctx.auditd.warnings instanceof List &&
+        ctx.auditd.warnings.size() > 0 &&
+        ctx.error?.message == null
+  - script:
+      tag: script_standardize_field_names_cc8c6936
+      lang: painless
+      description: >-
+        Standardize all field names by replacing hyphens with underscores.
+        Must run before the user.* renames below so that user.old-auid.id
+        becomes user.old_auid.id before it is renamed to auditd.user.old_auid.id.
+      source: |
+        void handleMap(Map map) {
+          for (def k : map.keySet().toArray(new def[map.size()])) {
+            if (map[k] instanceof Map) {
+              handleMap(map[k]);
+            }
+
+            if (k.contains("-")) {
+              map[k.replace("-", "_")] = map[k];
+              map.remove(k);
+            }
+          }
+        }
+        handleMap(ctx);
+  - rename:
+      tag: rename_source_path_to_source_address_00a6ccdc
+      field: source.path
+      target_field: source.address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_destination_path_to_destination_address_3ff0f574
+      field: destination.path
+      target_field: destination.address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_user_audit_to_auditd_user_audit_7c3bf895
+      field: user.audit
+      target_field: auditd.user.audit
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_user_new_auid_to_auditd_user_new_auid_77c8df09
+      field: user.new_auid
+      target_field: auditd.user.new_auid
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_user_old_auid_to_auditd_user_old_auid_de1e77ed
+      field: user.old_auid
+      target_field: auditd.user.old_auid
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_file_selinux_to_auditd_file_selinux_7d7cdf35
+      field: file.selinux
+      target_field: auditd.file.selinux
+      ignore_missing: true
+      ignore_failure: true
+  # The coalescing parser writes auditd.user.selinux (coalesce.go:342) AND
+  # user.selinux (coalesce.go:508) simultaneously. The rename below fails
+  # silently (ignore_failure) because the target already exists. We then
+  # remove the leftover root user.selinux explicitly.
+  - rename:
+      tag: rename_user_selinux_to_auditd_user_selinux_8df0623b
+      field: user.selinux
+      target_field: auditd.user.selinux
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      tag: remove_user_selinux_root_b0d197eb
+      field: user.selinux
+      ignore_missing: true
+  - rename:
+      tag: rename_user_saved_to_auditd_user_saved_c5f9999d
+      field: user.saved
+      target_field: auditd.user.saved
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_user_filesystem_to_auditd_user_filesystem_6eb7d075
+      field: user.filesystem
+      target_field: auditd.user.filesystem
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      tag: script_normalize_event_category_type_cb272db1
+      lang: painless
+      description: >-
+        Remap non-ECS event.category strings emitted by go-libaudit's
+        auditEventTypeNames (the scalar fallback when no aucoalesce normalization
+        matched) to ECS-valid values, and dedup event.category and event.type
+        lists produced when both record-type and syscall normalizations ran.
+      params:
+        remap:
+          user-login: authentication
+          user-account: iam
+          group-change: iam
+          audit-rule: configuration
+          configuration: configuration
+          mac-decision: intrusion_detection
+          dac-decision: intrusion_detection
+          mac: intrusion_detection
+          anomaly: intrusion_detection
+          anomaly-response: intrusion_detection
+          integrity: file
+      source: |
+        if (ctx.event == null) { return; }
+        if (ctx.event.category instanceof String) {
+          def mapped = params.remap.get(ctx.event.category);
+          if (mapped != null) {
+            ctx.event.category = [mapped];
+          } else {
+            ctx.event.remove("category");
+          }
+        } else if (ctx.event.category instanceof List) {
+          def seen = new HashSet();
+          def deduped = new ArrayList();
+          for (def v : ctx.event.category) {
+            if (seen.add(v)) { deduped.add(v); }
+          }
+          ctx.event.category = deduped;
+        }
+        if (ctx.event.type instanceof List) {
+          def seen = new HashSet();
+          def deduped = new ArrayList();
+          for (def v : ctx.event.type) {
+            if (seen.add(v)) { deduped.add(v); }
+          }
+          ctx.event.type = deduped;
+        }
+  - set:
+      tag: set_event_outcome_failure_75a731a4
+      field: event.outcome
+      value: failure
+      if: ctx.event?.outcome == "fail"
+  - rename:
+      tag: rename_auditd_sequence_to_event_sequence_ba8d0fc4
+      field: auditd.sequence
+      target_field: event.sequence
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      tag: rename_auditd_data_id_to_event_id_68febf51
+      field: auditd.data.id
+      target_field: event.id
+      ignore_missing: true
+      ignore_failure: true
+  # Set host.architecture for parity with the legacy parse-mode path, which
+  # derives it from auditd.log.arch via the ingest pipeline. The coalescing
+  # parser writes no host.* fields.
+  - set:
+      tag: set_host_architecture_from_auditd_data_arch_451e0467
+      field: host.architecture
+      copy_from: auditd.data.arch
+      ignore_empty_value: true
+  - convert:
+      tag: convert_auditd_data_removed_to_long_d47fcdd7
+      field: auditd.data.removed
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_items_to_long_1159e55f
+      field: auditd.data.items
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_lport_to_long_cffb7380
+      field: auditd.data.lport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_rport_to_long_3f021c4a
+      field: auditd.data.rport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_sport_to_long_70e03255
+      field: auditd.data.sport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_dport_to_long_5ed294d8
+      field: auditd.data.dport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_entries_to_long_81fadd13
+      field: auditd.data.entries
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_argc_to_long_69cb1836
+      field: auditd.data.argc
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_seqno_to_long_1978f87f
+      field: auditd.data.seqno
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_nargs_to_long_91c1c674
+      field: auditd.data.nargs
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_socket_port_to_long_a65f73e6
+      field: auditd.data.socket.port
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_old_vcpu_to_long_e18125c5
+      field: auditd.data.old_vcpu
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_new_vcpu_to_long_bc08841c
+      field: auditd.data.new_vcpu
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_changed_to_long_1c8c3cb7
+      field: auditd.data.changed
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_added_to_long_ae53a03d
+      field: auditd.data.added
+      type: long
+      ignore_missing: true
+  # source.port and destination.port are strings in coalesce mode:
+  # aucoalesce.Address.Port is a string and coalesce.go copies it verbatim.
+  - convert:
+      tag: convert_destination_port_to_long_88edb376
+      field: destination.port
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_source_port_to_long_2cf885ff
+      field: source.port
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_spid_to_long_254d10d1
+      field: auditd.data.spid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_opid_to_long_bde2b69d
+      field: auditd.data.opid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_nlnk_pid_to_long_34b6f578
+      field: auditd.data.nlnk_pid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_vm_pid_to_long_8b6faa20
+      field: auditd.data.vm_pid
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_auditd_data_audit_pid_to_long_0db5680e
+      field: auditd.data.audit_pid
+      type: long
+      ignore_missing: true
+  # process.pid and process.exit_code are already converted by default.yml
+  # (lines 2351 and 2394) before this sub-pipeline is invoked.
+  - remove:
+      tag: remove_auditd_messages_unless_preserve_original_65be8ae4
+      field: auditd.messages
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      tag: script_remove_null_fields_a62eb695
+      lang: painless
+      description: Remove fields with null values, empty strings, and empty objects or lists.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+on_failure:
+  - set:
+      tag: set_event_kind_pipeline_error_coalesced_1f4a8b2c
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_coalesced_9e3d5f71
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_preserve_original_event_coalesced_3c7a19f0
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
