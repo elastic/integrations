@@ -2,69 +2,90 @@
 description: Pipeline for processing Audit Events logs
 processors:
   - set:
+      tag: set_ecs_version_c620a28e
       field: ecs.version
       value: "8.11.0"
   - rename:
+      tag: rename_message_27498c16
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_f8cb8c0c
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - set:
+      tag: set_event_dataset_ed3af3a5
       field: event.dataset
       value: spring_boot.audit_events
   - set:
+      tag: set_event_module_5a2ef451
       field: event.module
       value: spring_boot
   - json:
+      tag: json_event_original_9bb87322
       field: event.original
       target_field: json
       ignore_failure: true
   - fingerprint:
+      tag: fingerprint_a4fd0722
       fields:
         - json.timestamp
         - json.type
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_type_6dc26427
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_8a33d7b4
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_e784b274
       field: event.category
       value: [web]
   - rename:
+      tag: rename_json_principal_1943f59d
       field: json.principal
       target_field: spring_boot.audit_events.principal
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_type_21296f69
       field: json.type
       target_field: spring_boot.audit_events.type
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_details_sessionId_5109dd11
       field: json.data.details.sessionId
       target_field: spring_boot.audit_events.data.session_id
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_data_details_remoteAddress_fa252ad2
       field: json.data.details.remoteAddress
       target_field: spring_boot.audit_events.data.remote_address
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_spring_boot_audit_events_document_id_3fcaa110
       field: spring_boot.audit_events.document_id
       copy_from: _id
       ignore_empty_value: true
   - remove:
+      tag: remove_json_1cb792b4
       field:
         - json
         - input.type
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_550ad32f
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -83,5 +104,14 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_9134a0b0
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_3a06cda1
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

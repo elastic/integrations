@@ -2,34 +2,50 @@
 description: Pipeline for parsing Spring Boot Threading metrics.
 processors:
   - set:
+      tag: set_ecs_version_1f9ab628
       field: ecs.version
       value: "8.11.0"
   - rename:
+      tag: rename_jolokia_metrics_bc906512
       field: jolokia.metrics
       target_field: spring_boot.threading
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_type_9ff4bdfb
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_ea8e800d
       field: event.kind
       value: metric
   - set:
+      tag: set_event_category_f0d69953
       field: event.category
       value: [web]
   - set:
+      tag: set_event_module_6e41e490
       field: event.module
       value: spring_boot
   - set:
+      tag: set_event_dataset_405b2863
       field: event.dataset
       value: spring_boot.threading
   - remove:
+      tag: remove_jolokia_9ea7010b
       field: jolokia
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_e81f4e28
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_d8340d28
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
-      
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
