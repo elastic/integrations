@@ -11,7 +11,7 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 ## Data streams
 
 - **`inventory`** Provides Inventory data for computers. Includes: hardware, OS, etc. Saves each device as a separate log record.  
-This data stream utilizes the Jamf Pro API's `/v1/computers-inventory` endpoint.
+This data stream uses the Jamf Pro API `/v4/computers-inventory` endpoint.
 
 - **`events`** Receives events sent by [Jamf Pro Webhooks](https://developer.jamf.com/developer-guide/docs/webhooks).  
 This data stream requires opening a port on the Elastic Agent host.
@@ -24,6 +24,9 @@ This data stream requires opening a port on the Elastic Agent host.
 ## Requirements
 
 #### Inventory
+
+- **Jamf Pro 11.30.0 or later**  
+The inventory data stream uses the Jamf Pro API `/api/v4/computers-inventory` endpoint, which was introduced in Jamf Pro 11.30.0. Earlier Jamf Pro versions do not provide this endpoint.
 
 - **Jamf Pro Active License and OAuth2 Credentials**  
 This connector utilizes Jamf Pro API, therefore an active license - either Jamf **Business** or **Enterprise** - is required (Jamf _**Now**_ does not have access to the API)
@@ -144,39 +147,50 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-11T06:28:58.396Z",
+    "@timestamp": "2026-11-20T05:32:21.292Z",
     "agent": {
-        "ephemeral_id": "69860cc1-6d27-47ce-9f09-fee5748b03d8",
-        "id": "cb6bd8dd-e2fb-46d0-9849-66f25eb830d9",
-        "name": "elastic-agent-79227",
+        "ephemeral_id": "17fb72a2-5c02-4edd-951d-7892aa5564be",
+        "id": "0b7d48cd-352b-4de3-baef-4179da237a2f",
+        "name": "elastic-agent-41975",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.19.2"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "47676",
+        "namespace": "94903",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "cb6bd8dd-e2fb-46d0-9849-66f25eb830d9",
+        "id": "0b7d48cd-352b-4de3-baef-4179da237a2f",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.19.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2025-09-11T06:29:01Z",
+        "ingested": "2026-11-20T05:32:24Z",
         "kind": "asset"
     },
     "host": {
+        "entity": {
+            "attributes": {
+                "managed": true
+            },
+            "lifecycle": {
+                "last_activity": "2024-04-18T14:26:51.514Z"
+            }
+        },
         "id": "5982CE36-4526-580B-B4B9-ECC6782535BB",
-        "name": "acme-C07DM3AZQ6NV",
         "ip": [
             "10.122.26.87"
-        ]
+        ],
+        "name": "acme-C07DM3AZQ6NV",
+        "os": {
+            "platform": "Mac"
+        }
     },
     "input": {
         "type": "cel"
@@ -190,10 +204,13 @@ An example event for `inventory` looks as following:
                 "initial_entry_date": "2024-06-19",
                 "itunes_store_account_active": false,
                 "jamf_binary_version": "11.4.1-t1712591696",
+                "last_check_in": "2024-04-18T14:26:51.514Z",
                 "last_contact_time": "2024-04-18T14:26:51.514Z",
                 "last_enrolled_date": "2023-02-22T10:46:17.199Z",
                 "last_ip_address": "10.122.26.87",
                 "last_reported_ip": "10.122.26.87",
+                "last_reported_ip_v4": "10.122.26.87",
+                "last_reported_ip_v6": "2001:db8::1",
                 "management_id": "1a59c510-b3a9-41cb-8afa-3d4187ac60d0",
                 "mdm_capable": {
                     "capable": false
@@ -215,12 +232,10 @@ An example event for `inventory` looks as following:
             "udid": "5982CE36-4526-580B-B4B9-ECC6782535BB"
         }
     },
-    "os": {
-        "platform": "Mac"
-    },
     "related": {
         "ip": [
-            "10.122.26.87"
+            "10.122.26.87",
+            "2001:db8::1"
         ]
     },
     "tags": [
@@ -245,6 +260,8 @@ The following non-ECS fields are used in inventory documents:
 | host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Input type | keyword |
 | jamf_pro.inventory.applications.bundle_id |  | keyword |
+| jamf_pro.inventory.applications.cf_bundle_short_version_string | Short bundle version string from Jamf Pro API v4 (`cfBundleShortVersionString`). | keyword |
+| jamf_pro.inventory.applications.cf_bundle_version | Bundle version from Jamf Pro API v4 (`cfBundleVersion`). | keyword |
 | jamf_pro.inventory.applications.external_version_id |  | keyword |
 | jamf_pro.inventory.applications.mac_app_store |  | boolean |
 | jamf_pro.inventory.applications.name |  | keyword |
@@ -253,25 +270,38 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.applications.update_available |  | boolean |
 | jamf_pro.inventory.applications.version |  | keyword |
 | jamf_pro.inventory.attachments |  | nested |
-| jamf_pro.inventory.certificates |  | nested |
+| jamf_pro.inventory.certificates.certificate_status |  | keyword |
+| jamf_pro.inventory.certificates.common_name |  | keyword |
+| jamf_pro.inventory.certificates.expiration_date |  | date |
+| jamf_pro.inventory.certificates.identity |  | boolean |
+| jamf_pro.inventory.certificates.issued_date |  | date |
+| jamf_pro.inventory.certificates.lifecycle_status |  | keyword |
+| jamf_pro.inventory.certificates.serial_number |  | keyword |
+| jamf_pro.inventory.certificates.sha1fingerprint |  | keyword |
+| jamf_pro.inventory.certificates.subject_name |  | keyword |
+| jamf_pro.inventory.certificates.username |  | keyword |
 | jamf_pro.inventory.configuration_profiles.display_name |  | keyword |
 | jamf_pro.inventory.configuration_profiles.id |  | keyword |
 | jamf_pro.inventory.configuration_profiles.last_installed |  | date |
 | jamf_pro.inventory.configuration_profiles.profile_identifier |  | keyword |
 | jamf_pro.inventory.configuration_profiles.removable |  | boolean |
 | jamf_pro.inventory.configuration_profiles.username |  | keyword |
+| jamf_pro.inventory.configuration_profiles.uuid |  | keyword |
 | jamf_pro.inventory.disk_encryption.boot_partition_encryption_details.partition_file_vault2percent |  | float |
 | jamf_pro.inventory.disk_encryption.boot_partition_encryption_details.partition_file_vault2state |  | keyword |
 | jamf_pro.inventory.disk_encryption.boot_partition_encryption_details.partition_name |  | keyword |
 | jamf_pro.inventory.disk_encryption.disk_encryption_configuration_name |  | keyword |
 | jamf_pro.inventory.disk_encryption.file_vault2eligibility_message |  | text |
+| jamf_pro.inventory.disk_encryption.file_vault2enabled |  | boolean |
 | jamf_pro.inventory.disk_encryption.file_vault2enabled_user_names |  | keyword |
 | jamf_pro.inventory.disk_encryption.individual_recovery_key_validity_status |  | keyword |
 | jamf_pro.inventory.disk_encryption.institutional_recovery_key_present |  | boolean |
 | jamf_pro.inventory.error.message |  | text |
 | jamf_pro.inventory.extension_attributes |  | nested |
 | jamf_pro.inventory.fonts |  | nested |
+| jamf_pro.inventory.general.apple_enrollment_type |  | keyword |
 | jamf_pro.inventory.general.asset_tag |  | keyword |
+| jamf_pro.inventory.general.awaiting_configuration |  | boolean |
 | jamf_pro.inventory.general.barcode1 |  | keyword |
 | jamf_pro.inventory.general.barcode2 |  | keyword |
 | jamf_pro.inventory.general.declarative_device_management_enabled |  | boolean |
@@ -283,8 +313,9 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.general.initial_entry_date |  | date |
 | jamf_pro.inventory.general.itunes_store_account_active |  | boolean |
 | jamf_pro.inventory.general.jamf_binary_version |  | keyword |
+| jamf_pro.inventory.general.last_check_in | Last check-in time reported by the computer (`general.lastCheckIn` in Jamf Pro API v4). | date |
 | jamf_pro.inventory.general.last_cloud_backup_date |  | date |
-| jamf_pro.inventory.general.last_contact_time |  | date |
+| jamf_pro.inventory.general.last_contact_time | Last contact time reported by the computer. Mapped from Jamf Pro API v4 `general.lastContact` (v1 `general.lastContactTime`). | date |
 | jamf_pro.inventory.general.last_enrolled_date |  | date |
 | jamf_pro.inventory.general.last_ip_address |  | ip |
 | jamf_pro.inventory.general.last_ip_address_geo.city_name |  | keyword |
@@ -294,10 +325,20 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.general.last_ip_address_geo.location |  | geo_point |
 | jamf_pro.inventory.general.last_ip_address_geo.region_iso_code |  | keyword |
 | jamf_pro.inventory.general.last_ip_address_geo.region_name |  | keyword |
-| jamf_pro.inventory.general.last_reported_ip |  | ip |
+| jamf_pro.inventory.general.last_logged_in_username_binary |  | keyword |
+| jamf_pro.inventory.general.last_logged_in_username_binary_timestamp |  | date |
+| jamf_pro.inventory.general.last_logged_in_username_mdm |  | keyword |
+| jamf_pro.inventory.general.last_logged_in_username_mdm_timestamp |  | date |
+| jamf_pro.inventory.general.last_logged_in_username_self_service |  | keyword |
+| jamf_pro.inventory.general.last_logged_in_username_self_service_timestamp |  | date |
+| jamf_pro.inventory.general.last_reported_ip | Last reported IPv4 address. Mapped from Jamf Pro API v4 `general.lastReportedIpV4` (v1 `general.lastReportedIp`). | ip |
+| jamf_pro.inventory.general.last_reported_ip_v4 | Last reported IPv4 address (`general.lastReportedIpV4`). | ip |
+| jamf_pro.inventory.general.last_reported_ip_v6 | Last reported IPv6 address (`general.lastReportedIpV6`). | ip |
 | jamf_pro.inventory.general.management_id |  | keyword |
 | jamf_pro.inventory.general.mdm_capable.capable |  | boolean |
 | jamf_pro.inventory.general.mdm_capable.capable_users |  | keyword |
+| jamf_pro.inventory.general.mdm_capable.user_management_info.capable_user |  | keyword |
+| jamf_pro.inventory.general.mdm_capable.user_management_info.management_id |  | keyword |
 | jamf_pro.inventory.general.mdm_profile_expiration |  | date |
 | jamf_pro.inventory.general.name |  | keyword |
 | jamf_pro.inventory.general.platform |  | keyword |
@@ -308,6 +349,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.general.site.name |  | keyword |
 | jamf_pro.inventory.general.supervised |  | boolean |
 | jamf_pro.inventory.general.user_approved_mdm |  | boolean |
+| jamf_pro.inventory.group_memberships.group_description |  | keyword |
 | jamf_pro.inventory.group_memberships.group_id |  | keyword |
 | jamf_pro.inventory.group_memberships.group_name |  | keyword |
 | jamf_pro.inventory.group_memberships.smart_group |  | boolean |
@@ -315,6 +357,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.hardware.alt_network_adapter_type |  | keyword |
 | jamf_pro.inventory.hardware.apple_silicon |  | boolean |
 | jamf_pro.inventory.hardware.battery_capacity_percent |  | integer |
+| jamf_pro.inventory.hardware.battery_health |  | keyword |
 | jamf_pro.inventory.hardware.ble_capable |  | boolean |
 | jamf_pro.inventory.hardware.boot_rom |  | keyword |
 | jamf_pro.inventory.hardware.bus_speed_mhz |  | long |
@@ -332,6 +375,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.hardware.processor_count |  | integer |
 | jamf_pro.inventory.hardware.processor_speed_mhz |  | long |
 | jamf_pro.inventory.hardware.processor_type |  | keyword |
+| jamf_pro.inventory.hardware.provisioning_udid |  | keyword |
 | jamf_pro.inventory.hardware.serial_number |  | keyword |
 | jamf_pro.inventory.hardware.smc_version |  | keyword |
 | jamf_pro.inventory.hardware.supports_ios_app_installs |  | boolean |
@@ -385,18 +429,22 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.purchasing.vendor |  | keyword |
 | jamf_pro.inventory.purchasing.warranty_date |  | date |
 | jamf_pro.inventory.security.activation_lock_enabled |  | boolean |
+| jamf_pro.inventory.security.attestation_status |  | keyword |
 | jamf_pro.inventory.security.auto_login_disabled |  | boolean |
 | jamf_pro.inventory.security.bootstrap_token_allowed |  | boolean |
 | jamf_pro.inventory.security.bootstrap_token_escrowed_status |  | keyword |
 | jamf_pro.inventory.security.external_boot_level |  | keyword |
 | jamf_pro.inventory.security.firewall_enabled |  | boolean |
 | jamf_pro.inventory.security.gatekeeper_status |  | keyword |
+| jamf_pro.inventory.security.last_attestation_attempt |  | date |
+| jamf_pro.inventory.security.last_successful_attestation |  | date |
+| jamf_pro.inventory.security.lockdown_mode_enabled |  | boolean |
 | jamf_pro.inventory.security.recovery_lock_enabled |  | boolean |
 | jamf_pro.inventory.security.remote_desktop_enabled |  | boolean |
 | jamf_pro.inventory.security.secure_boot_level |  | keyword |
 | jamf_pro.inventory.security.sip_status |  | keyword |
 | jamf_pro.inventory.security.xprotect_version |  | keyword |
-| jamf_pro.inventory.services |  | nested |
+| jamf_pro.inventory.services.name |  | keyword |
 | jamf_pro.inventory.software_updates.name |  | keyword |
 | jamf_pro.inventory.software_updates.package_name |  | keyword |
 | jamf_pro.inventory.software_updates.version |  | keyword |
@@ -404,6 +452,19 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.storage.disks.device |  | keyword |
 | jamf_pro.inventory.storage.disks.id |  | keyword |
 | jamf_pro.inventory.storage.disks.model |  | keyword |
+| jamf_pro.inventory.storage.disks.partitions.available_megabytes |  | long |
+| jamf_pro.inventory.storage.disks.partitions.file_vault2progress_percent |  | integer |
+| jamf_pro.inventory.storage.disks.partitions.file_vault2state |  | keyword |
+| jamf_pro.inventory.storage.disks.partitions.lvm_managed |  | boolean |
+| jamf_pro.inventory.storage.disks.partitions.name |  | keyword |
+| jamf_pro.inventory.storage.disks.partitions.partition_type |  | keyword |
+| jamf_pro.inventory.storage.disks.partitions.percent_used |  | integer |
+| jamf_pro.inventory.storage.disks.partitions.size_megabytes |  | long |
+| jamf_pro.inventory.storage.disks.revision |  | keyword |
+| jamf_pro.inventory.storage.disks.serial_number |  | keyword |
+| jamf_pro.inventory.storage.disks.size_megabytes |  | long |
+| jamf_pro.inventory.storage.disks.smart_status |  | keyword |
+| jamf_pro.inventory.storage.disks.type |  | keyword |
 | jamf_pro.inventory.udid |  | keyword |
 | jamf_pro.inventory.user_and_location.building_id |  | keyword |
 | jamf_pro.inventory.user_and_location.department_id |  | keyword |

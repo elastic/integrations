@@ -11,7 +11,7 @@ For more information, refer to [Elastic Managed integrations](https://www.elasti
 ## Data streams
 
 - **`inventory`** Provides Inventory data for computers. Includes: hardware, OS, etc. Saves each device as a separate log record.  
-This data stream utilizes the Jamf Pro API's `/v1/computers-inventory` endpoint.
+This data stream uses the Jamf Pro API `/v4/computers-inventory` endpoint.
 
 - **`events`** Receives events sent by [Jamf Pro Webhooks](https://developer.jamf.com/developer-guide/docs/webhooks).  
 This data stream requires opening a port on the Elastic Agent host.
@@ -24,6 +24,9 @@ This data stream requires opening a port on the Elastic Agent host.
 ## Requirements
 
 #### Inventory
+
+- **Jamf Pro 11.30.0 or later**  
+The inventory data stream uses the Jamf Pro API `/api/v4/computers-inventory` endpoint, which was introduced in Jamf Pro 11.30.0. Earlier Jamf Pro versions do not provide this endpoint.
 
 - **Jamf Pro Active License and OAuth2 Credentials**  
 This connector utilizes Jamf Pro API, therefore an active license - either Jamf **Business** or **Enterprise** - is required (Jamf _**Now**_ does not have access to the API)

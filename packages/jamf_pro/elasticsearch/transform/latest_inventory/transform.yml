@@ -6,8 +6,12 @@ source:
       must_not:
         - exists:
             field: error.message
+# The version suffix on the dest.index should be incremented if a breaking
+# change is made to the index mapping. You must also bump the
+# fleet_transform_version for any change to this transform configuration to
+# take effect. The old destination index is not automatically removed.
 dest:
-  index: "logs-jamf_pro_latest.dest_inventory-1"
+  index: "logs-jamf_pro_latest.dest_inventory-2"
   aliases:
     - alias: "logs-jamf_pro_latest.inventory"
       move_on_creation: true
@@ -32,5 +36,7 @@ retention_policy:
     max_age: 30d
 _meta:
   managed: false
-  fleet_transform_version: 0.1.0
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package upgrade.
+  fleet_transform_version: 0.2.0
   run_as_kibana_system: false
