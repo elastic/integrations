@@ -390,221 +390,110 @@ source:
       type: keyword
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { return; }
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
-            }
-          } catch (Exception e) {}
-          if (!isNat) { return; }
-          long syncMs = 0L;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
-            } else {
-              for (String k : ['ingested', 'created']) {
-                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
-                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
-                if (rawVal != null) {
-                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
-                  String s = rawVal.toString().trim();
-                  if (s != '') {
-                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
-                  }
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
                 }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
               }
             }
-          } catch (Exception e) {}
-          if (syncMs == 0L) {
-            try {
-              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
-              } else if (params._source?.get('@timestamp') != null) {
-                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
-              }
-            } catch (Exception e) {}
+            return '';
           }
-          String pName = '';
-          for (String f : ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                String v = doc[f].value.toString().trim();
-                if (v != '') { pName = v; break; }
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
               }
-            } catch (Exception e) {}
+            }
+            return dflt;
           }
-          if (pName == '') {
-            try {
-              if (params._source?.project_name != null && params._source.project_name.toString().trim() != '') {
-                pName = params._source.project_name.toString().trim();
-              } else if (params._source?.ess?.billing?.deployment_name != null && params._source.ess.billing.deployment_name.toString().trim() != '') {
-                pName = params._source.ess.billing.deployment_name.toString().trim();
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
               }
-            } catch (Exception e) {}
+            }
+            return 0L;
           }
-          String pType = '';
-          for (String f : ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                String v = doc[f].value.toString().trim().toLowerCase(Locale.ROOT);
-                if (v != '') { pType = v; break; }
-              }
-            } catch (Exception e) {}
-          }
-          if (pType == '') {
-            try {
-              if (params._source?.project_type != null && params._source.project_type.toString().trim() != '') {
-                pType = params._source.project_type.toString().trim().toLowerCase(Locale.ROOT);
-              } else if (params._source?.ess?.billing?.deployment_type != null && params._source.ess.billing.deployment_type.toString().trim() != '') {
-                pType = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
-              }
-            } catch (Exception e) {}
-          }
+          if (readStr(doc, null, ['_index'], []) == 'serverless_billing_cost_lookup-1') { return; }
+          if (readStr(doc, params._source, ['data_stream.dataset'], [['data_stream', 'dataset']]) != 'chargeback_serverless.billing') { return; }
+          long syncMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          String pName = readStr(doc, params._source, ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword'], [['project_name'], ['ess', 'billing', 'deployment_name']]);
+          String pType = readStr(doc, params._source, ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword'], [['project_type'], ['ess', 'billing', 'deployment_type']]).toLowerCase(Locale.ROOT);
           if (pType == 'oblt') { pType = 'observability'; }
           else if (pType == 'sec') { pType = 'security'; }
           else if (pType == 'vector') { pType = 'vectordb'; }
           else if (pType == 'es') { pType = 'elasticsearch'; }
           else if (pType == 'enterprise_search') { pType = 'search'; }
-
-          double ecu = 0.0;
-          boolean hasEcu = false;
-          for (String f : ['total_ecu', 'ess.billing.total_ecu']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                ecu = ((Number)doc[f].value).doubleValue();
-                hasEcu = true; break;
-              }
-            } catch (Exception e) {}
-          }
-          if (!hasEcu) {
-            try {
-              if (params._source?.total_ecu instanceof Number) { ecu = ((Number)params._source.total_ecu).doubleValue(); }
-              else if (params._source?.ess?.billing?.total_ecu instanceof Number) { ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue(); }
-            } catch (Exception e) {}
-          }
-
-          double qty = 0.0;
-          boolean hasQty = false;
-          for (String f : ['quantity_value', 'ess.billing.quantity.value']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                qty = ((Number)doc[f].value).doubleValue();
-                hasQty = true; break;
-              }
-            } catch (Exception e) {}
-          }
-          if (!hasQty) {
-            try {
-              if (params._source?.quantity_value instanceof Number) { qty = ((Number)params._source.quantity_value).doubleValue(); }
-              else if (params._source?.ess?.billing?.quantity?.value instanceof Number) { qty = ((Number)params._source.ess.billing.quantity.value).doubleValue(); }
-            } catch (Exception e) {}
-          }
-
-          String orgId = '';
-          try {
-            if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
-              orgId = doc['ess.billing.organization_id'].value.toString();
-            } else if (params._source?.ess?.billing?.organization_id != null) {
-              orgId = params._source.ess.billing.organization_id.toString();
-            } else if (params._source?.organization_id != null) {
-              orgId = params._source.organization_id.toString();
-            }
-          } catch (Exception e) {}
-
-          String cRegion = '';
-          try {
-            if (doc.containsKey('cloud.region') && !doc['cloud.region'].empty) {
-              cRegion = doc['cloud.region'].value.toString();
-            } else if (params._source?.cloud?.region != null) {
-              cRegion = params._source.cloud.region.toString();
-            }
-          } catch (Exception e) {}
-
-          String bType = '';
-          try {
-            if (doc.containsKey('billing_type') && !doc['billing_type'].empty) {
-              bType = doc['billing_type'].value.toString();
-            } else if (params._source?.billing_type != null) {
-              bType = params._source.billing_type.toString();
-            } else if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) {
-              bType = doc['ess.billing.type'].value.toString();
-            } else if (params._source?.ess?.billing?.type != null) {
-              bType = params._source.ess.billing.type.toString();
-            }
-          } catch (Exception e) {}
-
-          String bKind = '';
-          try {
-            if (doc.containsKey('billing_kind') && !doc['billing_kind'].empty) {
-              bKind = doc['billing_kind'].value.toString();
-            } else if (params._source?.billing_kind != null) {
-              bKind = params._source.billing_kind.toString();
-            } else if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) {
-              bKind = doc['ess.billing.kind'].value.toString();
-            } else if (params._source?.ess?.billing?.kind != null) {
-              bKind = params._source.ess.billing.kind.toString();
-            }
-          } catch (Exception e) {}
-
-          String bUnit = '';
-          try {
-            if (doc.containsKey('billing_unit') && !doc['billing_unit'].empty) {
-              bUnit = doc['billing_unit'].value.toString();
-            } else if (params._source?.billing_unit != null) {
-              bUnit = params._source.billing_unit.toString();
-            } else if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
-              bUnit = doc['ess.billing.unit'].value.toString();
-            } else if (params._source?.ess?.billing?.unit != null) {
-              bUnit = params._source.ess.billing.unit.toString();
-            }
-          } catch (Exception e) {}
-
-          double cRate = -1.0;
-          try {
-            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
-              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
-            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
-              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
-            }
-          } catch (Exception e) {}
-
-          String cUnit = '';
-          try {
-            if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) {
-              cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString();
-            } else if (params._source?.conf_chargeable_unit_rate_unit != null) {
-              cUnit = params._source.conf_chargeable_unit_rate_unit.toString();
-            }
-          } catch (Exception e) {}
-
-          String cSym = '';
-          try {
-            if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) {
-              cSym = doc['conf_currency_symbol'].value.toString();
-            } else if (params._source?.conf_currency_symbol != null) {
-              cSym = params._source.conf_currency_symbol.toString();
-            }
-          } catch (Exception e) {}
-
+          double ecu = readDbl(doc, params._source, ['total_ecu', 'ess.billing.total_ecu'], [['total_ecu'], ['ess', 'billing', 'total_ecu']], 0.0);
+          double qty = readDbl(doc, params._source, ['quantity_value', 'ess.billing.quantity.value'], [['quantity_value'], ['ess', 'billing', 'quantity', 'value']], 0.0);
+          String orgId = readStr(doc, params._source, ['ess.billing.organization_id'], [['ess', 'billing', 'organization_id'], ['organization_id']]);
+          String cRegion = readStr(doc, params._source, ['cloud.region'], [['cloud', 'region']]);
+          String bType = readStr(doc, params._source, ['billing_type', 'ess.billing.type'], [['billing_type'], ['ess', 'billing', 'type']]);
+          String bKind = readStr(doc, params._source, ['billing_kind', 'ess.billing.kind'], [['billing_kind'], ['ess', 'billing', 'kind']]);
+          String bUnit = readStr(doc, params._source, ['billing_unit', 'ess.billing.unit'], [['billing_unit'], ['ess', 'billing', 'unit']]);
+          double cRate = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol'], [['conf_currency_symbol']]);
           String sep = Character.toString((char)31);
           emit(
-            Long.toString(syncMs) + sep
-            + Double.toString(ecu) + sep
-            + Double.toString(qty) + sep
-            + pName.replace(sep, '') + sep
-            + pType.replace(sep, '') + sep
-            + orgId.replace(sep, '') + sep
-            + cRegion.replace(sep, '') + sep
-            + bType.replace(sep, '') + sep
-            + bKind.replace(sep, '') + sep
-            + bUnit.replace(sep, '') + sep
-            + Double.toString(cRate) + sep
-            + cUnit.replace(sep, '') + sep
+            Long.toString(syncMs) + sep + Double.toString(ecu) + sep + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep + pType.replace(sep, '') + sep + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep + bType.replace(sep, '') + sep + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep + Double.toString(cRate) + sep + cUnit.replace(sep, '') + sep
             + cSym.replace(sep, '')
           );
     cb_leg_interval_key:
@@ -714,332 +603,214 @@ source:
       type: keyword
       script:
         source: |
-          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { return; }
-          boolean isNat = false;
-          try {
-            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
-              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
-            } else if (params._source?.data_stream?.dataset != null) {
-              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
-            }
-          } catch (Exception e) {}
-          if (isNat) { return; }
-          long syncMs = 0L;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
-            } else {
-              for (String k : ['ingested', 'created']) {
-                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
-                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
-                if (rawVal != null) {
-                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
-                  String s = rawVal.toString().trim();
-                  if (s != '') {
-                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
-                  }
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
                 }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
               }
             }
-          } catch (Exception e) {}
-          if (syncMs == 0L) {
-            try {
-              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
-              } else if (params._source?.get('@timestamp') != null) {
-                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
-              }
-            } catch (Exception e) {}
+            return '';
           }
-          String pName = '';
-          for (String f : ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                String v = doc[f].value.toString().trim();
-                if (v != '') { pName = v; break; }
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
               }
-            } catch (Exception e) {}
+            }
+            return dflt;
           }
-          if (pName == '') {
-            try {
-              if (params._source?.project_name != null && params._source.project_name.toString().trim() != '') {
-                pName = params._source.project_name.toString().trim();
-              } else if (params._source?.ess?.billing?.deployment_name != null && params._source.ess.billing.deployment_name.toString().trim() != '') {
-                pName = params._source.ess.billing.deployment_name.toString().trim();
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
               }
-            } catch (Exception e) {}
+            }
+            return 0L;
           }
-          String pType = '';
-          for (String f : ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                String v = doc[f].value.toString().trim().toLowerCase(Locale.ROOT);
-                if (v != '') { pType = v; break; }
-              }
-            } catch (Exception e) {}
-          }
-          if (pType == '') {
-            try {
-              if (params._source?.project_type != null && params._source.project_type.toString().trim() != '') {
-                pType = params._source.project_type.toString().trim().toLowerCase(Locale.ROOT);
-              } else if (params._source?.ess?.billing?.deployment_type != null && params._source.ess.billing.deployment_type.toString().trim() != '') {
-                pType = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
-              }
-            } catch (Exception e) {}
-          }
+          if (readStr(doc, null, ['_index'], []) == 'serverless_billing_cost_lookup-1') { return; }
+          if (readStr(doc, params._source, ['data_stream.dataset'], [['data_stream', 'dataset']]) == 'chargeback_serverless.billing') { return; }
+          long syncMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          String pName = readStr(doc, params._source, ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword'], [['project_name'], ['ess', 'billing', 'deployment_name']]);
+          String pType = readStr(doc, params._source, ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword'], [['project_type'], ['ess', 'billing', 'deployment_type']]).toLowerCase(Locale.ROOT);
           if (pType == 'oblt') { pType = 'observability'; }
           else if (pType == 'sec') { pType = 'security'; }
           else if (pType == 'vector') { pType = 'vectordb'; }
           else if (pType == 'es') { pType = 'elasticsearch'; }
           else if (pType == 'enterprise_search') { pType = 'search'; }
-
-          double ecu = 0.0;
-          boolean hasEcu = false;
-          for (String f : ['total_ecu', 'ess.billing.total_ecu']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                ecu = ((Number)doc[f].value).doubleValue();
-                hasEcu = true; break;
-              }
-            } catch (Exception e) {}
-          }
-          if (!hasEcu) {
-            try {
-              if (params._source?.total_ecu instanceof Number) { ecu = ((Number)params._source.total_ecu).doubleValue(); }
-              else if (params._source?.ess?.billing?.total_ecu instanceof Number) { ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue(); }
-            } catch (Exception e) {}
-          }
-
-          double qty = 0.0;
-          boolean hasQty = false;
-          for (String f : ['quantity_value', 'ess.billing.quantity.value']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                qty = ((Number)doc[f].value).doubleValue();
-                hasQty = true; break;
-              }
-            } catch (Exception e) {}
-          }
-          if (!hasQty) {
-            try {
-              if (params._source?.quantity_value instanceof Number) { qty = ((Number)params._source.quantity_value).doubleValue(); }
-              else if (params._source?.ess?.billing?.quantity?.value instanceof Number) { qty = ((Number)params._source.ess.billing.quantity.value).doubleValue(); }
-            } catch (Exception e) {}
-          }
-
-          String orgId = '';
-          try {
-            if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
-              orgId = doc['ess.billing.organization_id'].value.toString();
-            } else if (params._source?.ess?.billing?.organization_id != null) {
-              orgId = params._source.ess.billing.organization_id.toString();
-            } else if (params._source?.organization_id != null) {
-              orgId = params._source.organization_id.toString();
-            }
-          } catch (Exception e) {}
-
-          String cRegion = '';
-          try {
-            if (doc.containsKey('cloud.region') && !doc['cloud.region'].empty) {
-              cRegion = doc['cloud.region'].value.toString();
-            } else if (params._source?.cloud?.region != null) {
-              cRegion = params._source.cloud.region.toString();
-            }
-          } catch (Exception e) {}
-
-          String bType = '';
-          try {
-            if (doc.containsKey('billing_type') && !doc['billing_type'].empty) {
-              bType = doc['billing_type'].value.toString();
-            } else if (params._source?.billing_type != null) {
-              bType = params._source.billing_type.toString();
-            } else if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) {
-              bType = doc['ess.billing.type'].value.toString();
-            } else if (params._source?.ess?.billing?.type != null) {
-              bType = params._source.ess.billing.type.toString();
-            }
-          } catch (Exception e) {}
-
-          String bKind = '';
-          try {
-            if (doc.containsKey('billing_kind') && !doc['billing_kind'].empty) {
-              bKind = doc['billing_kind'].value.toString();
-            } else if (params._source?.billing_kind != null) {
-              bKind = params._source.billing_kind.toString();
-            } else if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) {
-              bKind = doc['ess.billing.kind'].value.toString();
-            } else if (params._source?.ess?.billing?.kind != null) {
-              bKind = params._source.ess.billing.kind.toString();
-            }
-          } catch (Exception e) {}
-
-          String bUnit = '';
-          try {
-            if (doc.containsKey('billing_unit') && !doc['billing_unit'].empty) {
-              bUnit = doc['billing_unit'].value.toString();
-            } else if (params._source?.billing_unit != null) {
-              bUnit = params._source.billing_unit.toString();
-            } else if (doc.containsKey('ess.billing.unit') && !doc['ess.billing.unit'].empty) {
-              bUnit = doc['ess.billing.unit'].value.toString();
-            } else if (params._source?.ess?.billing?.unit != null) {
-              bUnit = params._source.ess.billing.unit.toString();
-            }
-          } catch (Exception e) {}
-
-          double cRate = -1.0;
-          try {
-            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
-              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
-            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
-              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
-            }
-          } catch (Exception e) {}
-
-          String cUnit = '';
-          try {
-            if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) {
-              cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString();
-            } else if (params._source?.conf_chargeable_unit_rate_unit != null) {
-              cUnit = params._source.conf_chargeable_unit_rate_unit.toString();
-            }
-          } catch (Exception e) {}
-
-          String cSym = '';
-          try {
-            if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) {
-              cSym = doc['conf_currency_symbol'].value.toString();
-            } else if (params._source?.conf_currency_symbol != null) {
-              cSym = params._source.conf_currency_symbol.toString();
-            }
-          } catch (Exception e) {}
-
+          double ecu = readDbl(doc, params._source, ['total_ecu', 'ess.billing.total_ecu'], [['total_ecu'], ['ess', 'billing', 'total_ecu']], 0.0);
+          double qty = readDbl(doc, params._source, ['quantity_value', 'ess.billing.quantity.value'], [['quantity_value'], ['ess', 'billing', 'quantity', 'value']], 0.0);
+          String orgId = readStr(doc, params._source, ['ess.billing.organization_id'], [['ess', 'billing', 'organization_id'], ['organization_id']]);
+          String cRegion = readStr(doc, params._source, ['cloud.region'], [['cloud', 'region']]);
+          String bType = readStr(doc, params._source, ['billing_type', 'ess.billing.type'], [['billing_type'], ['ess', 'billing', 'type']]);
+          String bKind = readStr(doc, params._source, ['billing_kind', 'ess.billing.kind'], [['billing_kind'], ['ess', 'billing', 'kind']]);
+          String bUnit = readStr(doc, params._source, ['billing_unit', 'ess.billing.unit'], [['billing_unit'], ['ess', 'billing', 'unit']]);
+          double cRate = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol'], [['conf_currency_symbol']]);
           String sep = Character.toString((char)31);
           emit(
-            Long.toString(syncMs) + sep
-            + Double.toString(ecu) + sep
-            + Double.toString(qty) + sep
-            + pName.replace(sep, '') + sep
-            + pType.replace(sep, '') + sep
-            + orgId.replace(sep, '') + sep
-            + cRegion.replace(sep, '') + sep
-            + bType.replace(sep, '') + sep
-            + bKind.replace(sep, '') + sep
-            + bUnit.replace(sep, '') + sep
-            + Double.toString(cRate) + sep
-            + cUnit.replace(sep, '') + sep
+            Long.toString(syncMs) + sep + Double.toString(ecu) + sep + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep + pType.replace(sep, '') + sep + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep + bType.replace(sep, '') + sep + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep + Double.toString(cRate) + sep + cUnit.replace(sep, '') + sep
             + cSym.replace(sep, '')
           );
     cb_v1_rec:
       type: keyword
       script:
         source: |
-          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_billing_cost_lookup-1') {
-            return;
-          }
-          long syncMs = 0L;
-          try {
-            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
-              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
-              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
-            } else if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
-              syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
+                }
+              } catch (Exception e) {}
             }
-          } catch (Exception e) {}
-          double ecu = 0.0;
-          for (String f : ['total_ecu', 'total_chargeable_units', 'ess.billing.total_ecu']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                ecu = ((Number)doc[f].value).doubleValue();
-                break;
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
               }
-            } catch (Exception e) {}
-          }
-          if (ecu == 0.0 && params._source != null) {
-            try {
-              if (params._source.get('total_ecu') instanceof Number) { ecu = ((Number)params._source.get('total_ecu')).doubleValue(); }
-              else if (params._source.get('total_chargeable_units') instanceof Number) { ecu = ((Number)params._source.get('total_chargeable_units')).doubleValue(); }
-              else if (params._source.ess?.billing?.total_ecu instanceof Number) { ecu = ((Number)params._source.ess.billing.total_ecu).doubleValue(); }
-            } catch (Exception e) {}
-          }
-          double qty = 0.0;
-          for (String f : ['quantity_value', 'ess.billing.quantity.value']) {
-            try {
-              if (doc.containsKey(f) && !doc[f].empty) {
-                qty = ((Number)doc[f].value).doubleValue();
-                break;
-              }
-            } catch (Exception e) {}
-          }
-          if (qty == 0.0 && params._source != null) {
-            try {
-              if (params._source.get('quantity_value') instanceof Number) { qty = ((Number)params._source.get('quantity_value')).doubleValue(); }
-              else if (params._source.ess?.billing?.quantity?.value instanceof Number) { qty = ((Number)params._source.ess.billing.quantity.value).doubleValue(); }
-            } catch (Exception e) {}
-          }
-          String pName = '';
-          for (String f : ['project_name', 'project_name.keyword', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { pName = doc[f].value.toString().trim(); if (pName != '') break; } } catch (Exception e) {}
-          }
-          if (pName == '' && params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); }
-          String pType = '';
-          for (String f : ['project_type', 'project_type.keyword', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {}
-          }
-          if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
-          String orgId = '';
-          for (String f : ['ess.billing.organization_id', 'cloud.account.id']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { orgId = doc[f].value.toString().trim(); if (orgId != '') break; } } catch (Exception e) {}
-          }
-          if (orgId == '' && params._source?.ess?.billing?.organization_id != null) { orgId = params._source.ess.billing.organization_id.toString().trim(); }
-          String cRegion = '';
-          try { if (doc.containsKey('cloud.region') && !doc['cloud.region'].empty) { cRegion = doc['cloud.region'].value.toString().trim(); } } catch (Exception e) {}
-          if (cRegion == '' && params._source?.cloud?.region != null) { cRegion = params._source.cloud.region.toString().trim(); }
-          String bType = '';
-          for (String f : ['billing_type', 'ess.billing.type']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { bType = doc[f].value.toString().trim(); if (bType != '') break; } } catch (Exception e) {}
-          }
-          if (bType == '' && params._source?.ess?.billing?.type != null) { bType = params._source.ess.billing.type.toString().trim(); }
-          String bKind = '';
-          for (String f : ['billing_kind', 'ess.billing.kind']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { bKind = doc[f].value.toString().trim(); if (bKind != '') break; } } catch (Exception e) {}
-          }
-          if (bKind == '' && params._source?.ess?.billing?.kind != null) { bKind = params._source.ess.billing.kind.toString().trim(); }
-          String bUnit = '';
-          for (String f : ['billing_unit', 'ess.billing.unit']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { bUnit = doc[f].value.toString().trim(); if (bUnit != '') break; } } catch (Exception e) {}
-          }
-          if (bUnit == '' && params._source?.ess?.billing?.unit != null) { bUnit = params._source.ess.billing.unit.toString().trim(); }
-          double cRate = -1.0;
-          try {
-            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
-              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
-            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
-              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
             }
-          } catch (Exception e) {}
-          String cUnit = '';
-          try { if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) { cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString().trim(); } } catch (Exception e) {}
-          if (cUnit == '' && params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); }
-          String cSym = '';
-          try { if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) { cSym = doc['conf_currency_symbol'].value.toString().trim(); } } catch (Exception e) {}
-          if (cSym == '' && params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); }
+            return '';
+          }
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
+              }
+            }
+            return dflt;
+          }
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return 0L;
+          }
+          if (readStr(doc, null, ['_index'], []) != 'serverless_billing_cost_lookup-1') { return; }
+          long syncMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          double ecu = readDbl(doc, params._source, ['total_ecu', 'total_chargeable_units', 'ess.billing.total_ecu'], [['total_ecu'], ['total_chargeable_units'], ['ess', 'billing', 'total_ecu']], 0.0);
+          double qty = readDbl(doc, params._source, ['quantity_value', 'ess.billing.quantity.value'], [['quantity_value'], ['ess', 'billing', 'quantity', 'value']], 0.0);
+          String pName = readStr(doc, params._source, ['project_name', 'project_name.keyword', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword'], [['project_name'], ['ess', 'billing', 'deployment_name']]);
+          String pType = readStr(doc, params._source, ['project_type', 'project_type.keyword', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword'], [['project_type'], ['ess', 'billing', 'deployment_type']]);
+          String orgId = readStr(doc, params._source, ['ess.billing.organization_id', 'cloud.account.id'], [['ess', 'billing', 'organization_id'], ['cloud', 'account', 'id']]);
+          String cRegion = readStr(doc, params._source, ['cloud.region'], [['cloud', 'region']]);
+          String bType = readStr(doc, params._source, ['billing_type', 'ess.billing.type'], [['billing_type'], ['ess', 'billing', 'type']]);
+          String bKind = readStr(doc, params._source, ['billing_kind', 'ess.billing.kind'], [['billing_kind'], ['ess', 'billing', 'kind']]);
+          String bUnit = readStr(doc, params._source, ['billing_unit', 'ess.billing.unit'], [['billing_unit'], ['ess', 'billing', 'unit']]);
+          double cRate = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol'], [['conf_currency_symbol']]);
           String sep = Character.toString((char)31);
           emit(
-            Long.toString(syncMs) + sep
-            + Double.toString(ecu) + sep
-            + Double.toString(qty) + sep
-            + pName.replace(sep, '') + sep
-            + pType.replace(sep, '') + sep
-            + orgId.replace(sep, '') + sep
-            + cRegion.replace(sep, '') + sep
-            + bType.replace(sep, '') + sep
-            + bKind.replace(sep, '') + sep
-            + bUnit.replace(sep, '') + sep
-            + Double.toString(cRate) + sep
-            + cUnit.replace(sep, '') + sep
+            Long.toString(syncMs) + sep + Double.toString(ecu) + sep + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep + pType.replace(sep, '') + sep + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep + bType.replace(sep, '') + sep + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep + Double.toString(cRate) + sep + cUnit.replace(sep, '') + sep
             + cSym.replace(sep, '')
           );
 dest:

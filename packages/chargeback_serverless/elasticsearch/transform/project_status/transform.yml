@@ -306,81 +306,109 @@ source:
       type: keyword
       script:
         source: |
-          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_project_status_lookup-1') {
-            return;
-          }
-          String sep = Character.toString((char)31);
-          long ingMs = 0L;
-          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
-            try {
-              if (doc.containsKey(tf) && !doc[tf].empty) {
-                ingMs = doc[tf].value.toInstant().toEpochMilli();
-                if (ingMs > 0L) { break; }
-              }
-            } catch (Exception e) {}
-          }
-          long idxCnt = 0L;
-          long dsCnt = 0L;
-          long aiCnt = 0L;
-          long synCnt = 0L;
-          long updMs = 0L;
-          try { if (doc.containsKey('index_count') && !doc['index_count'].empty) { idxCnt = ((Number)doc['index_count'].value).longValue(); } else if (params._source?.index_count instanceof Number) { idxCnt = ((Number)params._source.index_count).longValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('datastream_count') && !doc['datastream_count'].empty) { dsCnt = ((Number)doc['datastream_count'].value).longValue(); } else if (params._source?.datastream_count instanceof Number) { dsCnt = ((Number)params._source.datastream_count).longValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('ai_model_count') && !doc['ai_model_count'].empty) { aiCnt = ((Number)doc['ai_model_count'].value).longValue(); } else if (params._source?.ai_model_count instanceof Number) { aiCnt = ((Number)params._source.ai_model_count).longValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('synthetics_monitor_count') && !doc['synthetics_monitor_count'].empty) { synCnt = ((Number)doc['synthetics_monitor_count'].value).longValue(); } else if (params._source?.synthetics_monitor_count instanceof Number) { synCnt = ((Number)params._source.synthetics_monitor_count).longValue(); } } catch (Exception e) {}
-          for (String tf : ['updated_at', 'event.ingested', '@timestamp']) {
-            try {
-              if (doc.containsKey(tf) && !doc[tf].empty) {
-                updMs = doc[tf].value.toInstant().toEpochMilli();
-                if (updMs > 0L) { break; }
-              }
-            } catch (Exception e) {}
-          }
-          String lastSt = '';
-          String apiKeyType = '';
-          String synSt = '';
-          String pName = '';
-          String pType = '';
-          String optFor = '';
-          String esUrl = '';
-          String cRate = '-1';
-          String cUnit = '';
-          String cSym = '';
-          try { if (doc.containsKey('last_status') && !doc['last_status'].empty) { lastSt = doc['last_status'].value.toString().trim(); } else if (params._source?.last_status != null) { lastSt = params._source.last_status.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('api_key_type') && !doc['api_key_type'].empty) { apiKeyType = doc['api_key_type'].value.toString().trim(); } else if (params._source?.api_key_type != null) { apiKeyType = params._source.api_key_type.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('synthetics_status') && !doc['synthetics_status'].empty) { synSt = doc['synthetics_status'].value.toString().trim(); } else if (params._source?.synthetics_status != null) { synSt = params._source.synthetics_status.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('project_name') && !doc['project_name'].empty) { pName = doc['project_name'].value.toString().trim(); } else if (params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('project_type') && !doc['project_type'].empty) { pType = doc['project_type'].value.toString().trim(); } else if (params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('optimized_for') && !doc['optimized_for'].empty) { optFor = doc['optimized_for'].value.toString().trim(); } else if (params._source?.optimized_for != null) { optFor = params._source.optimized_for.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('es_url') && !doc['es_url'].empty) { esUrl = doc['es_url'].value.toString().trim(); } else if (params._source?.es_url != null) { esUrl = params._source.es_url.toString().trim(); } } catch (Exception e) {}
-          try {
-            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
-              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
-              if (r >= 0.0) { cRate = String.valueOf(r); }
-            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
-              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
-              if (r >= 0.0) { cRate = String.valueOf(r); }
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
+                }
+              } catch (Exception e) {}
             }
-          } catch (Exception e) {}
-          try { if (doc.containsKey('conf_chargeable_unit_rate_unit') && !doc['conf_chargeable_unit_rate_unit'].empty) { cUnit = doc['conf_chargeable_unit_rate_unit'].value.toString().trim(); } else if (params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); } } catch (Exception e) {}
-          try { if (doc.containsKey('conf_currency_symbol') && !doc['conf_currency_symbol'].empty) { cSym = doc['conf_currency_symbol'].value.toString().trim(); } else if (params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); } } catch (Exception e) {}
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return '';
+          }
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
+              }
+            }
+            return dflt;
+          }
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return 0L;
+          }
+          if (readStr(doc, null, ['_index'], []) != 'serverless_project_status_lookup-1') { return; }
+          String sep = Character.toString((char)31);
+          long ingMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          long idxCnt = (long)readDbl(doc, params._source, ['index_count'], [['index_count']], 0.0);
+          long dsCnt = (long)readDbl(doc, params._source, ['datastream_count'], [['datastream_count']], 0.0);
+          long aiCnt = (long)readDbl(doc, params._source, ['ai_model_count'], [['ai_model_count']], 0.0);
+          long synCnt = (long)readDbl(doc, params._source, ['synthetics_monitor_count'], [['synthetics_monitor_count']], 0.0);
+          long updMs = readTs(doc, params._source, ['updated_at', 'event.ingested', '@timestamp']);
+          String lastSt = readStr(doc, params._source, ['last_status'], [['last_status']]);
+          String apiKeyType = readStr(doc, params._source, ['api_key_type'], [['api_key_type']]);
+          String synSt = readStr(doc, params._source, ['synthetics_status'], [['synthetics_status']]);
+          String pName = readStr(doc, params._source, ['project_name'], [['project_name']]);
+          String pType = readStr(doc, params._source, ['project_type'], [['project_type']]);
+          String optFor = readStr(doc, params._source, ['optimized_for'], [['optimized_for']]);
+          String esUrl = readStr(doc, params._source, ['es_url'], [['es_url']]);
+          double rVal = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cRate = (rVal >= 0.0) ? String.valueOf(rVal) : '-1';
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol'], [['conf_currency_symbol']]);
           emit(
-            String.valueOf(ingMs) + sep
-            + Long.toString(idxCnt) + sep
-            + Long.toString(dsCnt) + sep
-            + Long.toString(aiCnt) + sep
-            + Long.toString(synCnt) + sep
-            + Long.toString(updMs) + sep
-            + lastSt.replace(sep, ' ') + sep
-            + apiKeyType.replace(sep, ' ') + sep
-            + synSt.replace(sep, ' ') + sep
-            + pName.replace(sep, ' ') + sep
-            + pType.replace(sep, ' ') + sep
-            + optFor.replace(sep, ' ') + sep
-            + esUrl.replace(sep, ' ') + sep
-            + cRate + sep
-            + cUnit.replace(sep, ' ') + sep
-            + cSym.replace(sep, ' ')
+            String.valueOf(ingMs) + sep + Long.toString(idxCnt) + sep + Long.toString(dsCnt) + sep
+            + Long.toString(aiCnt) + sep + Long.toString(synCnt) + sep + Long.toString(updMs) + sep
+            + lastSt.replace(sep, ' ') + sep + apiKeyType.replace(sep, ' ') + sep + synSt.replace(sep, ' ') + sep
+            + pName.replace(sep, ' ') + sep + pType.replace(sep, ' ') + sep + optFor.replace(sep, ' ') + sep
+            + esUrl.replace(sep, ' ') + sep + cRate + sep + cUnit.replace(sep, ' ') + sep + cSym.replace(sep, ' ')
           );
 dest:
   index: serverless_project_status_lookup-2

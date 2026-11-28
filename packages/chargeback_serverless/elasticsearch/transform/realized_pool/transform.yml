@@ -169,98 +169,108 @@ source:
       type: keyword
       script:
         source: |
-          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_billing_realized_pool_lookup-1') {
-            return;
-          }
-          String sep = Character.toString((char)31);
-          long ingMs = 0L;
-          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
-            try {
-              if (doc.containsKey(tf) && !doc[tf].empty) {
-                ingMs = doc[tf].value.toInstant().toEpochMilli();
-                if (ingMs > 0L) { break; }
-              }
-            } catch (Exception e) {}
-          }
-          if (ingMs <= 0L && params._source != null) {
-            try {
-              def ev = params._source.get('event');
-              def rawTs = (ev instanceof Map) ? (((Map)ev).get('ingested') != null ? ((Map)ev).get('ingested') : ((Map)ev).get('created')) : null;
-              if (rawTs == null) { rawTs = params._source.get('@timestamp'); }
-              if (rawTs instanceof Number) { ingMs = ((Number)rawTs).longValue(); }
-              else if (rawTs != null && rawTs.toString().trim() != '') {
-                ingMs = ZonedDateTime.parse(rawTs.toString().trim()).toInstant().toEpochMilli();
-              }
-            } catch (Exception e) {}
-          }
-          if (ingMs < 0L) { ingMs = 0L; }
-          double idxEcu = 0.0;
-          double qryEcu = 0.0;
-          double stgEcu = 0.0;
-          double aiEcu = 0.0;
-          double synEcu = 0.0;
-          double synPingsEcu = 0.0;
-          double synExecEcu = 0.0;
-          double allSkuEcu = -1.0;
-          try { if (doc.containsKey('indexing_ecu') && !doc['indexing_ecu'].empty) { idxEcu = ((Number)doc['indexing_ecu'].value).doubleValue(); } else if (params._source?.indexing_ecu instanceof Number) { idxEcu = ((Number)params._source.indexing_ecu).doubleValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('query_ecu') && !doc['query_ecu'].empty) { qryEcu = ((Number)doc['query_ecu'].value).doubleValue(); } else if (params._source?.query_ecu instanceof Number) { qryEcu = ((Number)params._source.query_ecu).doubleValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('storage_ecu') && !doc['storage_ecu'].empty) { stgEcu = ((Number)doc['storage_ecu'].value).doubleValue(); } else if (params._source?.storage_ecu instanceof Number) { stgEcu = ((Number)params._source.storage_ecu).doubleValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('ai_ecu') && !doc['ai_ecu'].empty) { aiEcu = ((Number)doc['ai_ecu'].value).doubleValue(); } else if (params._source?.ai_ecu instanceof Number) { aiEcu = ((Number)params._source.ai_ecu).doubleValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('synthetics_ecu') && !doc['synthetics_ecu'].empty) { synEcu = ((Number)doc['synthetics_ecu'].value).doubleValue(); } else if (params._source?.synthetics_ecu instanceof Number) { synEcu = ((Number)params._source.synthetics_ecu).doubleValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('synthetics_pings_ecu') && !doc['synthetics_pings_ecu'].empty) { synPingsEcu = ((Number)doc['synthetics_pings_ecu'].value).doubleValue(); } else if (params._source?.synthetics_pings_ecu instanceof Number) { synPingsEcu = ((Number)params._source.synthetics_pings_ecu).doubleValue(); } } catch (Exception e) {}
-          try { if (doc.containsKey('synthetics_executions_ecu') && !doc['synthetics_executions_ecu'].empty) { synExecEcu = ((Number)doc['synthetics_executions_ecu'].value).doubleValue(); } else if (params._source?.synthetics_executions_ecu instanceof Number) { synExecEcu = ((Number)params._source.synthetics_executions_ecu).doubleValue(); } } catch (Exception e) {}
-          for (String af : ['all_sku_ecu', 'total_ecu', 'total_chargeable_units']) {
-            try {
-              if (doc.containsKey(af) && !doc[af].empty) { allSkuEcu = ((Number)doc[af].value).doubleValue(); break; }
-              else if (params._source != null && params._source.get(af) instanceof Number) { allSkuEcu = ((Number)params._source.get(af)).doubleValue(); break; }
-            } catch (Exception e) {}
-          }
-          if (allSkuEcu < 0.0) { allSkuEcu = idxEcu + qryEcu + stgEcu + aiEcu + synEcu; }
-          String pName = '';
-          for (String f : ['project_name', 'project_name.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { pName = doc[f].value.toString().trim(); if (pName != '') break; } } catch (Exception e) {}
-          }
-          if (pName == '' && params._source?.project_name != null) { pName = params._source.project_name.toString().trim(); }
-          String pType = '';
-          for (String f : ['project_type', 'project_type.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { pType = doc[f].value.toString().trim(); if (pType != '') break; } } catch (Exception e) {}
-          }
-          if (pType == '' && params._source?.project_type != null) { pType = params._source.project_type.toString().trim(); }
-          String cRate = '-1';
-          try {
-            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
-              double r = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
-              if (r >= 0.0) { cRate = String.valueOf(r); }
-            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
-              double r = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
-              if (r >= 0.0) { cRate = String.valueOf(r); }
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
+                }
+              } catch (Exception e) {}
             }
-          } catch (Exception e) {}
-          String cUnit = '';
-          for (String f : ['conf_chargeable_unit_rate_unit', 'conf_chargeable_unit_rate_unit.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { cUnit = doc[f].value.toString().trim(); if (cUnit != '') break; } } catch (Exception e) {}
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return '';
           }
-          if (cUnit == '' && params._source?.conf_chargeable_unit_rate_unit != null) { cUnit = params._source.conf_chargeable_unit_rate_unit.toString().trim(); }
-          String cSym = '';
-          for (String f : ['conf_currency_symbol', 'conf_currency_symbol.keyword']) {
-            try { if (doc.containsKey(f) && !doc[f].empty) { cSym = doc[f].value.toString().trim(); if (cSym != '') break; } } catch (Exception e) {}
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
+              }
+            }
+            return dflt;
           }
-          if (cSym == '' && params._source?.conf_currency_symbol != null) { cSym = params._source.conf_currency_symbol.toString().trim(); }
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return 0L;
+          }
+          if (readStr(doc, null, ['_index'], []) != 'serverless_billing_realized_pool_lookup-1') { return; }
+          String sep = Character.toString((char)31);
+          long ingMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          double idxEcu = readDbl(doc, params._source, ['indexing_ecu'], [['indexing_ecu']], 0.0);
+          double qryEcu = readDbl(doc, params._source, ['query_ecu'], [['query_ecu']], 0.0);
+          double stgEcu = readDbl(doc, params._source, ['storage_ecu'], [['storage_ecu']], 0.0);
+          double aiEcu = readDbl(doc, params._source, ['ai_ecu'], [['ai_ecu']], 0.0);
+          double synEcu = readDbl(doc, params._source, ['synthetics_ecu'], [['synthetics_ecu']], 0.0);
+          double synPingsEcu = readDbl(doc, params._source, ['synthetics_pings_ecu'], [['synthetics_pings_ecu']], 0.0);
+          double synExecEcu = readDbl(doc, params._source, ['synthetics_executions_ecu'], [['synthetics_executions_ecu']], 0.0);
+          double allSkuEcu = readDbl(doc, params._source, ['all_sku_ecu', 'total_ecu', 'total_chargeable_units'], [['all_sku_ecu'], ['total_ecu'], ['total_chargeable_units']], -1.0);
+          if (allSkuEcu < 0.0) { allSkuEcu = idxEcu + qryEcu + stgEcu + aiEcu + synEcu; }
+          String pName = readStr(doc, params._source, ['project_name', 'project_name.keyword'], [['project_name']]);
+          String pType = readStr(doc, params._source, ['project_type', 'project_type.keyword'], [['project_type']]);
+          double rVal = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cRate = (rVal >= 0.0) ? String.valueOf(rVal) : '-1';
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit', 'conf_chargeable_unit_rate_unit.keyword'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol', 'conf_currency_symbol.keyword'], [['conf_currency_symbol']]);
           emit(
-            String.valueOf(ingMs) + sep
-            + Double.toString(idxEcu) + sep
-            + Double.toString(qryEcu) + sep
-            + Double.toString(stgEcu) + sep
-            + Double.toString(aiEcu) + sep
-            + Double.toString(synEcu) + sep
-            + Double.toString(synPingsEcu) + sep
-            + Double.toString(synExecEcu) + sep
-            + Double.toString(allSkuEcu) + sep
-            + pName.replace(sep, ' ') + sep
-            + pType.replace(sep, ' ') + sep
-            + cRate + sep
-            + cUnit.replace(sep, ' ') + sep
-            + cSym.replace(sep, ' ')
+            String.valueOf(ingMs) + sep + Double.toString(idxEcu) + sep + Double.toString(qryEcu) + sep
+            + Double.toString(stgEcu) + sep + Double.toString(aiEcu) + sep + Double.toString(synEcu) + sep
+            + Double.toString(synPingsEcu) + sep + Double.toString(synExecEcu) + sep + Double.toString(allSkuEcu) + sep
+            + pName.replace(sep, ' ') + sep + pType.replace(sep, ' ') + sep + cRate + sep
+            + cUnit.replace(sep, ' ') + sep + cSym.replace(sep, ' ')
           );
 dest:
   index: serverless_billing_realized_pool_lookup-2
