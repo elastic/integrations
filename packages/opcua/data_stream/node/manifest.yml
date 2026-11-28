@@ -1,0 +1,42 @@
+type: metrics
+title: OPC UA node values
+streams:
+  - input: opcua/metrics
+    title: OPC UA node values
+    description: Read the values of OPC UA nodes.
+    vars:
+      - name: period
+        type: text
+        title: Period
+        description: How often the nodes are read.
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: nodes
+        type: yaml
+        title: Nodes
+        description: >-
+          Nodes to read. Each entry has an `id` in OPC UA node id format, for example `ns=3;s=StepUp` or `ns=2;i=1001`, and an optional `label` that is added to the event.
+        multi: false
+        required: true
+        show_user: true
+        default: |
+          - id: "ns=0;i=2258"
+            label: server_time
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - opcua-node
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/docs/reference/fleet/agent-processors) for details.

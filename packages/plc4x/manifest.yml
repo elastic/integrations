@@ -1,0 +1,54 @@
+format_version: "3.6.5"
+name: plc4x
+title: PLC4X
+version: "0.1.0"
+description: Collect tag values from PLCs with Apache PLC4X and Elastic Agent.
+type: integration
+categories:
+  - observability
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/plc4x-logo.svg
+    title: PLC4X logo
+    size: 64x64
+    type: image/svg+xml
+policy_templates:
+  - name: plc4x
+    title: PLC tag values
+    description: Read tag values from PLCs with Apache PLC4X.
+    inputs:
+      - type: plc4x/metrics
+        title: Collect PLC tag values
+        description: Read the configured tags from PLCs.
+        vars:
+          - name: hosts
+            type: text
+            title: Connection strings
+            description: PLC4X connection strings of the PLCs. Only the Modbus TCP driver is supported, for example `modbus-tcp://plc.example.com:502?unit-identifier=1`.
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - modbus-tcp://localhost:502
+          - name: timeout
+            type: text
+            title: Timeout
+            description: Timeout for connecting and for each read request.
+            multi: false
+            required: false
+            show_user: false
+            default: 10s
+          - name: condition
+            type: text
+            title: Condition
+            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/docs/reference/fleet/dynamic-input-configuration) for details.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/integrations-triaging
+  type: community

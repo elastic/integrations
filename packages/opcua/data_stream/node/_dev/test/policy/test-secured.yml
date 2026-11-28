@@ -1,0 +1,25 @@
+vars:
+  hosts:
+    - opc.tcp://plc.example.com:4840
+  timeout: 30s
+  security_policy: Basic256Sha256
+  security_mode: SignAndEncrypt
+  username: elastic-reader
+  password: changeme
+  client_certificate: /etc/elastic-agent/opcua/client.der
+  client_key: /etc/elastic-agent/opcua/client.key
+  application_uri: urn:example:elastic-agent
+  condition: ${host.name} == 'edge-1'
+data_stream:
+  vars:
+    period: 30s
+    nodes: |
+      - id: "ns=3;s=StepUp"
+    tags:
+      - opcua-node
+      - plant-a
+    processors: |
+      - add_fields:
+          target: site
+          fields:
+            line: "2"
