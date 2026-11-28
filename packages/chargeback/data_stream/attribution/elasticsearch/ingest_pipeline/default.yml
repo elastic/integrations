@@ -124,10 +124,10 @@ processors:
         String ts = ctx['@timestamp'] != null ? ctx['@timestamp'].toString().trim() : '';
         String pass = ctx.driver_pass != null ? ctx.driver_pass.toString().trim() : '';
         String runId = ctx.run_id != null ? ctx.run_id.toString().trim() : '';
-        String kind = ctx.raw_bucket_kind != null ? ctx.raw_bucket_kind.toString().trim() : '';
+        String kind = ctx.raw_bucket_kind != null ? ctx.raw_bucket_kind.toString() : '';
         String tenantId = ctx.tenant_id != null ? ctx.tenant_id.toString().trim() : '';
 
-        ctx._cb_fp_key = 'v1|ns=' + ns + '|pol=' + polId + '|col=' + collectorId + '|cluster=' + clusterName + '|ts=' + ts + '|ds=' + dsName + '|pass=' + pass + '|run=' + runId + '|kind=' + kind + '|tenant=' + tenantId;
+        ctx._cb_fp_key = 'v1|ns=' + ns + '|pol=' + polId + '|col=' + collectorId + '|cluster=' + clusterName + '|ts=' + ts + '|ds=' + dsName + '|pass=' + pass + '|run=' + runId + '|kind=' + kind.length() + ':' + kind + '|tenant=' + tenantId.length() + ':' + tenantId;
   - fingerprint:
       if: "ctx._cb_fp_key != null"
       fields:

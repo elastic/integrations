@@ -963,6 +963,7 @@ inputs:
             int(ss.?ingest_tot_docs.orValue(0)).as(ingest_tot_docs,
             double(ss.?ingest_tot_bytes.orValue(0.0)).as(ingest_tot_bytes,
             ss.?acc.orValue([]).as(prev_acc,
+            ss.?ing_done.orValue(dyn({})).as(ing_d,
             (is_ingest && eff_storage_mode == "live_open" && size(nf_idxs) > 0).as(will_run_live_sto,
             (is_ingest && eff_storage_mode == "rolling_hub" && has_prior && (prior_docs > 0 || prior_bytes > 0.0) && hub_url != "" && hub_key != "").as(will_run_hub_sto,
             (is_ingest ? all_search_target : nf_search_target).as(srch_target,
@@ -1005,35 +1006,127 @@ inputs:
             }).do_request(),
             "req_err"
             ).as(s_resp,
+            (
             has(s_resp.req_err) ?
-            {
-            "events": [dyn({ "error": { "code": "transport_error", "id": tid, "message": "POST " + srch_url + ": " + string(s_resp.req_err) } })],
-            "cursor": { "last_to": high_water.format(time_layout.RFC3339), "active_day": day_from_str, "phase": "process_streams", "disc_targets": targets, "stream_queue": queue, "queue_idx": next_q_idx, "stream_state": dyn({}), "good_key_idx": prev_good_idx },
-            "want_more": true,
-            }
+            { "ok": false, "err": dyn({ "error": { "code": "transport_error", "id": tid, "message": "POST " + srch_url + ": " + string(s_resp.req_err) } }), "sb": dyn({}) }
             : (s_resp.StatusCode != 200) ?
+            { "ok": false, "err": dyn({ "error": { "code": string(s_resp.StatusCode), "id": tid, "message": "POST " + s_resp.Request.URL + ": " + string(s_resp.Status) } }), "sb": dyn({}) }
+            :
+            try(bytes(s_resp.Body).decode_json(), "json_err").as(sb_raw,
+            (type(sb_raw) != map || has(sb_raw.json_err)) ?
+            { "ok": false, "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "POST " + srch_url + ": invalid JSON" } }), "sb": dyn({}) }
+            :
+            ((has(sb_raw.timed_out) && bool(sb_raw.timed_out)) || (has(sb_raw._shards) && sb_raw._shards != null && has(sb_raw._shards.failed) && sb_raw._shards.failed != null && int(sb_raw._shards.failed) > 0)) ?
+            { "ok": false, "err": dyn({ "error": { "code": "partial_shard_attribution", "id": tid, "message": "Aborting " + step + " for " + ds + " on " + tid + ": timed_out or failed shards reported by Elasticsearch; incomplete run discarded." } }), "sb": dyn({}) }
+            :
+            { "ok": true, "err": dyn({}), "sb": sb_raw }
+            )
+            ).as(srch_res,
+            (!srch_res.ok) ?
+            (
+            (!is_ingest && has(ing_d.acc)) ?
+            (
+            ing_d.acc.map(r,
+            string(r[0]).as(b_tid,
+            string(r[1]).as(b_kind,
+            bool(r[2]).as(b_fb,
+            int(r[3]).as(b_docs,
+            double(r[4]).as(b_bytes,
+            dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": b_tid,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": b_docs,
+            "ingest_bytes": b_bytes,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": b_fb,
+            "raw_bucket_kind": b_kind,
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))
+            )))))) +
+            (bool(ing_d.emit_ov) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_overflow_label,
+            "attribution_field": res_field,
+            "attribution_source": "overflow",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": int(ing_d.ov_docs),
+            "ingest_bytes": double(ing_d.ov_bytes),
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "overflow",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : []) +
+            ((size(ing_d.acc) == 0 && !bool(ing_d.emit_ov)) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_unattr_label,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": 0,
+            "ingest_bytes": 0.0,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": 0,
+            "stream_total_bytes": 0.0,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "empty_day",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : [])
+            ) : []
+            ).as(ing_fb_evts,
             {
-            "events": [dyn({ "error": { "code": string(s_resp.StatusCode), "id": tid, "message": "POST " + s_resp.Request.URL + ": " + string(s_resp.Status) } })],
+            "events": [srch_res.err] + ing_fb_evts,
             "cursor": { "last_to": high_water.format(time_layout.RFC3339), "active_day": day_from_str, "phase": "process_streams", "disc_targets": targets, "stream_queue": queue, "queue_idx": next_q_idx, "stream_state": dyn({}), "good_key_idx": prev_good_idx },
             "want_more": true,
             }
+            )
             :
-            try(bytes(s_resp.Body).decode_json(), "json_err").as(sb,
-            (type(sb) != map || has(sb.json_err)) ?
-            {
-            "events": [dyn({ "error": { "code": "decode_error", "id": tid, "message": "POST " + srch_url + ": invalid JSON" } })],
-            "cursor": { "last_to": high_water.format(time_layout.RFC3339), "active_day": day_from_str, "phase": "process_streams", "disc_targets": targets, "stream_queue": queue, "queue_idx": next_q_idx, "stream_state": dyn({}), "good_key_idx": prev_good_idx },
-            "want_more": true,
-            }
-            :
-            ((has(sb.timed_out) && bool(sb.timed_out)) || (has(sb._shards) && sb._shards != null && has(sb._shards.failed) && sb._shards.failed != null && int(sb._shards.failed) > 0)).as(is_partial,
-            is_partial ?
-            {
-            "events": [dyn({ "error": { "code": "partial_shard_attribution", "id": tid, "message": "Aborting " + step + " for " + ds + " on " + tid + ": timed_out or failed shards reported by Elasticsearch; incomplete run discarded." } })],
-            "cursor": { "last_to": high_water.format(time_layout.RFC3339), "active_day": day_from_str, "phase": "process_streams", "disc_targets": targets, "stream_queue": queue, "queue_idx": next_q_idx, "stream_state": dyn({}), "good_key_idx": prev_good_idx },
-            "want_more": true,
-            }
-            :
+            srch_res.sb.as(sb,
             (page_num == 1 ? ((has(sb.hits) && has(sb.hits.total) && has(sb.hits.total.value) && sb.hits.total.value != null) ? int(sb.hits.total.value) : 0) : prev_total_docs).as(tot_docs,
             (page_num == 1 ? ((res_size_field != "" && has(sb.aggregations) && has(sb.aggregations.stream_total_bytes) && sb.aggregations.stream_total_bytes.value != null) ? double(sb.aggregations.stream_total_bytes.value) : 0.0) : prev_total_bytes).as(tot_bytes,
             (page_num == 1 && res_size_field != "" && tot_docs > 0 && tot_bytes <= 0.0).as(fallback_doc_count,
@@ -1072,11 +1165,11 @@ inputs:
             "fb": true,
             } : (string(b.key.tenant).trim_space() == "" ? {
             "tid_val": clean_unattr_label,
-            "kind": "blank",
+            "kind": "blank:" + string(b.key.tenant),
             "fb": true,
             } : (string(b.key.tenant).trim_space() == clean_unattr_label ? {
             "tid_val": clean_unattr_label,
-            "kind": "literal_unattributed",
+            "kind": (string(b.key.tenant) == clean_unattr_label) ? "literal_unattributed" : ("literal_unattributed_ws:" + string(b.key.tenant)),
             "fb": true,
             } : {
             "tid_val": string(b.key.tenant).trim_space(),
@@ -1121,113 +1214,28 @@ inputs:
             "prior_docs": prior_docs,
             "prior_bytes": prior_bytes,
             "acc": new_acc,
-            }).with(!is_ingest ? { "ingest_tot_docs": ingest_tot_docs, "ingest_tot_bytes": ingest_tot_bytes } : {}),
+            }).with(!is_ingest ? { "ingest_tot_docs": ingest_tot_docs, "ingest_tot_bytes": ingest_tot_bytes, "ing_done": ing_d } : {}),
             "good_key_idx": prev_good_idx,
             },
             "want_more": true,
             }
             :
-            (page_num == 1 && size(new_acc) == 0 && !emit_overflow && !will_run_live_sto && !will_run_hub_sto && (is_ingest || ingest_tot_docs == 0)).as(emit_empty_day,
+            (will_run_live_sto || will_run_hub_sto) ?
             (
-            new_acc.map(r,
-            string(r[0]).as(b_tid,
-            string(r[1]).as(b_kind,
-            bool(r[2]).as(b_fb,
-            int(r[3]).as(b_docs,
-            double(r[4]).as(b_bytes,
             dyn({
-            "period_start": day_from_str,
-            "period_obs_ts": now.format(time_layout.RFC3339),
-            "doc_type": "sub_attribution",
-            "deployment_name": tname,
-            "deployment_group": tgroup,
-            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
-            "ds_type": ds_type,
-            "ds_namespace": ds_ns,
-            "tenant_id": b_tid,
-            "attribution_field": res_field,
-            "attribution_source": "field",
-            "driver_pass": is_ingest ? "ingest" : "storage",
-            "weight_metric": eff_wm,
-            "ingest_doc_count": is_ingest ? b_docs : 0,
-            "ingest_bytes": is_ingest ? b_bytes : 0.0,
-            "storage_doc_count": is_ingest ? 0 : b_docs,
-            "storage_bytes": is_ingest ? 0.0 : b_bytes,
-            "stream_total_docs": eff_tot_docs,
-            "stream_total_bytes": eff_tot_bytes,
-            "storage_share_source": eff_storage_mode,
-            "query_share_source": clean_query_fallback,
-            "is_fallback_bucket": b_fb,
-            "raw_bucket_kind": b_kind,
             "run_id": run_id,
-            "pass_complete": true,
-            }.with(eff_sf != "" ? { "size_field": eff_sf } : {})
-             .with(is_ingest && has_prior ? { "stream_prior_docs": prior_docs, "stream_prior_bytes": prior_bytes } : {})
-             .with(!is_ingest ? { "stream_ingest_docs": ingest_tot_docs, "stream_ingest_bytes": ingest_tot_bytes } : {}))
-            )))))
-            ) +
-            (emit_overflow ? [dyn({
-            "period_start": day_from_str,
-            "period_obs_ts": now.format(time_layout.RFC3339),
-            "doc_type": "sub_attribution",
-            "deployment_name": tname,
-            "deployment_group": tgroup,
-            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
-            "ds_type": ds_type,
-            "ds_namespace": ds_ns,
-            "tenant_id": clean_overflow_label,
-            "attribution_field": res_field,
-            "attribution_source": "overflow",
-            "driver_pass": is_ingest ? "ingest" : "storage",
-            "weight_metric": eff_wm,
-            "ingest_doc_count": is_ingest ? ov_docs : 0,
-            "ingest_bytes": is_ingest ? ov_bytes : 0.0,
-            "storage_doc_count": is_ingest ? 0 : ov_docs,
-            "storage_bytes": is_ingest ? 0.0 : ov_bytes,
-            "stream_total_docs": eff_tot_docs,
-            "stream_total_bytes": eff_tot_bytes,
-            "storage_share_source": eff_storage_mode,
-            "query_share_source": clean_query_fallback,
-            "is_fallback_bucket": true,
-            "raw_bucket_kind": "overflow",
-            "run_id": run_id,
-            "pass_complete": true,
-            }.with(eff_sf != "" ? { "size_field": eff_sf } : {})
-             .with(is_ingest && has_prior ? { "stream_prior_docs": prior_docs, "stream_prior_bytes": prior_bytes } : {})
-             .with(!is_ingest ? { "stream_ingest_docs": ingest_tot_docs, "stream_ingest_bytes": ingest_tot_bytes } : {}))] : []) +
-            (emit_empty_day ? [dyn({
-            "period_start": day_from_str,
-            "period_obs_ts": now.format(time_layout.RFC3339),
-            "doc_type": "sub_attribution",
-            "deployment_name": tname,
-            "deployment_group": tgroup,
-            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
-            "ds_type": ds_type,
-            "ds_namespace": ds_ns,
-            "tenant_id": clean_unattr_label,
-            "attribution_field": res_field,
-            "attribution_source": "field",
-            "driver_pass": is_ingest ? "ingest" : "storage",
-            "weight_metric": eff_wm,
-            "ingest_doc_count": 0,
-            "ingest_bytes": 0.0,
-            "storage_doc_count": 0,
-            "storage_bytes": 0.0,
-            "stream_total_docs": 0,
-            "stream_total_bytes": 0.0,
-            "storage_share_source": eff_storage_mode,
-            "query_share_source": clean_query_fallback,
-            "is_fallback_bucket": true,
-            "raw_bucket_kind": "empty_day",
-            "run_id": run_id,
-            "pass_complete": true,
-            }.with(eff_sf != "" ? { "size_field": eff_sf } : {})
-             .with(is_ingest && has_prior ? { "stream_prior_docs": prior_docs, "stream_prior_bytes": prior_bytes } : {})
-             .with(!is_ingest ? { "stream_ingest_docs": ingest_tot_docs, "stream_ingest_bytes": ingest_tot_bytes } : {}))] : [])
-            ).as(page_evts,
+            "eff_sf": eff_sf,
+            "eff_wm": eff_wm,
+            "tot_docs": eff_tot_docs,
+            "tot_bytes": eff_tot_bytes,
+            "emit_ov": emit_overflow,
+            "ov_docs": ov_docs,
+            "ov_bytes": ov_bytes,
+            "acc": new_acc,
+            }).as(next_ing_done,
             will_run_live_sto ?
             {
-            "events": size(page_evts) > 0 ? page_evts : [dyn({ "fake": true })],
+            "events": [dyn({ "fake": true })],
             "cursor": {
             "last_to": high_water.format(time_layout.RFC3339),
             "active_day": day_from_str,
@@ -1251,15 +1259,16 @@ inputs:
             "total_bytes": 0.0,
             "ingest_tot_docs": eff_tot_docs,
             "ingest_tot_bytes": eff_tot_bytes,
+            "ing_done": next_ing_done,
             "acc": [],
             },
             "good_key_idx": prev_good_idx,
             },
             "want_more": true,
             }
-            : will_run_hub_sto ?
+            :
             {
-            "events": size(page_evts) > 0 ? page_evts : [dyn({ "fake": true })],
+            "events": [dyn({ "fake": true })],
             "cursor": {
             "last_to": high_water.format(time_layout.RFC3339),
             "active_day": day_from_str,
@@ -1283,15 +1292,113 @@ inputs:
             "total_bytes": eff_tot_bytes,
             "prior_docs": prior_docs,
             "prior_bytes": prior_bytes,
+            "ing_done": next_ing_done,
             "acc": [],
             },
             "good_key_idx": prev_good_idx,
             },
             "want_more": true,
             }
+            )
+            )
             :
+            (is_ingest ?
+            (size(new_acc) == 0 && !emit_overflow).as(emit_empty_day,
+            (
+            new_acc.map(r,
+            string(r[0]).as(b_tid,
+            string(r[1]).as(b_kind,
+            bool(r[2]).as(b_fb,
+            int(r[3]).as(b_docs,
+            double(r[4]).as(b_bytes,
+            dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": b_tid,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": eff_wm,
+            "ingest_doc_count": b_docs,
+            "ingest_bytes": b_bytes,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": eff_tot_docs,
+            "stream_total_bytes": eff_tot_bytes,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": b_fb,
+            "raw_bucket_kind": b_kind,
+            "run_id": run_id,
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(eff_sf != "" ? { "size_field": eff_sf } : {}))
+            )))))) +
+            (emit_overflow ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_overflow_label,
+            "attribution_field": res_field,
+            "attribution_source": "overflow",
+            "driver_pass": "ingest",
+            "weight_metric": eff_wm,
+            "ingest_doc_count": ov_docs,
+            "ingest_bytes": ov_bytes,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": eff_tot_docs,
+            "stream_total_bytes": eff_tot_bytes,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "overflow",
+            "run_id": run_id,
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(eff_sf != "" ? { "size_field": eff_sf } : {}))] : []) +
+            (emit_empty_day ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_unattr_label,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": eff_wm,
+            "ingest_doc_count": 0,
+            "ingest_bytes": 0.0,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": 0,
+            "stream_total_bytes": 0.0,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "empty_day",
+            "run_id": run_id,
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(eff_sf != "" ? { "size_field": eff_sf } : {}))] : [])
+            ).as(ing_evts,
             {
-            "events": size(page_evts) > 0 ? page_evts : [dyn({ "fake": true })],
+            "events": size(ing_evts) > 0 ? ing_evts : [dyn({ "fake": true })],
             "cursor": {
             "last_to": high_water.format(time_layout.RFC3339),
             "active_day": day_from_str,
@@ -1306,18 +1413,194 @@ inputs:
             }
             )
             )
-            )
-            )
-            )
-            )
-            ))))))))))
-            )
-            )
-            ))))))))))))
-            )
-            )
-            )
-            )))))))))))))))))))))))
+            :
+            (
+            (size(new_acc) == 0 && !emit_overflow && int(ing_d.tot_docs) == 0 && size(ing_d.acc) == 0 && !bool(ing_d.emit_ov)).as(emit_empty_day,
+            (eff_tot_docs > 0 || (eff_wm == "bytes" && eff_tot_bytes > 0.0) || emit_empty_day).as(sto_has_signal,
+            (
+            ing_d.acc.map(r,
+            string(r[0]).as(b_tid,
+            string(r[1]).as(b_kind,
+            bool(r[2]).as(b_fb,
+            int(r[3]).as(b_docs,
+            double(r[4]).as(b_bytes,
+            dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": b_tid,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": b_docs,
+            "ingest_bytes": b_bytes,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "stream_sto_docs": eff_tot_docs,
+            "stream_sto_bytes": eff_tot_bytes,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": b_fb,
+            "raw_bucket_kind": b_kind,
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": sto_has_signal,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))
+            )))))) +
+            (bool(ing_d.emit_ov) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_overflow_label,
+            "attribution_field": res_field,
+            "attribution_source": "overflow",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": int(ing_d.ov_docs),
+            "ingest_bytes": double(ing_d.ov_bytes),
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "stream_sto_docs": eff_tot_docs,
+            "stream_sto_bytes": eff_tot_bytes,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "overflow",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": sto_has_signal,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : [])
+            ).as(ing_ok_evts,
+            (
+            new_acc.map(r,
+            string(r[0]).as(b_tid,
+            string(r[1]).as(b_kind,
+            bool(r[2]).as(b_fb,
+            int(r[3]).as(b_docs,
+            double(r[4]).as(b_bytes,
+            dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": b_tid,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "storage",
+            "weight_metric": eff_wm,
+            "ingest_doc_count": 0,
+            "ingest_bytes": 0.0,
+            "storage_doc_count": b_docs,
+            "storage_bytes": b_bytes,
+            "stream_total_docs": eff_tot_docs,
+            "stream_total_bytes": eff_tot_bytes,
+            "stream_ingest_docs": int(ing_d.tot_docs),
+            "stream_ingest_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": b_fb,
+            "raw_bucket_kind": b_kind,
+            "run_id": run_id,
+            "pass_complete": true,
+            "sto_pass_complete": sto_has_signal,
+            }.with(eff_sf != "" ? { "size_field": eff_sf } : {}))
+            )))))) +
+            (emit_overflow ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_overflow_label,
+            "attribution_field": res_field,
+            "attribution_source": "overflow",
+            "driver_pass": "storage",
+            "weight_metric": eff_wm,
+            "ingest_doc_count": 0,
+            "ingest_bytes": 0.0,
+            "storage_doc_count": ov_docs,
+            "storage_bytes": ov_bytes,
+            "stream_total_docs": eff_tot_docs,
+            "stream_total_bytes": eff_tot_bytes,
+            "stream_ingest_docs": int(ing_d.tot_docs),
+            "stream_ingest_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "overflow",
+            "run_id": run_id,
+            "pass_complete": true,
+            "sto_pass_complete": sto_has_signal,
+            }.with(eff_sf != "" ? { "size_field": eff_sf } : {}))] : []) +
+            (emit_empty_day ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_unattr_label,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "storage",
+            "weight_metric": eff_wm,
+            "ingest_doc_count": 0,
+            "ingest_bytes": 0.0,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": 0,
+            "stream_total_bytes": 0.0,
+            "stream_ingest_docs": 0,
+            "stream_ingest_bytes": 0.0,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "empty_day",
+            "run_id": run_id,
+            "pass_complete": true,
+            "sto_pass_complete": true,
+            }.with(eff_sf != "" ? { "size_field": eff_sf } : {}))] : [])
+            ).as(sto_evts,
+            (ing_ok_evts + sto_evts).as(comb_evts,
+            {
+            "events": size(comb_evts) > 0 ? comb_evts : [dyn({ "fake": true })],
+            "cursor": {
+            "last_to": high_water.format(time_layout.RFC3339),
+            "active_day": day_from_str,
+            "phase": "process_streams",
+            "disc_targets": targets,
+            "stream_queue": queue,
+            "queue_idx": next_q_idx,
+            "stream_state": dyn({}),
+            "good_key_idx": prev_good_idx,
+            },
+            "want_more": true,
+            }
+            ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
             :
             string(ss.resolved_field).as(res_field,
             string(ss.resolved_size_field).as(res_size_field,
@@ -1333,6 +1616,7 @@ inputs:
             int(ss.?emitted_docs.orValue(0)).as(emitted_docs,
             double(ss.?emitted_bytes.orValue(0.0)).as(emitted_bytes,
             ss.?acc.orValue([]).as(prev_acc,
+            ss.?ing_done.orValue(dyn({})).as(ing_d,
             (hub_url + "/chargeback_lookup.cluster_sub_attribution/_search?ignore_unavailable=true&allow_no_indices=true").as(hub_srch_url,
             try(
             request("POST", hub_srch_url).with({
@@ -1366,21 +1650,122 @@ inputs:
             }).do_request(),
             "req_err"
             ).as(hp_resp,
+            (
             (has(hp_resp.req_err) || hp_resp.StatusCode != 200) ?
+            { "ok": false, "err": dyn({ "error": { "code": has(hp_resp.req_err) ? "transport_error" : string(hp_resp.StatusCode), "id": tid, "message": "POST " + hub_srch_url + ": failed rolling_hub history lookup" } }), "hb": dyn({}) }
+            :
+            try(bytes(hp_resp.Body).decode_json(), "json_err").as(hb_raw,
+            (type(hb_raw) != map || has(hb_raw.json_err) || (has(hb_raw.timed_out) && bool(hb_raw.timed_out)) || (has(hb_raw._shards) && hb_raw._shards != null && has(hb_raw._shards.failed) && hb_raw._shards.failed != null && int(hb_raw._shards.failed) > 0)) ?
+            { "ok": false, "err": dyn({ "error": { "code": "decode_error", "id": tid, "message": "POST " + hub_srch_url + ": invalid, timed_out, or partial shard response" } }), "hb": dyn({}) }
+            :
+            { "ok": true, "err": dyn({}), "hb": hb_raw }
+            )
+            ).as(hp_res,
+            (!hp_res.ok) ?
+            (
+            has(ing_d.acc) ?
+            (
+            ing_d.acc.map(r,
+            string(r[0]).as(b_tid,
+            string(r[1]).as(b_kind,
+            bool(r[2]).as(b_fb,
+            int(r[3]).as(b_docs,
+            double(r[4]).as(b_bytes,
+            dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": b_tid,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": b_docs,
+            "ingest_bytes": b_bytes,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": b_fb,
+            "raw_bucket_kind": b_kind,
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))
+            )))))) +
+            (bool(ing_d.emit_ov) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_overflow_label,
+            "attribution_field": res_field,
+            "attribution_source": "overflow",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": int(ing_d.ov_docs),
+            "ingest_bytes": double(ing_d.ov_bytes),
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "overflow",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : []) +
+            ((size(ing_d.acc) == 0 && !bool(ing_d.emit_ov)) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_unattr_label,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": 0,
+            "ingest_bytes": 0.0,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": 0,
+            "stream_total_bytes": 0.0,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "empty_day",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : [])
+            ) : []
+            ).as(ing_fb_evts,
             {
-            "events": [dyn({ "error": { "code": has(hp_resp.req_err) ? "transport_error" : string(hp_resp.StatusCode), "id": tid, "message": "POST " + hub_srch_url + ": failed rolling_hub history lookup" } })],
+            "events": [hp_res.err] + ing_fb_evts,
             "cursor": { "last_to": high_water.format(time_layout.RFC3339), "active_day": day_from_str, "phase": "process_streams", "disc_targets": targets, "stream_queue": queue, "queue_idx": next_q_idx, "stream_state": dyn({}), "good_key_idx": prev_good_idx },
             "want_more": true,
             }
+            )
             :
-            try(bytes(hp_resp.Body).decode_json(), "json_err").as(hb_p,
-            (type(hb_p) != map || has(hb_p.json_err) || (has(hb_p.timed_out) && bool(hb_p.timed_out)) || (has(hb_p._shards) && hb_p._shards != null && has(hb_p._shards.failed) && hb_p._shards.failed != null && int(hb_p._shards.failed) > 0)) ?
-            {
-            "events": [dyn({ "error": { "code": "decode_error", "id": tid, "message": "POST " + hub_srch_url + ": invalid, timed_out, or partial shard response" } })],
-            "cursor": { "last_to": high_water.format(time_layout.RFC3339), "active_day": day_from_str, "phase": "process_streams", "disc_targets": targets, "stream_queue": queue, "queue_idx": next_q_idx, "stream_state": dyn({}), "good_key_idx": prev_good_idx },
-            "want_more": true,
-            }
-            :
+            hp_res.hb.as(hb_p,
             ((has(hb_p.aggregations) && has(hb_p.aggregations.by_tenant) && has(hb_p.aggregations.by_tenant.buckets) && hb_p.aggregations.by_tenant.buckets != null) ? hb_p.aggregations.by_tenant.buckets : []).as(p_buckets,
             (has(hb_p.aggregations) && has(hb_p.aggregations.by_tenant) && has(hb_p.aggregations.by_tenant.after_key) && hb_p.aggregations.by_tenant.after_key != null).as(has_next,
             (has_next ? hb_p.aggregations.by_tenant.after_key : dyn({})).as(next_after,
@@ -1402,8 +1787,11 @@ inputs:
             (emitted_bytes + page_bytes).as(new_emitted_bytes,
             (emitted_tenants + size(kept_named)).as(new_emitted_tenants,
             (!has_next || ceiling_hit).as(is_last_page,
-            max(0, prior_tot_docs - new_emitted_docs).as(ov_docs,
-            ((cur_wmetric == "bytes" && prior_tot_bytes > new_emitted_bytes) ? (prior_tot_bytes - new_emitted_bytes) : 0.0).as(ov_bytes,
+            ((!ceiling_hit) ? new_emitted_docs : max(prior_tot_docs, new_emitted_docs)).as(eff_prior_docs,
+            ((!ceiling_hit && cur_wmetric == "bytes") ? new_emitted_bytes : ((cur_wmetric == "bytes" && new_emitted_bytes > prior_tot_bytes) ? new_emitted_bytes : prior_tot_bytes)).as(eff_prior_bytes,
+            (eff_prior_docs > 0 || (cur_wmetric == "bytes" && eff_prior_bytes > 0.0)).as(prior_has_signal,
+            max(0, eff_prior_docs - new_emitted_docs).as(ov_docs,
+            ((cur_wmetric == "bytes" && eff_prior_bytes > new_emitted_bytes) ? (eff_prior_bytes - new_emitted_bytes) : 0.0).as(ov_bytes,
             (ceiling_hit && (ov_docs > 0 || ov_bytes > 0.0)).as(emit_overflow,
             kept_buckets.map(b,
             dyn([
@@ -1439,6 +1827,7 @@ inputs:
             "total_bytes": today_tot_bytes,
             "prior_docs": prior_tot_docs,
             "prior_bytes": prior_tot_bytes,
+            "ing_done": ing_d,
             "acc": new_acc,
             },
             "good_key_idx": prev_good_idx,
@@ -1447,6 +1836,78 @@ inputs:
             }
             :
             (
+            (prior_has_signal ?
+            (
+            (has(ing_d.acc) ?
+            (
+            ing_d.acc.map(r,
+            string(r[0]).as(b_tid,
+            string(r[1]).as(b_kind,
+            bool(r[2]).as(b_fb,
+            int(r[3]).as(b_docs,
+            double(r[4]).as(b_bytes,
+            dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": b_tid,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": b_docs,
+            "ingest_bytes": b_bytes,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "stream_prior_docs": eff_prior_docs,
+            "stream_prior_bytes": eff_prior_bytes,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": b_fb,
+            "raw_bucket_kind": b_kind,
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": true,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))
+            )))))) +
+            (bool(ing_d.emit_ov) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_overflow_label,
+            "attribution_field": res_field,
+            "attribution_source": "overflow",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": int(ing_d.ov_docs),
+            "ingest_bytes": double(ing_d.ov_bytes),
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "stream_prior_docs": eff_prior_docs,
+            "stream_prior_bytes": eff_prior_bytes,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "overflow",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": true,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : [])
+            ) : []) +
             new_acc.map(r,
             string(r[0]).as(tval,
             int(r[1]).as(p_d,
@@ -1469,19 +1930,19 @@ inputs:
             "ingest_bytes": 0.0,
             "storage_doc_count": p_d,
             "storage_bytes": p_b,
-            "stream_total_docs": today_tot_docs,
-            "stream_total_bytes": today_tot_bytes,
-            "stream_prior_docs": prior_tot_docs,
-            "stream_prior_bytes": prior_tot_bytes,
+            "stream_total_docs": has(ing_d.tot_docs) ? int(ing_d.tot_docs) : today_tot_docs,
+            "stream_total_bytes": has(ing_d.tot_bytes) ? double(ing_d.tot_bytes) : today_tot_bytes,
+            "stream_prior_docs": eff_prior_docs,
+            "stream_prior_bytes": eff_prior_bytes,
             "storage_share_source": "rolling_hub",
             "query_share_source": clean_query_fallback,
             "is_fallback_bucket": (tval == clean_unattr_label || tval == clean_overflow_label),
-            "raw_bucket_kind": (tval == clean_overflow_label) ? "prior_overflow" : "prior",
+            "raw_bucket_kind": "prior",
             "run_id": run_id,
             "pass_complete": true,
+            "sto_pass_complete": true,
             }.with(res_size_field != "" ? { "size_field": res_size_field } : {}))
-            )))
-            ) +
+            )))) +
             (emit_overflow ? [dyn({
             "period_start": day_from_str,
             "period_obs_ts": now.format(time_layout.RFC3339),
@@ -1500,17 +1961,116 @@ inputs:
             "ingest_bytes": 0.0,
             "storage_doc_count": ov_docs,
             "storage_bytes": ov_bytes,
-            "stream_total_docs": today_tot_docs,
-            "stream_total_bytes": today_tot_bytes,
-            "stream_prior_docs": prior_tot_docs,
-            "stream_prior_bytes": prior_tot_bytes,
+            "stream_total_docs": has(ing_d.tot_docs) ? int(ing_d.tot_docs) : today_tot_docs,
+            "stream_total_bytes": has(ing_d.tot_bytes) ? double(ing_d.tot_bytes) : today_tot_bytes,
+            "stream_prior_docs": eff_prior_docs,
+            "stream_prior_bytes": eff_prior_bytes,
             "storage_share_source": "rolling_hub",
             "query_share_source": clean_query_fallback,
             "is_fallback_bucket": true,
             "raw_bucket_kind": "prior_overflow",
             "run_id": run_id,
             "pass_complete": true,
+            "sto_pass_complete": true,
             }.with(res_size_field != "" ? { "size_field": res_size_field } : {}))] : [])
+            ) :
+            (
+            has(ing_d.acc) ?
+            (
+            ing_d.acc.map(r,
+            string(r[0]).as(b_tid,
+            string(r[1]).as(b_kind,
+            bool(r[2]).as(b_fb,
+            int(r[3]).as(b_docs,
+            double(r[4]).as(b_bytes,
+            dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": b_tid,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": b_docs,
+            "ingest_bytes": b_bytes,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": b_fb,
+            "raw_bucket_kind": b_kind,
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))
+            )))))) +
+            (bool(ing_d.emit_ov) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_overflow_label,
+            "attribution_field": res_field,
+            "attribution_source": "overflow",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": int(ing_d.ov_docs),
+            "ingest_bytes": double(ing_d.ov_bytes),
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": int(ing_d.tot_docs),
+            "stream_total_bytes": double(ing_d.tot_bytes),
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "overflow",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : []) +
+            ((size(ing_d.acc) == 0 && !bool(ing_d.emit_ov)) ? [dyn({
+            "period_start": day_from_str,
+            "period_obs_ts": now.format(time_layout.RFC3339),
+            "doc_type": "sub_attribution",
+            "deployment_name": tname,
+            "deployment_group": tgroup,
+            "elasticsearch": { "cluster": { "name": tid }, "index": { "datastream": ds } },
+            "ds_type": ds_type,
+            "ds_namespace": ds_ns,
+            "tenant_id": clean_unattr_label,
+            "attribution_field": res_field,
+            "attribution_source": "field",
+            "driver_pass": "ingest",
+            "weight_metric": string(ing_d.eff_wm),
+            "ingest_doc_count": 0,
+            "ingest_bytes": 0.0,
+            "storage_doc_count": 0,
+            "storage_bytes": 0.0,
+            "stream_total_docs": 0,
+            "stream_total_bytes": 0.0,
+            "storage_share_source": eff_storage_mode,
+            "query_share_source": clean_query_fallback,
+            "is_fallback_bucket": true,
+            "raw_bucket_kind": "empty_day",
+            "run_id": string(ing_d.run_id),
+            "pass_complete": true,
+            "sto_pass_complete": false,
+            }.with(string(ing_d.eff_sf) != "" ? { "size_field": string(ing_d.eff_sf) } : {}))] : [])
+            ) : []
+            )
+            )
             ).as(p_evts,
             {
             "events": size(p_evts) > 0 ? p_evts : [dyn({ "fake": true })],
@@ -1527,9 +2087,10 @@ inputs:
             "want_more": true,
             }
             )
+            )
             ))
             )))
-            ))))))))))))))))))))))))))))))
+            ))))))))))))))))))))))))))))))))))
             )
             )))))))))))))))))))))))))))))
             )

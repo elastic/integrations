@@ -70,6 +70,15 @@
 - name: stream_ingest_bytes
   type: double
   description: Total daily byte volume across the data stream during the ingest pass when size_field is active.
+- name: stream_sto_docs
+  type: long
+  description: Total document count across the data stream from a completed live_open storage pass.
+- name: stream_sto_bytes
+  type: double
+  description: Total byte volume across the data stream from a completed live_open storage pass when size_field is active.
+- name: sto_pass_complete
+  type: boolean
+  description: Whether the paired stream-wide storage pass (live_open or rolling_hub) completed and produced a positive storage denominator or empty-day sentinel.
 - name: ingest_share_pct
   type: double
   description: Precomputed ingest share ratio (0.0 to 1.0) for passthrough or unmapped fallback rows.
@@ -90,7 +99,7 @@
   description: Whether this row represents an explicit unattributed or overflow conservation bucket.
 - name: raw_bucket_kind
   type: keyword
-  description: Raw bucket discriminator (tenant, missing, blank, literal_unattributed, overflow, empty_day, unmapped, or passthrough) preventing ingest _id collisions.
+  description: Raw bucket discriminator preserving raw whitespace/blank/literal-unattributed discriminators (for example, tenant, tenant_ws, missing, blank:<raw>, literal_unattributed, overflow, prior, prior_overflow, empty_day, unmapped, or passthrough) to prevent ingest _id collisions.
 - name: run_id
   type: keyword
   description: Collector pass run identifier used by the transform to ignore incomplete failed runs.

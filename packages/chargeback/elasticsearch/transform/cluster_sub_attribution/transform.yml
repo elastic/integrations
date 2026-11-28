@@ -272,6 +272,9 @@ pivot:
           double stPriorBytes = 0.0;
           long ingStreamDocs = 0L;
           double ingStreamBytes = 0.0;
+          long stStoDocs = 0L;
+          double stStoBytes = 0.0;
+          boolean stoPassComp = false;
           double preIng = 0.0;
           double preSto = 0.0;
           double preQry = 0.0;
@@ -285,6 +288,15 @@ pivot:
           try { if (doc.containsKey('stream_prior_bytes') && !doc['stream_prior_bytes'].empty) { stPriorBytes = ((Number)doc['stream_prior_bytes'].value).doubleValue(); } else if (params._source?.get('stream_prior_bytes') instanceof Number) { stPriorBytes = ((Number)params._source.get('stream_prior_bytes')).doubleValue(); } } catch (Exception e) {}
           try { if (doc.containsKey('stream_ingest_docs') && !doc['stream_ingest_docs'].empty) { ingStreamDocs = ((Number)doc['stream_ingest_docs'].value).longValue(); } else if (params._source?.get('stream_ingest_docs') instanceof Number) { ingStreamDocs = ((Number)params._source.get('stream_ingest_docs')).longValue(); } } catch (Exception e) {}
           try { if (doc.containsKey('stream_ingest_bytes') && !doc['stream_ingest_bytes'].empty) { ingStreamBytes = ((Number)doc['stream_ingest_bytes'].value).doubleValue(); } else if (params._source?.get('stream_ingest_bytes') instanceof Number) { ingStreamBytes = ((Number)params._source.get('stream_ingest_bytes')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_sto_docs') && !doc['stream_sto_docs'].empty) { stStoDocs = ((Number)doc['stream_sto_docs'].value).longValue(); } else if (params._source?.get('stream_sto_docs') instanceof Number) { stStoDocs = ((Number)params._source.get('stream_sto_docs')).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_sto_bytes') && !doc['stream_sto_bytes'].empty) { stStoBytes = ((Number)doc['stream_sto_bytes'].value).doubleValue(); } else if (params._source?.get('stream_sto_bytes') instanceof Number) { stStoBytes = ((Number)params._source.get('stream_sto_bytes')).doubleValue(); } } catch (Exception e) {}
+          try {
+            if (doc.containsKey('sto_pass_complete') && !doc['sto_pass_complete'].empty) {
+              stoPassComp = Boolean.TRUE.equals(doc['sto_pass_complete'].value) || 'true'.equalsIgnoreCase(doc['sto_pass_complete'].value.toString());
+            } else if (params._source != null && params._source.containsKey('sto_pass_complete')) {
+              stoPassComp = Boolean.TRUE.equals(params._source.get('sto_pass_complete'));
+            }
+          } catch (Exception e) {}
           try { if (doc.containsKey('ingest_share_pct') && !doc['ingest_share_pct'].empty) { preIng = ((Number)doc['ingest_share_pct'].value).doubleValue(); } else if (params._source?.get('ingest_share_pct') instanceof Number) { preIng = ((Number)params._source.get('ingest_share_pct')).doubleValue(); } } catch (Exception e) {}
           try { if (doc.containsKey('storage_share_pct') && !doc['storage_share_pct'].empty) { preSto = ((Number)doc['storage_share_pct'].value).doubleValue(); } else if (params._source?.get('storage_share_pct') instanceof Number) { preSto = ((Number)params._source.get('storage_share_pct')).doubleValue(); } } catch (Exception e) {}
           try { if (doc.containsKey('query_share_pct') && !doc['query_share_pct'].empty) { preQry = ((Number)doc['query_share_pct'].value).doubleValue(); } else if (params._source?.get('query_share_pct') instanceof Number) { preQry = ((Number)params._source.get('query_share_pct')).doubleValue(); } } catch (Exception e) {}
@@ -319,12 +331,20 @@ pivot:
             }
           } catch (Exception e) {}
 
+          String baseRunId = runId;
+          if ('storage'.equals(dpass) && baseRunId.endsWith(':sto')) {
+            baseRunId = baseRunId.substring(0, baseRunId.length() - 4);
+          } else if ('storage_prior'.equals(dpass) && baseRunId.endsWith(':prior')) {
+            baseRunId = baseRunId.substring(0, baseRunId.length() - 6);
+          }
+
           String rk = ns + '|' + polId + '|' + collectorId + '||' + dpass + '||' + runId;
           Map r = (Map)state.runs.get(rk);
           if (r == null) {
             r = new HashMap();
             r.put('pass', dpass);
             r.put('run_id', runId);
+            r.put('base_run_id', baseRunId);
             r.put('ing_ts', ingTs);
             r.put('complete', passComp);
             r.put('ing_docs', 0L);
@@ -337,6 +357,9 @@ pivot:
             r.put('prior_bytes', stPriorBytes);
             r.put('ing_stream_docs', ingStreamDocs);
             r.put('ing_stream_bytes', ingStreamBytes);
+            r.put('sto_stream_docs', stStoDocs);
+            r.put('sto_stream_bytes', stStoBytes);
+            r.put('sto_complete', stoPassComp);
             r.put('pre_ing', preIng);
             r.put('pre_sto', preSto);
             r.put('pre_qry', preQry);
@@ -351,6 +374,7 @@ pivot:
             state.runs.put(rk, r);
           }
           if (passComp) { r.put('complete', true); }
+          if (stoPassComp) { r.put('sto_complete', true); }
           if (ingTs > ((Number)r.get('ing_ts')).longValue()) { r.put('ing_ts', ingTs); }
           r.put('ing_docs', ((Number)r.get('ing_docs')).longValue() + ingDocs);
           r.put('ing_bytes', ((Number)r.get('ing_bytes')).doubleValue() + ingBytes);
@@ -362,6 +386,8 @@ pivot:
           if (stPriorBytes > ((Number)r.get('prior_bytes')).doubleValue()) { r.put('prior_bytes', stPriorBytes); }
           if (ingStreamDocs > ((Number)r.get('ing_stream_docs')).longValue()) { r.put('ing_stream_docs', ingStreamDocs); }
           if (ingStreamBytes > ((Number)r.get('ing_stream_bytes')).doubleValue()) { r.put('ing_stream_bytes', ingStreamBytes); }
+          if (stStoDocs > ((Number)r.get('sto_stream_docs')).longValue()) { r.put('sto_stream_docs', stStoDocs); }
+          if (stStoBytes > ((Number)r.get('sto_stream_bytes')).doubleValue()) { r.put('sto_stream_bytes', stStoBytes); }
           if ('overflow'.equals(attrSrc) || 'field_unmapped'.equals(attrSrc)) { r.put('attr_src', attrSrc); }
           if ('empty_day'.equals(rawKind)) { r.put('raw_kind', 'empty_day'); }
           if (isFb) { r.put('is_fb', true); }
@@ -401,6 +427,7 @@ pivot:
                 mergedRuns.put(rk, dr);
               } else {
                 if (Boolean.TRUE.equals(sr.get('complete'))) { dr.put('complete', true); }
+                if (Boolean.TRUE.equals(sr.get('sto_complete'))) { dr.put('sto_complete', true); }
                 long srTs = ((Number)sr.get('ing_ts')).longValue();
                 if (srTs > ((Number)dr.get('ing_ts')).longValue()) { dr.put('ing_ts', srTs); }
                 dr.put('ing_docs', ((Number)dr.get('ing_docs')).longValue() + ((Number)sr.get('ing_docs')).longValue());
@@ -419,6 +446,10 @@ pivot:
                 if (srIngSD > ((Number)dr.get('ing_stream_docs')).longValue()) { dr.put('ing_stream_docs', srIngSD); }
                 double srIngSB = ((Number)sr.get('ing_stream_bytes')).doubleValue();
                 if (srIngSB > ((Number)dr.get('ing_stream_bytes')).doubleValue()) { dr.put('ing_stream_bytes', srIngSB); }
+                long srStoSD = sr.get('sto_stream_docs') instanceof Number ? ((Number)sr.get('sto_stream_docs')).longValue() : 0L;
+                if (srStoSD > (dr.get('sto_stream_docs') instanceof Number ? ((Number)dr.get('sto_stream_docs')).longValue() : 0L)) { dr.put('sto_stream_docs', srStoSD); }
+                double srStoSB = sr.get('sto_stream_bytes') instanceof Number ? ((Number)sr.get('sto_stream_bytes')).doubleValue() : 0.0;
+                if (srStoSB > (dr.get('sto_stream_bytes') instanceof Number ? ((Number)dr.get('sto_stream_bytes')).doubleValue() : 0.0)) { dr.put('sto_stream_bytes', srStoSB); }
                 String srAttrSrc = sr.get('attr_src') != null ? sr.get('attr_src').toString() : '';
                 if ('overflow'.equals(srAttrSrc) || 'field_unmapped'.equals(srAttrSrc)) { dr.put('attr_src', srAttrSrc); }
                 if ('empty_day'.equals(sr.get('raw_kind'))) { dr.put('raw_kind', 'empty_day'); }
@@ -482,24 +513,50 @@ pivot:
             return null;
           }
 
-          boolean useLiveSto = false;
-          if (stoLiveRun != null && stoPriorRun == null) {
-            useLiveSto = true;
-          } else if (stoLiveRun != null && stoPriorRun != null) {
-            long lvTs = ((Number)stoLiveRun.get('ing_ts')).longValue();
-            long prTs = ((Number)stoPriorRun.get('ing_ts')).longValue();
-            String lvId = stoLiveRun.get('run_id') != null ? stoLiveRun.get('run_id').toString() : '';
-            String prId = stoPriorRun.get('run_id') != null ? stoPriorRun.get('run_id').toString() : '';
-            if (lvTs >= prTs && (lvTs > prTs || lvId.compareTo(prId) >= 0)) {
-              useLiveSto = true;
+          Map effStoLiveRun = stoLiveRun;
+          if (effStoLiveRun != null && ingRun != null) {
+            String lvBase = effStoLiveRun.get('base_run_id') != null ? effStoLiveRun.get('base_run_id').toString() : '';
+            String inBase = ingRun.get('base_run_id') != null ? ingRun.get('base_run_id').toString() : '';
+            long lvTs = ((Number)effStoLiveRun.get('ing_ts')).longValue();
+            long inTs = ((Number)ingRun.get('ing_ts')).longValue();
+            if (!lvBase.equals(inBase) && lvTs <= inTs) {
+              effStoLiveRun = null;
             }
+          }
+          Map effStoPriorRun = stoPriorRun;
+          if (effStoPriorRun != null && ingRun != null) {
+            String prBase = effStoPriorRun.get('base_run_id') != null ? effStoPriorRun.get('base_run_id').toString() : '';
+            String inBase = ingRun.get('base_run_id') != null ? ingRun.get('base_run_id').toString() : '';
+            long prTs = ((Number)effStoPriorRun.get('ing_ts')).longValue();
+            long inTs = ((Number)ingRun.get('ing_ts')).longValue();
+            if (!prBase.equals(inBase) && prTs <= inTs) {
+              effStoPriorRun = null;
+            }
+          }
+
+          boolean liveStoMode = false;
+          if (effStoLiveRun != null && effStoPriorRun != null) {
+            long lvTs = ((Number)effStoLiveRun.get('ing_ts')).longValue();
+            long prTs = ((Number)effStoPriorRun.get('ing_ts')).longValue();
+            String lvBase = effStoLiveRun.get('base_run_id') != null ? effStoLiveRun.get('base_run_id').toString() : '';
+            String prBase = effStoPriorRun.get('base_run_id') != null ? effStoPriorRun.get('base_run_id').toString() : '';
+            if (lvTs > prTs || (lvTs == prTs && lvBase.compareTo(prBase) >= 0)) {
+              liveStoMode = true;
+              effStoPriorRun = null;
+            } else {
+              effStoLiveRun = null;
+            }
+          } else if (effStoLiveRun != null) {
+            liveStoMode = true;
+          } else if (effStoPriorRun == null && ingRun != null && 'live_open'.equals(ingRun.get('sto_src'))) {
+            liveStoMode = true;
           }
 
           String attrField = metaRun.get('attr_field') != null ? metaRun.get('attr_field').toString() : '';
           String attrSrc = metaRun.get('attr_src') != null ? metaRun.get('attr_src').toString() : 'field';
           String wMetric = metaRun.get('w_metric') != null ? metaRun.get('w_metric').toString() : 'doc_count';
           String sField = metaRun.get('size_field') != null ? metaRun.get('size_field').toString() : '';
-          String stoSrc = (!usePassthrough && useLiveSto) ? 'live_open' : (metaRun.get('sto_src') != null ? metaRun.get('sto_src').toString() : 'rolling_hub');
+          String stoSrc = (!usePassthrough && liveStoMode) ? 'live_open' : (metaRun.get('sto_src') != null ? metaRun.get('sto_src').toString() : 'rolling_hub');
           String qrySrc = metaRun.get('qry_src') != null ? metaRun.get('qry_src').toString() : 'blend';
           boolean isFb = Boolean.TRUE.equals(metaRun.get('is_fb'));
 
@@ -534,29 +591,42 @@ pivot:
             }
 
             boolean hasStoSignal = false;
-            if (useLiveSto) {
-              outStoDocs = ((Number)stoLiveRun.get('sto_docs')).longValue();
-              outStoBytes = ((Number)stoLiveRun.get('sto_bytes')).doubleValue();
-              boolean stoUseBytes = ('bytes'.equals(stoLiveRun.get('w_metric')) && ((Number)stoLiveRun.get('tot_bytes')).doubleValue() > 0.0);
-              double stoDenom = stoUseBytes ? ((Number)stoLiveRun.get('tot_bytes')).doubleValue() : (double)((Number)stoLiveRun.get('tot_docs')).longValue();
-              if (stoDenom > 0.0) {
-                double stoNum = stoUseBytes ? outStoBytes : (double)outStoDocs;
-                stoShare = stoNum / stoDenom;
-                hasStoSignal = true;
-              } else if ('empty_day'.equals(stoLiveRun.get('raw_kind'))) {
-                stoShare = 1.0;
-                hasStoSignal = true;
+            if (liveStoMode) {
+              if (effStoLiveRun != null) {
+                outStoDocs = ((Number)effStoLiveRun.get('sto_docs')).longValue();
+                outStoBytes = ((Number)effStoLiveRun.get('sto_bytes')).doubleValue();
+                boolean stoUseBytes = ('bytes'.equals(effStoLiveRun.get('w_metric')) && ((Number)effStoLiveRun.get('tot_bytes')).doubleValue() > 0.0);
+                double stoDenom = stoUseBytes ? ((Number)effStoLiveRun.get('tot_bytes')).doubleValue() : (double)((Number)effStoLiveRun.get('tot_docs')).longValue();
+                if (stoDenom > 0.0) {
+                  double stoNum = stoUseBytes ? outStoBytes : (double)outStoDocs;
+                  stoShare = stoNum / stoDenom;
+                  hasStoSignal = true;
+                } else if ('empty_day'.equals(effStoLiveRun.get('raw_kind'))) {
+                  stoShare = 1.0;
+                  hasStoSignal = true;
+                }
+              } else {
+                long ingStoSD = (ingRun != null && ingRun.get('sto_stream_docs') instanceof Number) ? ((Number)ingRun.get('sto_stream_docs')).longValue() : 0L;
+                double ingStoSB = (ingRun != null && ingRun.get('sto_stream_bytes') instanceof Number) ? ((Number)ingRun.get('sto_stream_bytes')).doubleValue() : 0.0;
+                boolean liveCompletedWithTotals = (ingRun != null && Boolean.TRUE.equals(ingRun.get('sto_complete'))
+                  && (ingStoSD > 0L || ingStoSB > 0.0));
+                if (liveCompletedWithTotals) {
+                  outStoDocs = 0L;
+                  outStoBytes = 0.0;
+                  stoShare = 0.0;
+                  hasStoSignal = true;
+                }
               }
             } else {
-              boolean usePriorRun = (stoPriorRun != null) && (ingRun == null || (stoPriorRun.get('run_id') != null && ingRun.get('run_id') != null && stoPriorRun.get('run_id').toString().equals(ingRun.get('run_id').toString() + ':prior')) || ((Number)stoPriorRun.get('ing_ts')).longValue() >= ((Number)ingRun.get('ing_ts')).longValue());
-              long priorDocs = usePriorRun ? ((Number)stoPriorRun.get('sto_docs')).longValue() : 0L;
-              double priorBytes = usePriorRun ? ((Number)stoPriorRun.get('sto_bytes')).doubleValue() : 0.0;
+              boolean priorPassComplete = (effStoPriorRun != null) || (ingRun != null && Boolean.TRUE.equals(ingRun.get('sto_complete')));
+              long priorDocs = effStoPriorRun != null ? ((Number)effStoPriorRun.get('sto_docs')).longValue() : 0L;
+              double priorBytes = effStoPriorRun != null ? ((Number)effStoPriorRun.get('sto_bytes')).doubleValue() : 0.0;
               outStoDocs = outIngDocs + priorDocs;
               outStoBytes = outIngBytes + priorBytes;
-              long totTodayD = ingRun != null ? ((Number)ingRun.get('tot_docs')).longValue() : (usePriorRun ? ((Number)stoPriorRun.get('tot_docs')).longValue() : 0L);
-              double totTodayB = ingRun != null ? ((Number)ingRun.get('tot_bytes')).doubleValue() : (usePriorRun ? ((Number)stoPriorRun.get('tot_bytes')).doubleValue() : 0.0);
-              long totPriorD = usePriorRun ? ((Number)stoPriorRun.get('prior_docs')).longValue() : (ingRun != null ? ((Number)ingRun.get('prior_docs')).longValue() : 0L);
-              double totPriorB = usePriorRun ? ((Number)stoPriorRun.get('prior_bytes')).doubleValue() : (ingRun != null ? ((Number)ingRun.get('prior_bytes')).doubleValue() : 0.0);
+              long totTodayD = ingRun != null ? ((Number)ingRun.get('tot_docs')).longValue() : (effStoPriorRun != null ? ((Number)effStoPriorRun.get('tot_docs')).longValue() : 0L);
+              double totTodayB = ingRun != null ? ((Number)ingRun.get('tot_bytes')).doubleValue() : (effStoPriorRun != null ? ((Number)effStoPriorRun.get('tot_bytes')).doubleValue() : 0.0);
+              long totPriorD = effStoPriorRun != null ? ((Number)effStoPriorRun.get('prior_docs')).longValue() : (priorPassComplete && ingRun != null ? ((Number)ingRun.get('prior_docs')).longValue() : 0L);
+              double totPriorB = effStoPriorRun != null ? ((Number)effStoPriorRun.get('prior_bytes')).doubleValue() : (priorPassComplete && ingRun != null ? ((Number)ingRun.get('prior_bytes')).doubleValue() : 0.0);
               boolean combUseBytes = (wMetric.equals('bytes') && (totTodayB + totPriorB) > 0.0 && (totTodayD <= 0L || totTodayB > 0.0) && (totPriorD <= 0L || totPriorB > 0.0));
               double combDenom = combUseBytes ? (totTodayB + totPriorB) : (double)(totTodayD + totPriorD);
               if (combDenom > 0.0) {
@@ -570,8 +640,8 @@ pivot:
             }
 
             boolean streamHadIngest = (ingDenom > 0.0)
-              || (stoPriorRun != null && (((Number)stoPriorRun.get('tot_docs')).longValue() > 0L || ((Number)stoPriorRun.get('tot_bytes')).doubleValue() > 0.0))
-              || (useLiveSto && stoLiveRun != null && (((Number)stoLiveRun.get('ing_stream_docs')).longValue() > 0L || ((Number)stoLiveRun.get('ing_stream_bytes')).doubleValue() > 0.0));
+              || (effStoPriorRun != null && (((Number)effStoPriorRun.get('tot_docs')).longValue() > 0L || ((Number)effStoPriorRun.get('tot_bytes')).doubleValue() > 0.0))
+              || (liveStoMode && effStoLiveRun != null && (((Number)effStoLiveRun.get('ing_stream_docs')).longValue() > 0L || ((Number)effStoLiveRun.get('ing_stream_bytes')).doubleValue() > 0.0));
             boolean hasIngSignal = (streamHadIngest || isEmptyIngFallback);
             if (!hasIngSignal && hasStoSignal) {
               ingShare = stoShare;
