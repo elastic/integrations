@@ -74,6 +74,14 @@ Enable the category `Logs related to ApiManagement Gateway` to stream the logs t
    └──────────────────┘      └──────────────┘     └─────────────────┘
 ```
 
+#### Generative AI fields
+
+`gen_ai.provider.name` is `azure.ai.inference`. `event.action` keeps the Foundry operation name, such as `ChatCompletions_Create` or `getChatCompletions`. `gen_ai.operation.name` is the OpenTelemetry value for that operation, such as `chat`.
+
+Prompt text, response text, token counts, and tool calls are taken from API Management Gateway logs. RequestResponse logs provide the deployment name and the model name. These logs do not include a caller principal, so `user.name` is not set.
+
+When a response contains several tool calls, `gen_ai.tool.name`, `gen_ai.tool.type`, and `gen_ai.tool.call.id` are arrays in the order the model generated them. That pairing exists only in `_source`. Keyword aggregations sort and deduplicate the values. `MV_COUNT(gen_ai.tool.call.id)` counts the calls. Metric documents copy the model and the bucket token totals only.
+
 ### Metrics
 
 The metrics data stream collects the cognitive service metrics that is specific to the Microsoft Foundry service.
