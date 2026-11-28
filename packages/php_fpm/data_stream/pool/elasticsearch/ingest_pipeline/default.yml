@@ -2,110 +2,137 @@
 description: Pipeline for parsing PHP-FPM Pool metrics.
 processors:
   - set:
+      tag: set_ecs_version_28c74006
       field: ecs.version
       value: 8.11.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_type_8704b479
       field: event.type
       value: ["info"]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_4fa524dd
       field: event.kind
       value: event
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_category_9caa13ad
       field: event.category
       value: ["web","configuration","process"]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_module_8a52f9a0
       field: event.module
       value: php_fpm
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_message_8e0d4e1f
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_a3590548
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - json:
+      tag: json_event_original_e1d18f8a
       field: event.original
       target_field: json
       ignore_failure: true
   - rename:
+      tag: rename_json_accepted_conn_c6530afa
       field: json.accepted conn
       target_field: php_fpm.pool.connections.accepted
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_listen_queue_len_c078b68c
       field: json.listen queue len
       target_field: php_fpm.pool.connections.listen_queue.max_size
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_max_listen_queue_b0c6b7e9
       field: json.max listen queue
       target_field: php_fpm.pool.connections.listen_queue.requests.max
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_listen_queue_f65c5b81
       field: json.listen queue
       target_field: php_fpm.pool.connections.queued
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_pool_bde55115
       field: json.pool
       target_field: php_fpm.pool.name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_process_manager_80db3e74
       field: json.process manager
       target_field: php_fpm.pool.process_manager.type
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_active_processes_5c05fecc
       field: json.active processes
       target_field: php_fpm.pool.processes.active.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_max_active_processes_a2de78b4
       field: json.max active processes
       target_field: php_fpm.pool.processes.active.max
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_max_children_reached_7e631e82
       field: json.max children reached
       target_field: php_fpm.pool.processes.children_reached.max
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_total_processes_a31091d6
       field: json.total processes
       target_field: php_fpm.pool.processes.count
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_idle_processes_09fa8a4b
       field: json.idle processes
       target_field: php_fpm.pool.processes.idle
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_slow_requests_e5131c2d
       field: json.slow requests
       target_field: php_fpm.pool.slow_requests
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_start_since_278f6cb3
       field: json.start since
       target_field: php_fpm.pool.start_since
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_start_time_8008d3c4
       field: json.start time
       target_field: php_fpm.pool.start_time
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_15e6fcc6
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -123,11 +150,21 @@ processors:
         }
         drop(ctx);
   - remove:
+      tag: remove_json_2a05e913
       field:
         - json
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_325fda23
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_ffd4affb
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
