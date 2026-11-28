@@ -1,0 +1,152 @@
+---
+description: "Ingest pipeline for Chargeback sub-data-stream tenant and service attribution events."
+processors:
+  - drop:
+      if: "ctx.doc_type != 'sub_attribution' && ctx.error?.message == null"
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.doc_type != 'sub_attribution'
+      description: Terminate early on collection error documents.
+  - date:
+      field: period_start
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.period_start != null
+      ignore_failure: true
+      tag: restore_period_start_timestamp
+  - remove:
+      field: period_start
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: normalize_attribution_datastream
+      source: |
+        if (ctx.elasticsearch != null && ctx.elasticsearch.index != null && ctx.elasticsearch.index.datastream != null) {
+          String rawDs = ctx.elasticsearch.index.datastream.toString().trim();
+          if (rawDs != '') {
+            def dsPattern = /^(?:partial-|restored-|shrink-.{4}-|downsample-[^-]+-)*\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d+)?)?$/;
+            def m = dsPattern.matcher(rawDs);
+            if (m.matches()) {
+              rawDs = m.group(1);
+            }
+            ctx.elasticsearch.index.datastream = rawDs;
+            if (ctx.ds_type == null || ctx.ds_type.toString() == '' || ctx.ds_namespace == null || ctx.ds_namespace.toString() == '') {
+              if (rawDs.startsWith('.') || rawDs == 'system') {
+                ctx.ds_type = 'system';
+                ctx.ds_namespace = 'system';
+              } else {
+                def parts = rawDs.splitOnToken('-');
+                if (parts.length >= 3 && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling')) {
+                  ctx.ds_type = parts[0];
+                  def nsParts = new ArrayList();
+                  for (int i = 2; i < parts.length; i++) {
+                    nsParts.add(parts[i]);
+                  }
+                  ctx.ds_namespace = String.join('-', nsParts);
+                } else if (parts.length >= 2) {
+                  ctx.ds_type = parts[0];
+                  ctx.ds_namespace = parts[parts.length - 1];
+                } else {
+                  ctx.ds_type = 'other';
+                  ctx.ds_namespace = 'other';
+                }
+              }
+            }
+          }
+        }
+  - script:
+      lang: painless
+      tag: build_attribution_fingerprint_key
+      if: "ctx.doc_type == 'sub_attribution'"
+      source: |
+        String ns = (ctx.data_stream instanceof Map && ctx.data_stream.namespace != null)
+          ? ctx.data_stream.namespace.toString().trim()
+          : (ctx.get('data_stream.namespace') != null ? ctx.get('data_stream.namespace').toString().trim() : 'default');
+        if (ns == '') { ns = 'default'; }
+
+        String polId = '';
+        if (ctx.conf_policy_id != null) { polId = ctx.conf_policy_id.toString().trim(); }
+        else if (ctx.package_policy_id != null) { polId = ctx.package_policy_id.toString().trim(); }
+        else if (ctx.input instanceof Map && ctx.input.package_policy_id != null) { polId = ctx.input.package_policy_id.toString().trim(); }
+        else if (ctx.get('input.package_policy_id') != null) { polId = ctx.get('input.package_policy_id').toString().trim(); }
+        else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.package_policy_id != null) { polId = ctx.elastic_agent.package_policy_id.toString().trim(); }
+        else if (ctx.get('elastic_agent.package_policy_id') != null) { polId = ctx.get('elastic_agent.package_policy_id').toString().trim(); }
+        else if (ctx.input instanceof Map && ctx.input.id != null) { polId = ctx.input.id.toString().trim(); }
+        else if (ctx.get('input.id') != null) { polId = ctx.get('input.id').toString().trim(); }
+        else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.policy_id != null) { polId = ctx.elastic_agent.policy_id.toString().trim(); }
+        else if (ctx.get('elastic_agent.policy_id') != null) { polId = ctx.get('elastic_agent.policy_id').toString().trim(); }
+        if (polId == '') { polId = '_default_'; }
+
+        String collectorId = '';
+        if (ctx.agent instanceof Map && ctx.agent.id != null && ctx.agent.id.toString().trim() != '') {
+          collectorId = 'agent:' + ctx.agent.id.toString().trim();
+        } else if (ctx.get('agent.id') != null && ctx.get('agent.id').toString().trim() != '') {
+          collectorId = 'agent:' + ctx.get('agent.id').toString().trim();
+        } else if (ctx.elastic_agent instanceof Map && ctx.elastic_agent.id != null && ctx.elastic_agent.id.toString().trim() != '') {
+          collectorId = 'ea:' + ctx.elastic_agent.id.toString().trim();
+        } else if (ctx.get('elastic_agent.id') != null && ctx.get('elastic_agent.id').toString().trim() != '') {
+          collectorId = 'ea:' + ctx.get('elastic_agent.id').toString().trim();
+        } else if (ctx.host instanceof Map && ctx.host.id != null && ctx.host.id.toString().trim() != '') {
+          collectorId = 'host_id:' + ctx.host.id.toString().trim();
+        } else if (ctx.get('host.id') != null && ctx.get('host.id').toString().trim() != '') {
+          collectorId = 'host_id:' + ctx.get('host.id').toString().trim();
+        } else if (ctx.host instanceof Map && ctx.host.name != null && ctx.host.name.toString().trim() != '') {
+          collectorId = 'host_name:' + ctx.host.name.toString().trim();
+        } else if (ctx.get('host.name') != null && ctx.get('host.name').toString().trim() != '') {
+          collectorId = 'host_name:' + ctx.get('host.name').toString().trim();
+        } else {
+          collectorId = '_default_';
+        }
+
+        String clusterName = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.cluster instanceof Map && ctx.elasticsearch.cluster.name != null)
+          ? ctx.elasticsearch.cluster.name.toString().trim()
+          : (ctx.get('elasticsearch.cluster.name') != null ? ctx.get('elasticsearch.cluster.name').toString().trim() : '');
+        String dsName = (ctx.elasticsearch instanceof Map && ctx.elasticsearch.index instanceof Map && ctx.elasticsearch.index.datastream != null)
+          ? ctx.elasticsearch.index.datastream.toString().trim()
+          : (ctx.get('elasticsearch.index.datastream') != null ? ctx.get('elasticsearch.index.datastream').toString().trim() : '');
+        String ts = ctx['@timestamp'] != null ? ctx['@timestamp'].toString().trim() : '';
+        String pass = ctx.driver_pass != null ? ctx.driver_pass.toString().trim() : '';
+        String runId = ctx.run_id != null ? ctx.run_id.toString().trim() : '';
+        String kind = ctx.raw_bucket_kind != null ? ctx.raw_bucket_kind.toString().trim() : '';
+        String tenantId = ctx.tenant_id != null ? ctx.tenant_id.toString().trim() : '';
+
+        ctx._cb_fp_key = 'v1|ns=' + ns + '|pol=' + polId + '|col=' + collectorId + '|cluster=' + clusterName + '|ts=' + ts + '|ds=' + dsName + '|pass=' + pass + '|run=' + runId + '|kind=' + kind + '|tenant=' + tenantId;
+  - fingerprint:
+      if: "ctx._cb_fp_key != null"
+      fields:
+        - _cb_fp_key
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_attribution_event
+  - remove:
+      field:
+        - _cb_fp_key
+        - period_obs_ts
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

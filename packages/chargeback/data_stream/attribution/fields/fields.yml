@@ -1,0 +1,109 @@
+- name: input.type
+  type: keyword
+  description: Input type used to collect the event.
+- name: doc_type
+  type: keyword
+  description: Chargeback attribution event record type (sub_attribution).
+- name: deployment_name
+  type: keyword
+  description: Human-readable deployment or Serverless project name.
+- name: deployment_group
+  type: keyword
+  description: User-defined group of the deployment or Serverless project (based on tag:chargeback_group).
+- name: elasticsearch.cluster.name
+  type: keyword
+  description: Elasticsearch cluster identifier (matches billing deployment_id).
+- name: elasticsearch.index.datastream
+  type: keyword
+  description: Normalized data stream or index name.
+- name: ds_type
+  type: keyword
+  description: First segment of the data stream name (for example, logs, metrics, traces).
+- name: ds_namespace
+  type: keyword
+  description: Namespace segment of the data stream name.
+- name: tenant_id
+  type: keyword
+  description: Unified tenant or service identifier resolved for this data stream.
+- name: attribution_field
+  type: keyword
+  description: Field or metadata key used to attribute this data stream (for example, organization.id, service.name, or data_stream.namespace).
+- name: attribution_source
+  type: keyword
+  description: Attribution mechanism used for this row (field, ds_namespace_passthrough, field_unmapped, or overflow).
+- name: driver_pass
+  type: keyword
+  description: Collector pass that emitted this observation (ingest, storage, storage_prior, or passthrough).
+- name: weight_metric
+  type: keyword
+  description: Proportional weighting metric used for the driver pass (doc_count, bytes, or passthrough).
+- name: size_field
+  type: keyword
+  description: Numeric byte-size field evaluated when weight_metric is bytes.
+- name: ingest_doc_count
+  type: long
+  description: Document count attributed to this tenant during the UTC day ingest pass.
+- name: ingest_bytes
+  type: double
+  description: Byte volume attributed to this tenant during the UTC day ingest pass when size_field is active.
+- name: storage_doc_count
+  type: long
+  description: Document count attributed to this tenant during the storage pass.
+- name: storage_bytes
+  type: double
+  description: Byte volume attributed to this tenant during the storage pass when size_field is active.
+- name: stream_total_docs
+  type: long
+  description: Total document count across the shared data stream for the driver pass.
+- name: stream_total_bytes
+  type: double
+  description: Total byte volume across the shared data stream for the driver pass when size_field is active.
+- name: stream_prior_docs
+  type: long
+  description: Total historical document count across the rolling Hub window prior to the current UTC day.
+- name: stream_prior_bytes
+  type: double
+  description: Total historical byte volume across the rolling Hub window prior to the current UTC day when size_field is active.
+- name: stream_ingest_docs
+  type: long
+  description: Total daily document count across the data stream during the ingest pass.
+- name: stream_ingest_bytes
+  type: double
+  description: Total daily byte volume across the data stream during the ingest pass when size_field is active.
+- name: ingest_share_pct
+  type: double
+  description: Precomputed ingest share ratio (0.0 to 1.0) for passthrough or unmapped fallback rows.
+- name: storage_share_pct
+  type: double
+  description: Precomputed storage share ratio (0.0 to 1.0) for passthrough or unmapped fallback rows.
+- name: query_share_pct
+  type: double
+  description: Precomputed query share ratio (0.0 to 1.0) for passthrough or unmapped fallback rows.
+- name: storage_share_source
+  type: keyword
+  description: Storage attribution strategy configured for this stream (rolling_hub or live_open).
+- name: query_share_source
+  type: keyword
+  description: Query share estimation mode configured for this policy (blend, ingest, or storage).
+- name: is_fallback_bucket
+  type: boolean
+  description: Whether this row represents an explicit unattributed or overflow conservation bucket.
+- name: raw_bucket_kind
+  type: keyword
+  description: Raw bucket discriminator (tenant, missing, blank, literal_unattributed, overflow, empty_day, unmapped, or passthrough) preventing ingest _id collisions.
+- name: run_id
+  type: keyword
+  description: Collector pass run identifier used by the transform to ignore incomplete failed runs.
+- name: pass_complete
+  type: boolean
+  description: Whether the paginated driver pass completed without shard failures or timeouts.
+- name: conf_policy_id
+  type: keyword
+  description: Policy identifier emitted on attribution events to isolate multi-policy agents.
+- name: event.ingested
+  type: date
+  description: Ingest pipeline execution timestamp.
+- name: cb_sync_ts
+  type: alias
+  path: event.ingested
+  description: Alias of event.ingested used by continuous Chargeback transforms for incremental change detection.

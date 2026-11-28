@@ -1,0 +1,126 @@
+---
+description: 'Chargeback: Materialize per-driver sub-data-stream tenant and service attribution lookup rows.'
+processors:
+  - drop:
+      if: "ctx.sub_rollup == null"
+  - script:
+      lang: painless
+      source: |
+        if (ctx.sub_rollup instanceof Map) {
+          Map sr = (Map)ctx.sub_rollup;
+          for (String sk : ['attribution_field', 'attribution_source', 'weight_metric', 'size_field', 'storage_share_source', 'query_share_source', 'deployment_name']) {
+            if (sr.get(sk) != null && sr.get(sk).toString() != '') {
+              ctx[sk] = sr.get(sk).toString();
+            }
+          }
+          if (sr.containsKey('deployment_group')) {
+            def sdg = sr.get('deployment_group');
+            if (sdg != null && sdg.toString() != '') {
+              ctx.deployment_group = sdg.toString();
+            } else {
+              ctx.remove('deployment_group');
+            }
+          }
+          for (String lk : ['ingest_doc_count', 'storage_doc_count']) {
+            if (sr.get(lk) instanceof Number) {
+              long lv = ((Number)sr.get(lk)).longValue();
+              ctx[lk] = lv >= 0L ? lv : 0L;
+            } else {
+              ctx[lk] = 0L;
+            }
+          }
+          for (String dk : ['ingest_bytes', 'storage_bytes']) {
+            if (sr.get(dk) instanceof Number) {
+              double dv = ((Number)sr.get(dk)).doubleValue();
+              ctx[dk] = dv >= 0.0 ? dv : 0.0;
+            } else {
+              ctx[dk] = 0.0;
+            }
+          }
+          for (String pk : ['ingest_share_pct', 'storage_share_pct', 'query_share_pct']) {
+            if (sr.get(pk) instanceof Number) {
+              double pv = ((Number)sr.get(pk)).doubleValue();
+              if (pv < 0.0) { pv = 0.0; }
+              if (pv > 1.0) { pv = 1.0; }
+              ctx[pk] = pv;
+            } else {
+              ctx[pk] = 0.0;
+            }
+          }
+          ctx.is_fallback_bucket = Boolean.TRUE.equals(sr.get('is_fallback_bucket'));
+          ctx.remove('sub_rollup');
+        }
+
+        ctx.usage_source = 'native';
+
+        if (ctx.cluster_name != null) {
+          ctx.deployment_id = ctx.cluster_name;
+        } else if (ctx.elasticsearch?.cluster?.name != null) {
+          ctx.deployment_id = ctx.elasticsearch.cluster.name;
+          ctx.remove('elasticsearch');
+        }
+
+        if (ctx.datastream != null && ctx.datastream.toString() != '') {
+          String rawDs = ctx.datastream.toString();
+          def dsPattern = /^(?:partial-|restored-|shrink-.{4}-|downsample-[^-]+-)*\.ds-(.+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d+)?)?$/;
+          def m = dsPattern.matcher(rawDs);
+          if (m.matches()) {
+            rawDs = m.group(1);
+            ctx.datastream = rawDs;
+          }
+          if (rawDs.startsWith('.') || rawDs == 'system') {
+            ctx.ds_type = 'system';
+            ctx.ds_namespace = 'system';
+          } else {
+            def parts = rawDs.splitOnToken('-');
+            if (parts.length >= 3 && (parts[0] == 'logs' || parts[0] == 'metrics' || parts[0] == 'traces' || parts[0] == 'synthetics' || parts[0] == 'profiling')) {
+              ctx.ds_type = parts[0];
+              def nsParts = new ArrayList();
+              for (int i = 2; i < parts.length; i++) {
+                nsParts.add(parts[i]);
+              }
+              ctx.ds_namespace = String.join('-', nsParts);
+            } else if (parts.length >= 2) {
+              ctx.ds_type = parts[0];
+              ctx.ds_namespace = parts[parts.length - 1];
+            } else {
+              ctx.ds_type = 'other';
+              ctx.ds_namespace = 'other';
+            }
+          }
+        }
+
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+          def rawTs = ctx['@timestamp'];
+          String date = null;
+          if (rawTs instanceof Number) {
+            date = Instant.ofEpochMilli(((Number)rawTs).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString();
+          } else {
+            String tsStr = rawTs.toString().trim();
+            try {
+              date = ZonedDateTime.parse(tsStr).toInstant().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            } catch (Exception e) {
+              try {
+                date = LocalDate.parse(tsStr).toString();
+              } catch (Exception e2) {}
+            }
+          }
+          if (date != null) {
+            ctx.composite_key = date + '_' + ctx.deployment_id;
+            if (ctx.datastream != null) {
+              ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
+            }
+          }
+        }
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback sub-attribution lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback.lookup-sub_attribution@custom

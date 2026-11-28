@@ -889,3 +889,130 @@ rules:
           Content-Type:
             - "application/json"
         body: '{"aggregations":{"by_type":{"buckets":[]}}}'
+  - path: /hub/{indices}/_field_caps
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"fields":{"service.name":{"keyword":{"type":"keyword","searchable":true,"aggregatable":true}},"organization.id":{"keyword":{"type":"keyword","searchable":true,"aggregatable":true}}}}'
+  - path: /ech1/{indices}/_field_caps
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"fields":{"organization.id":{"keyword":{"type":"keyword","searchable":true,"aggregatable":true}}}}'
+  - path: /sls1/{indices}/_field_caps
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"fields":{"organization.id":{"keyword":{"type":"keyword","searchable":true,"aggregatable":true}}}}'
+  - path: /sls2/{indices}/_field_caps
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"fields":{"tenant.id":{"keyword":{"type":"keyword","searchable":true,"aggregatable":true}}}}'
+  - path: /hub/chargeback_lookup.cluster_sub_attribution/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"hits":{"total":{"value":0,"relation":"eq"}},"aggregations":{"prior_docs":{"value":0.0},"prior_bytes":{"value":0.0}}}'
+  - path: /hub/{indices}/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey hub-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "hits": { "total": { "value": 1000, "relation": "eq" } },
+              "_shards": { "total": 1, "successful": 1, "skipped": 0, "failed": 0 },
+              "aggregations": {
+                "by_tenant": {
+                  "buckets": [
+                    { "key": { "tenant": "checkout-service" }, "doc_count": 600 },
+                    { "key": { "tenant": "payment-service" }, "doc_count": 300 },
+                    { "key": { "tenant": null }, "doc_count": 100 }
+                  ]
+                }
+              }
+            }
+          `}}
+  - path: /sls2/{indices}/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+            {
+              "hits": { "total": { "value": 2500, "relation": "eq" } },
+              "_shards": { "total": 1, "successful": 1, "skipped": 0, "failed": 0 },
+              "aggregations": {
+                "by_tenant": {
+                  "buckets": [
+                    { "key": { "tenant": "tenant-alpha" }, "doc_count": 2500 }
+                  ]
+                }
+              }
+            }
+          `}}
+  - path: /ech1/{indices}/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey ech-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"hits":{"total":{"value":0,"relation":"eq"}},"_shards":{"total":1,"successful":1,"skipped":0,"failed":0},"aggregations":{"by_tenant":{"buckets":[]}}}'
+  - path: /sls1/{indices}/_search
+    methods: ["POST"]
+    request_headers:
+      Authorization:
+        - "ApiKey cloud-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: '{"hits":{"total":{"value":0,"relation":"eq"}},"_shards":{"total":1,"successful":1,"skipped":0,"failed":0},"aggregations":{"by_tenant":{"buckets":[]}}}'

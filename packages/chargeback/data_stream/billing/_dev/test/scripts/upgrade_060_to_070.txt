@@ -166,11 +166,13 @@ TID_ENR=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-char
 TID_META=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.usage_deployment_metadata-default-*" | jq -r '.transforms[0].id')
 TID_AI=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_ai_contrib-default-*" | jq -r '.transforms[0].id')
 TID_SYN=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_synthetics_contrib-default-*" | jq -r '.transforms[0].id')
+TID_SUB=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-chargeback.cluster_sub_attribution-default-*" | jq -r '.transforms[0].id')
 [ -n "$TID_CUR" ] && [ "$TID_CUR" != "null" ]
 [ -n "$TID_ENR" ] && [ "$TID_ENR" != "null" ]
 [ -n "$TID_META" ] && [ "$TID_META" != "null" ]
 [ -n "$TID_AI" ] && [ "$TID_AI" != "null" ]
 [ -n "$TID_SYN" ] && [ "$TID_SYN" != "null" ]
+[ -n "$TID_SUB" ] && [ "$TID_SUB" != "null" ]
 
 # Trigger 0.7.0 lookup transforms via _schedule_now (no manual index creation) and wait for
 # TransformIndexer to materialize every lookup-mode destination index and move_on_creation alias.

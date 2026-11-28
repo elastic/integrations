@@ -1,0 +1,47 @@
+input: cel
+service: chargeback
+wait_for_data_timeout: 2m
+vars:
+  organization_id: "1111"
+  cloud_api_key: cloud-key
+  cloud_api_base: http://{{Hostname}}:{{Port}}
+  hub_es_url: http://{{Hostname}}:{{Port}}/hub
+  hub_es_api_key: hub-key
+  deployment_api_keys: "dep-ech-01:ech-key"
+  enable_request_tracer: true
+data_stream:
+  vars:
+    shared_namespaces:
+      - "default"
+      - "orders"
+    attribution_rules: |
+      - index_pattern: "app-orders*"
+        field: "service.name"
+      - index_pattern: "search-catalog-*"
+        field: "tenant.id"
+    lookbehind: 1
+    processors: |-
+      - add_fields:
+          target: labels
+          fields:
+            test_run_id: "{{Test.RunID}}"
+assert:
+  # 1 passthrough (ech1 .ds-logs-nginx.access-prod) + 1 passthrough (sls1 .ds-metrics-apm.app-team_a) + 3 shared composite buckets on hub app-orders (checkout-service, payment-service, __unattributed__) + 1 rule-matched composite bucket on sls2 search-catalog-v1 (tenant-alpha) = 6 documents.
+  hit_count: 6
+  fields_present:
+    - doc_type
+    - deployment_name
+    - elasticsearch.cluster.name
+    - elasticsearch.index.datastream
+    - ds_type
+    - ds_namespace
+    - tenant_id
+    - attribution_field
+    - attribution_source
+    - driver_pass
+    - weight_metric
+    - storage_share_source
+    - query_share_source
+    - run_id
+    - pass_complete
+    - event.ingested
