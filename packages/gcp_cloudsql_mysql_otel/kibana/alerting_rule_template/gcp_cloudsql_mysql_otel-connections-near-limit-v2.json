@@ -1,0 +1,74 @@
+{
+  "id": "gcp_cloudsql_mysql_otel-connections-near-limit-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP Cloud SQL MySQL OTel] Connections near the max_connections limit",
+        "description": "Alerts when open connections to a Cloud SQL for MySQL instance (database/network/connections) are at least 90% of its max_connections setting (database/mysql/max_connections) in every observed minute of the last 20 minutes, with at least 3 minutes observed. The 20-minute window still holds enough minutes when the receiver polls Cloud Monitoring every 5 minutes (the default), because the newest data can then be about 9 minutes old. At 100%, MySQL refuses new connections with 'Too many connections'. connection_usage_pct is the latest value, computed like the Connection usage % panel. Requiring every observed minute ignores single spikes and the partly filled newest minute.",
+        "tags": [
+          "observability",
+          "gcp",
+          "cloudsql",
+          "mysql"
+        ]
+      },
+      "schedule": {
+        "every": "1m",
+        "lookback": "20m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.cloudsql_mysql.otel-*\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n// Per instance and minute: open connections and the max_connections setting (MAX collapses duplicate points)\n| STATS c = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/network/connections`)),\n        mx = MAX(MAX_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/max_connections`))\n  BY `@timestamp` = TBUCKET(1 minute), database_id\n| EVAL minute_usage = CASE(mx > 0, TO_DOUBLE(c) / mx, NULL)\n// Latest connections and max_connections (ignoring minutes where the metric is missing) and the lowest per-minute usage\n| STATS connections = LAST(c, CASE(c IS NOT NULL, `@timestamp`, NULL)),\n        max_connections = LAST(mx, CASE(mx IS NOT NULL, `@timestamp`, NULL)),\n        lowest_usage = MIN(minute_usage),\n        observed_minutes = COUNT(minute_usage)\n  BY database_id",
+        "breach": {
+          "segment": "// mysql/max_connections is emitted only by MySQL, so this also scopes the rule to MySQL.\n// At least 3 observed minutes, so one late sample does not decide.\nWHERE max_connections > 0 AND observed_minutes >= 3\n// Threshold: every observed minute at or above 90% of max_connections; at 100% new connections are refused\n| WHERE lowest_usage >= 0.9\n| EVAL connection_usage_pct = ROUND(TO_DOUBLE(connections) * 100.0 / max_connections, 1),\n       lowest_usage_pct = ROUND(lowest_usage * 100, 1)\n| SORT connection_usage_pct DESC, database_id ASC\n// Up to 1000 breaching instances per run (the ES|QL default row limit); raise it for larger fleets\n| LIMIT 1000\n| KEEP database_id, connection_usage_pct, connections, max_connections, lowest_usage_pct, observed_minutes"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "database_id"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_cloudsql_mysql_otel-connections-near-limit-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## Cloud SQL MySQL connections near max_connections\n\nOpen connections have stayed at 90% or more of `max_connections`. When the limit is reached, new clients get `Too many connections` errors.\n\n### Triage\n1. Open **[GCP OTel] Cloud SQL MySQL Instance Detail**. Check *Connections vs max connections*, *Threads connected, running and cached* and *Connection attempts by outcome*.\n2. A sudden jump right after a restart, failover or maintenance is a reconnect storm. A slow climb is usually a connection leak or pool growth (pool size \u00d7 application replicas).\n3. Many connections with few threads running means idle connections are holding slots. Check pool idle settings and `wait_timeout`.\n4. Check whether failed connection attempts are rising (*Failed connection surge*), which means clients are already being refused.\n\n### Actions\nFix leaks, cap pool sizes, add a pooler, or terminate idle sessions. Raise `max_connections` only if the tier has spare memory, because each connection costs memory.\n\n### Tuning\nChange `lowest_usage >= 0.9` to adjust the threshold."
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-connections-near-limit-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-244a7e1a-2f13-4f93-b534-20a10a5158a7"
+          }
+        },
+        {
+          "id": "gcp_cloudsql_mysql_otel-connections-near-limit-v2-dashboard-1",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_cloudsql_mysql_otel-deda1e6a-80e7-49cd-ba2e-fff6be787503"
+          }
+        }
+      ]
+    }
+  }
+}
