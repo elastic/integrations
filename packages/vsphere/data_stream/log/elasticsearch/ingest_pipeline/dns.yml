@@ -2,49 +2,74 @@
 description: "Parse DNS events from VMware vSphere/vCenter"
 processors:
     - dissect:
+        tag: dissect_message_eba116d7
         field: message
         pattern: "%{dns.op_code}[%{dns.question.type}] %{dns.question.name} from %{}"
         if: ctx.message.startsWith('query[')
         description: "Extract information out of queries"
     - dissect:
+        tag: dissect_message_fce4d05d
         field: message
         pattern: "cached %{dns.question.name} is %{_tmp.dns.resolved_ip}"
         if: ctx.message.startsWith('cached')
         description: "Extract information out of cached answers"
     - dissect:
+        tag: dissect_message_2cdec2f8
         field: message
         pattern: "forwarded %{dns.question.name} to %{_tmp.dns.resolved_ip}"
         if: ctx.message.startsWith('forwarded')
         description: "Extract information out of forwarded answers"
     - registered_domain:
+        tag: registered_domain_dns_question_name_ef1d588f
         field: dns.question.name
         target_field: dns.question
         if: ctx.dns?.question?.name != null
     - uppercase:
+        tag: uppercase_dns_op_code_db49c9ce
         field: dns.op_code
         if: ctx.dns?.op_code != null
     - append:
+        tag: append_dns_resolved_ip_361d15b6
         field: dns.resolved_ip
         value: "{{_tmp.dns.resolved_ip}}"
         if: ctx._tmp?.dns?.resolved_ip != null
     - set:
+        tag: set_dns_answers_data_abac8a1a
         field: dns.answers.data
         value: "{{dns.resolved_ip}}"
         if: ctx.dns?.resolved_ip != null
     - set:
+        tag: set_dns_answers_name_966cd5a2
         field: dns.answers.name
         value: "{{dns.question.name}}"
         if: ctx.dns?.question?.name != null && ctx.dns?.resolved_ip != null
     - append:
+        tag: append_event_category_7ad86ce3
         field: event.category
         value: network
     - append:
+        tag: append_event_type_a5cba58b
         field: event.type
         value: protocol
     - append:
+        tag: append_event_type_91fc8b03
         field: event.type
         value: connection
     - remove:
+        tag: remove_dns_question_domain_41540d6b
         field: "dns.question.domain"
         if: "ctx.dns?.question?.domain != null"
         
+on_failure:
+  - set:
+      tag: set_event_kind_e1e02fb2
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_c11eed17
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

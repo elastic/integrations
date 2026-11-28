@@ -2,9 +2,11 @@
 description: Pipeline for resourcepool
 processors:
 - set:
+    tag: set_ecs_version_1630ea0b
     field: ecs.version
     value: '8.11.0'
 - script: 
+    tag: script_5aaced53
     if: ctx.vsphere?.resourcepool?.triggered_alarms != null
     lang: painless
     source: >
@@ -21,14 +23,17 @@ processors:
         ctx.alerts = alerts;
         ctx.warnings = warnings
 - rename:
+    tag: rename_alerts_925cf703
     field: alerts
     target_field: vsphere.resourcepool.alert.names
     ignore_missing: true
 - rename:
+    tag: rename_warnings_988d7b29
     field: warnings
     target_field: vsphere.resourcepool.warning.names
     ignore_missing: true
 - script:
+    tag: script_760fc1fe
     description: "Drops null/empty values recursively."
     lang: painless
     source: |
@@ -46,6 +51,15 @@ processors:
       }
       drop(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_4b180653
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_7bd7f126
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

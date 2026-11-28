@@ -2,9 +2,11 @@
 description: Pipeline for datastore
 processors:
 - set:
+    tag: set_ecs_version_7f8723f4
     field: ecs.version
     value: '8.11.0'
 - script: 
+    tag: script_3dee1085
     if: ctx.vsphere?.datastore?.triggered_alarms != null
     lang: painless
     source: >
@@ -21,14 +23,17 @@ processors:
         ctx.alerts = alerts;
         ctx.warnings = warnings
 - rename:
+    tag: rename_alerts_fe31a01d
     field: alerts
     target_field: vsphere.datastore.alert.names
     ignore_missing: true
 - rename:
+    tag: rename_warnings_0066a48e
     field: warnings
     target_field: vsphere.datastore.warning.names
     ignore_missing: true
 - script:
+    tag: script_7d21fb8c
     description: "Drops null/empty values recursively."
     lang: painless
     source: |
@@ -46,6 +51,15 @@ processors:
       }
       drop(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      tag: set_event_kind_219b1da0
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_56b32e51
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

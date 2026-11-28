@@ -1,14 +1,22 @@
 ---
 processors:
 - set:
+    tag: set_ecs_version_8e94a13c
     field: ecs.version
     value: 8.11.0
 - rename:
+    tag: rename_message_776b6ebe
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
+- remove:
+    tag: remove_message_476b6011
+    field: message
+    ignore_missing: true
+    if: 'ctx.event?.original != null'
 - grok:
+    tag: grok_event_original_d33b73ec
     description: Parse syslog header
     field: event.original
     patterns:
@@ -25,6 +33,7 @@ processors:
       ECS_SYSLOG_PRIORITY: "<%{NONNEGINT:log.syslog.priority:long}>(\\d )?"
       HOST: "(?:%{IP:host.ip}|%{HOSTNAME:host.name})"
 - grok:
+    tag: grok_tmp_structured_data_449d738d
     description: Extract user name from RFC5424 syslog structured data
     field: _tmp.structured_data
     patterns:
@@ -33,6 +42,7 @@ processors:
       SDPARAMVALUE: '[^\s\]"]+'
     ignore_failure: true
 - script:
+    tag: script_bb240118
     description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
     lang: painless
     source: |
@@ -45,6 +55,7 @@ processors:
         ctx.log.syslog['facility'] = facility;
       }
 - script:
+    tag: script_6999a77a
     description: Translate log.syslog.facility.code to log.syslog.facility.name
     lang: painless
     params:
@@ -78,6 +89,7 @@ processors:
       }
       ctx.log.syslog.facility.name = params[(ctx.log.syslog.facility.code).toString()];
 - script:
+    tag: script_9c6c3680
     description: Translate log.syslog.severity.code to log.syslog.severity.name
     lang: painless
     params:
@@ -95,6 +107,7 @@ processors:
       }
       ctx.log.syslog.severity.name = params[(ctx.log.syslog.severity.code).toString()];
 - grok:
+    tag: grok_message_ecf0fd5f
     description: Parse vSphere event body, including hostd "Event <id> :" messages left after RFC 5424 structured data
     field: message
     patterns:
@@ -109,6 +122,7 @@ processors:
         \[%{LOGLEVEL:log.level}\] %{GREEDYDATA:message}
       EVENT_SD: Event\s+%{POSINT:event.id}\s*:\s*%{GREEDYDATA:message}
 - date:
+    tag: date_tmp_timestamp_7d052dcf
     field: _tmp.timestamp
     target_field: "@timestamp"
     formats:
@@ -121,22 +135,28 @@ processors:
     - "yyyy-MM-dd HH:mm:ssZ"
     - "MMM dd HH:mm:ss"
 - pipeline:
+    tag: pipeline_a636e000
     name: '{{ IngestPipeline "dns" }}'
     if: "ctx.process?.name == 'dnsmasq'"
 - pipeline:
+    tag: pipeline_3f9b0640
     name: '{{ IngestPipeline "login" }}'
     if: "(ctx.message != null && (ctx.message.contains('logged') || ctx.message.toLowerCase().contains('login'))) || (ctx.log?.logger != null && ['vim.event.UserLogoutSessionEvent', 'vim.event.UserLogoutSessionEvent'].contains(ctx.log.logger)) || ctx.process?.name == 'sshd'"
 - pipeline:
+    tag: pipeline_decd2256
     name: '{{ IngestPipeline "file" }}'
     if: "ctx.message?.contains(\"'Upload' for path\") ?: false"
 - set:
+    tag: set_event_kind_df8207c1
     field: event.kind
     value: event
 - remove:
+    tag: remove_tmp_ede426de
     field:
     - _tmp
     ignore_failure: true
 - script:
+    tag: script_54493b50
     lang: painless
     description: This script processor iterates over the whole document to remove
       fields with null values.
@@ -150,10 +170,15 @@ processors:
       List) {\n                    handleList(x);\n                  }\n                }\n
       \             }\n              handleMap(ctx);\n              "
 on_failure:
-- remove:
-    field:
-    - _tmp
-    ignore_failure: true
-- append:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_19765e29
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_672de20d
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
