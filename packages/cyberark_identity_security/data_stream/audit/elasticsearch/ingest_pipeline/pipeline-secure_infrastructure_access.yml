@@ -1,0 +1,81 @@
+---
+description: Pipeline for CyberArk Secure Infrastructure Access (SIA, application code DPA) audit events.
+processors:
+  # SSH targets have the form `user@host#network`. Other targets are a host name or address.
+  - dissect:
+      field: json.target
+      tag: dissect_target
+      pattern: '%{_tmp.target_user}@%{destination.address}#%{cyberark_identity_security.audit.target_network}'
+      if: ctx.json.target instanceof String && ctx.json.target.contains('@') && ctx.json.target.contains('#')
+  - remove:
+      field: json.target
+      tag: remove_dissected_target
+      ignore_missing: true
+      if: ctx.destination?.address != null
+  - rename:
+      field: _tmp.target_user
+      tag: rename_target_user
+      target_field: user.target.name
+      ignore_missing: true
+      if: ctx.user?.target?.name == null
+  - rename:
+      field: json.target
+      tag: rename_target
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      field: json.customData.target_machine
+      tag: rename_target_machine
+      target_field: destination.address
+      ignore_missing: true
+      if: ctx.destination?.address == null
+  - remove:
+      field: json.customData.target_machine
+      tag: remove_target_machine
+      ignore_missing: true
+      if: ctx.json.customData?.target_machine != null && ctx.json.customData.target_machine == ctx.destination?.address
+  - convert:
+      field: destination.address
+      tag: convert_destination_address_to_ip
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+
+  # A source that is not an IP address is the host name of the client.
+  - rename:
+      field: json.source
+      tag: rename_source
+      target_field: source.address
+      ignore_missing: true
+
+  - rename:
+      field: json.customData.protocol
+      tag: rename_protocol
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - rename:
+      field: json.customData.error_code
+      tag: rename_error_code
+      target_field: error.code
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,42 @@
+wait_for_data_timeout: 1m
+input: cel
+service: cyberark_identity_security-audit
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  api_key: test-api-key
+  identity_id: elastic-audit-test
+  identity_application_id: elastic_audit_app
+  client_id: 'svc_elastic@cyberark.cloud.1234'
+  client_secret: 'p@ss"w/ord\test'
+  ssl: |
+    certificate_authorities:
+      - |
+        -----BEGIN CERTIFICATE-----
+        MIIDczCCAlugAwIBAgIUNCGmjOhQLgP2W0/QC36VDNSVeAQwDQYJKoZIhvcNAQEL
+        BQAwLzEtMCsGA1UEAwwkZWxhc3RpYy1hdWRpdC10ZXN0LmlkLmN5YmVyYXJrLmNs
+        b3VkMB4XDTI2MTEwNDIzNTIyOVoXDTM2MTEwMTIzNTIyOVowLzEtMCsGA1UEAwwk
+        ZWxhc3RpYy1hdWRpdC10ZXN0LmlkLmN5YmVyYXJrLmNsb3VkMIIBIjANBgkqhkiG
+        9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2FQe/UlPzBOJsY+31whTu6BlDZk5idwXSf8Q
+        nv9RVnWgQjmgSyh5uhhWd2NP8jfPv1v/1S3XKsqjo7siwQl5klG8+wqqtTOM+Kv+
+        FR6BOnZTRsDvYORr5j+9AebbrmjmtO3B3ZCErKXHVW58b/JY0TOgwpvev5claTeC
+        U6b5Am5dearsK+5WoakI8+ntG2OERJstBehZdCiA9aNcCog+n8cbTGQiLeELpGuV
+        QOYieAQZ9mTpq3vjz+OSzwnToi68E9gtYoE24JXyhlDugE4iUKFNcKo+YREXzseR
+        c2TpXN79YtOxo8O1RFVXYwcIHjrPPxktpfsg6vwOOOBE20ecCwIDAQABo4GGMIGD
+        MB0GA1UdDgQWBBQD92UTn3SDXcHrkup5xs5VFsNeMzAPBgNVHRMBAf8EBTADAQH/
+        MC8GA1UdEQQoMCaCJGVsYXN0aWMtYXVkaXQtdGVzdC5pZC5jeWJlcmFyay5jbG91
+        ZDATBgNVHSUEDDAKBggrBgEFBQcDATALBgNVHQ8EBAMCAqQwDQYJKoZIhvcNAQEL
+        BQADggEBAKXis19gjWOu4Gf50zttGp/IkxxkGZ4pD5lJO0AnKKQVxPBJKCDCSUvz
+        GJIT40Cb8hKqvU9uF3YSZ5rHg++xFWa2j1WaQzRKuEozKc/jwZfkSYTmTHRtyGDa
+        fnTitHyA0tx6qDm35st7rGZmiQHREG87kP+0gstFL8f46zezJdBwY+xCRCY2u79O
+        meEOL1xSeDXdpze2U029tUbLB0zDw7dEX61y++NhuhA/oA6ho8rnKJ2RQRo8ZWo1
+        cIPxkEAaSiynySYeGfjWvPdUHiYM24qKX3H8qvx35xmx4NmcI3rpw+oOpuIOMekQ
+        Wsauoo9qS5pk95p8D6WZEDZUeRmdSkU=
+        -----END CERTIFICATE-----
+data_stream:
+  vars:
+    interval: 2s
+    initial_interval: 24h
+    page_size: 3
+    preserve_original_event: true
+assert:
+  hit_count: 9
