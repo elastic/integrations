@@ -1,0 +1,79 @@
+---
+description: Pipeline for processing aggregated admin managed extensions, user initiated extensions and application add-ons logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_asset_77b1ae23
+      value: asset
+  - set:
+      field: service.name
+      tag: set_service_name_from_application_name_1baf0c75
+      copy_from: axonius.application.name
+      if: ctx.axonius?.application?.name instanceof String && ctx.axonius.application.name.trim() != ''
+  # internal_axon_id is the only identifier shared by every adapter record of an Axonius application asset.
+  - set:
+      field: service.id
+      tag: set_service_id_from_application_internal_axon_id_80552c7c
+      copy_from: axonius.application.internal_axon_id
+      ignore_empty_value: true
+  - set:
+      field: service.entity.id
+      tag: set_service_entity_id_from_application_internal_axon_id_10ab7214
+      copy_from: axonius.application.internal_axon_id
+      ignore_empty_value: true
+  - append:
+      field: service.entity.type
+      tag: append_service_entity_type_a80f6cb4
+      value:
+        - service
+        - application
+      allow_duplicates: false
+  # Empty strings rendered from elements without a value are removed by the null and empty value cleanup in default.yml.
+  - foreach:
+      field: axonius.application.permissions
+      tag: foreach_permissions_name_7ad96e36
+      if: ctx.axonius?.application?.permissions instanceof List
+      processor:
+        append:
+          field: service.entity.attributes.permissions
+          tag: append_permissions_name_into_service_entity_attributes_permissions_053fef0b
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: axonius.application.redirect_uris
+      tag: foreach_redirect_uris_fe8022e6
+      if: ctx.axonius?.application?.redirect_uris instanceof List
+      processor:
+        append:
+          field: service.entity.attributes.known_redirects
+          tag: append_redirect_uris_into_service_entity_attributes_known_redirects_b5b57d11
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: service.entity.lifecycle.last_activity
+      tag: set_service_entity_lifecycle_last_activity_from_application_last_used_4dcfb20a
+      copy_from: axonius.application.last_used
+      ignore_empty_value: true
+  - append:
+      field: service.entity.relationships.depends_on.service.name
+      tag: append_application_source_application_into_service_depends_on_service_name_795d79c8
+      value: '{{{axonius.application.source_application}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.application?.source_application instanceof String && ctx.axonius.application.source_application.trim() != ''
+on_failure:
+  - append:
+      tag: append_error_message_417e65c9
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
