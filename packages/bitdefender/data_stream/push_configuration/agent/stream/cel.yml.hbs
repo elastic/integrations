@@ -26,7 +26,7 @@ program: |-
     request("POST", state.url).with(
       {
         "Header": {
-          "Authorization": ["Basic "+base64(state.api_key+":")],
+          "Authorization": ["Basic " + base64(state.api_key + ":")],
           "Content-Type": ["application/json"],
           "Accept": ["application/json"],
         },
@@ -34,27 +34,47 @@ program: |-
           "jsonrpc": "2.0",
           "method": state.method,
           "id": state.push_notification_configuration_id,
-        }.encode_json()
+        }.encode_json(),
       }
-    ).do_request().as(resp, resp.StatusCode == 200 ?
-      dyn({
-        "events": [{"message":string(resp.Body)}],
-      })
-    :
-      dyn({
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "POST: "+(
-              size(resp.Body) != 0 ?
-                string(resp.Body)
-              :
-                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-            ),
-          },
-        },
-      })
+    ).do_request().as(resp,
+      is_error(resp) ?
+        dyn(
+          {
+            "events": {
+              "error": {
+                "code": "transport_error",
+                "id": "transport_error",
+                "message": "POST: " + try(resp),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      : (resp.StatusCode == 200) ?
+        dyn(
+          {
+            "events": [{"message": string(resp.Body)}],
+            "want_more": false,
+          }
+        )
+      :
+        dyn(
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "POST: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
     )
   )
 tags:
@@ -62,7 +82,7 @@ tags:
   - preserve_original_event
 {{/if}}
 {{#each tags as |tag|}}
-  - {{tag}}
+  - {{escape_string tag}}
 {{/each}}
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true

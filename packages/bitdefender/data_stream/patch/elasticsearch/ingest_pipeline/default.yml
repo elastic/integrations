@@ -1,0 +1,165 @@
+---
+description: Parse Bitdefender GravityZone patch posture events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata when they would collide
+        with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original message field to event.original. The field is not
+        touched when an upstream processor has already populated event.original.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The message field is redundant after event.original is populated.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: bitdefender.patch
+      tag: parse_patch_json
+      if: ctx.event?.original != null
+  - fail:
+      tag: validate_patch_object
+      if: ctx.bitdefender?.patch == null || !(ctx.bitdefender.patch instanceof Map)
+      message: The patch posture event must be a JSON object.
+  - set:
+      field: '@timestamp'
+      tag: set_observation_timestamp
+      value: '{{{_ingest.timestamp}}}'
+      if: ctx['@timestamp'] == null
+      description: Uses the collection observation time for the posture snapshot.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: state
+  - append:
+      field: event.category
+      tag: append_event_category
+      value:
+        - vulnerability
+        - package
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value:
+        - info
+      allow_duplicates: false
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Bitdefender
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: GravityZone
+  - rename:
+      field: bitdefender.patch.endpointId
+      target_field: host.id
+      tag: rename_endpoint_id_to_host_id
+      ignore_missing: true
+  - rename:
+      field: bitdefender.patch.name
+      target_field: package.name
+      tag: rename_patch_name_to_package_name
+      ignore_missing: true
+  - rename:
+      field: bitdefender.patch.cves
+      target_field: vulnerability.id
+      tag: rename_cves_to_vulnerability_id
+      ignore_missing: true
+  - rename:
+      field: bitdefender.patch.bulletinUrl
+      target_field: vulnerability.reference
+      tag: rename_bulletin_url_to_vulnerability_reference
+      ignore_missing: true
+  - remove:
+      field: bitdefender.patch.releaseDate
+      tag: remove_null_patch_release_date
+      if: ctx.bitdefender.patch.containsKey('releaseDate') && ctx.bitdefender.patch.releaseDate == null
+  - date:
+      field: bitdefender.patch.releaseDate
+      target_field: bitdefender.patch.releaseDate
+      formats:
+        - yyyy-MM-dd
+        - ISO8601
+      tag: parse_patch_release_date
+      if: ctx.bitdefender.patch.releaseDate != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_parse_patch_release_date
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: bitdefender.patch.releaseDate
+            tag: remove_invalid_patch_release_date
+            ignore_missing: true
+  - set:
+      field: host.os.family
+      tag: set_windows_os_family
+      value: windows
+      if: ctx.bitdefender.patch.operatingSystem == 1
+  - set:
+      field: host.os.family
+      tag: set_linux_os_family
+      value: linux
+      if: ctx.bitdefender.patch.operatingSystem == 2
+  - set:
+      field: host.os.family
+      tag: set_macos_os_family
+      value: macos
+      if: ctx.bitdefender.patch.operatingSystem == 3
+  - append:
+      field: related.hosts
+      tag: append_host_id_to_related
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null
+  - append:
+      field: tags
+      tag: preserve_original_event_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: preserve_original_event_on_pipeline_error
+      value: preserve_original_event
+      allow_duplicates: false
