@@ -1,0 +1,72 @@
+{
+  "id": "gcp_bigquery_otel-batch-job-backlog-not-draining-v2",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "engine": "v2",
+    "rule": {
+      "kind": "alert",
+      "recovery": {
+        "strategy": "no_breach"
+      },
+      "no_data": {
+        "strategy": "ignore"
+      },
+      "metadata": {
+        "name": "[GCP BigQuery OTel] Batch job backlog not draining",
+        "description": "Alerts when non-interactive BigQuery jobs (batch-priority queries and load, copy, or extract jobs) are pending in at least 90 one-minute samples and at least 95% of the published minutes in the last 2 hours, and are still pending in the last 20 minutes. One alert per project, location, and job type.",
+        "tags": [
+          "observability",
+          "gcp",
+          "bigquery",
+          "otel",
+          "queueing",
+          "jobs",
+          "batch"
+        ]
+      },
+      "schedule": {
+        "every": "15m",
+        "lookback": "120m"
+      },
+      "time_field": "@timestamp",
+      "query": {
+        "base": "TS metrics-gcp.bigquery.otel-*\n// Non-interactive jobs in PENDING state: batch-priority queries plus load, copy and extract jobs.\n// Batch work is designed to wait for idle capacity, so this rule only fires when the queue almost never drains.\n| WHERE resource.attributes.gcp.resource_type == \"bigquery_project\"\n  AND `metrics.bigquery.googleapis.com/job/num_in_flight` IS NOT NULL\n// Stage 1: one value per minute per logical series (MAX collapses fragmented TSIDs of the same series).\n// All states, job types and priorities are read, so every published minute is seen, including minutes\n// in which GCP omits the pending series because nothing is queued.\n| STATS jobs = MAX(MAX_OVER_TIME(`metrics.bigquery.googleapis.com/job/num_in_flight`))\n    BY @timestamp = TBUCKET(1 minute), resource.attributes.project_id, resource.attributes.location, attributes.job_type, attributes.priority, attributes.state\n// Backlog: pending jobs, excluding interactive queries. Only query jobs carry priority \"interactive\", so a series\n// with that priority and no job_type label is treated as a query (the interactive queueing rule covers it).\n// COALESCE keeps every other unlabelled series (NOT of a null comparison would silently drop it).\n| EVAL backlog = CASE(attributes.state == \"pending\"\n    AND NOT (COALESCE(attributes.job_type, \"query\") == \"query\" AND COALESCE(attributes.priority, \"\") == \"interactive\"), jobs, NULL)\n// Series without a job_type label are grouped (and alerted) explicitly as \"unknown\"\n| EVAL attributes.job_type = COALESCE(attributes.job_type, \"unknown\")\n// Stage 2: pending jobs per job type per minute, summed across priorities (NULL when no pending series was reported)\n| STATS pending = SUM(backlog)\n    BY @timestamp, resource.attributes.project_id, resource.attributes.location, attributes.job_type\n// Published minutes per project and location (any job/num_in_flight sample). A published minute without\n// a pending sample counts as drained; unpublished minutes are not counted at all.\n| INLINE STATS visible_minutes = COUNT_DISTINCT(@timestamp)\n    BY resource.attributes.project_id, resource.attributes.location\n// Customize: minimum pending jobs for a minute to count as backlogged\n| STATS backlogged_minutes = COUNT(*) WHERE pending >= 1,\n        visible_minutes = MAX(visible_minutes),\n        peak_pending_jobs = MAX(pending),\n        last_backlogged_at = MAX(@timestamp) WHERE pending >= 1\n    BY resource.attributes.project_id, resource.attributes.location, attributes.job_type\n// Unrounded, so the threshold is exact (94.95% must not count as 95%); rounded only for display below\n| EVAL backlogged_pct = backlogged_minutes * 100.0 / visible_minutes",
+        "breach": {
+          "segment": "// Customize: alert when jobs were pending in >= 90 one-minute samples and in >= 95% of the published minutes,\n// and still pending in the last 20 minutes. job/num_in_flight publishes up to ~12 minutes late, so a 120-minute\n// window holds ~108 published minutes; with fewer (collector gaps) the 90-minute floor applies.\n// The recency check lets the alert recover soon after the queue drains, even when GCP stops reporting the pending series.\nWHERE backlogged_minutes >= 90 AND backlogged_pct >= 95.0 AND last_backlogged_at >= NOW() - 20 minutes\n| EVAL backlogged_pct = ROUND(backlogged_pct, 1)\n| SORT backlogged_minutes DESC, peak_pending_jobs DESC\n| LIMIT 50"
+        }
+      },
+      "state_transition": {
+        "pending": {
+          "count": 0
+        },
+        "recovering": {
+          "count": 0
+        }
+      },
+      "grouping": {
+        "fields": [
+          "resource.attributes.project_id",
+          "resource.attributes.location",
+          "attributes.job_type"
+        ]
+      },
+      "artifacts": [
+        {
+          "id": "gcp_bigquery_otel-batch-job-backlog-not-draining-v2-runbook",
+          "type": "runbook",
+          "data": {
+            "content": "## BigQuery batch job backlog not draining\n\nBatch-priority work, which waits for idle capacity by design, has not been able to start for about two hours. Pipelines that depend on these jobs (ETL, loads, exports) are falling behind.\n\n### Condition\n- Per minute: `job/num_in_flight` with `state == \"pending\"`, excluding interactive-priority queries (a series with interactive priority but no job type label counts as an interactive query and is covered by the interactive queueing rule; other series without a job type are kept and alerted as job type `unknown`), summed per project, location, and job type.\n- Published minutes: minutes with any `job/num_in_flight` sample for the project and location. A published minute without a pending sample counts as drained.\n- Alert when >= 1 job is pending in >= 90 one-minute samples within the 2-hour look-back, in >= 95% of the published minutes, and in at least one minute of the last 20 minutes. About 108 minutes are published because of the ~12-minute publish delay.\n- The alert recovers when no pending minute has been published for 20 minutes, or when the share of backlogged minutes falls below 95%.\n\n### Triage\n1. Open the [GCP OTel] BigQuery dashboard and check jobs in flight by state, slots allocated, and reservation utilization.\n2. Pending batch queries: the reservation or on-demand pool has had no idle capacity for hours. Check the reservation saturation alert.\n3. Pending load jobs: the shared load slot pool or the assigned `PIPELINE` reservation is exhausted, or load quotas are being hit.\n4. Check for a single long-running job holding capacity.\n\n### Tuning\n- `backlogged_minutes >= 90`: persistence. It decides when collector gaps leave fewer than about 95 published minutes.\n- `backlogged_pct >= 95.0`: share of published minutes with a backlog. It decides when the window is fully published. Lower it to alert on queues that drain more often.\n- `last_backlogged_at >= NOW() - 20 minutes`: the backlog must still be visible. Keep it above the ~12-minute publish delay.\n- To page on this rule, also route it by job type. Load backlogs usually matter more than batch query backlogs.\n\n### Notes\n- Data: `metrics-gcp.bigquery.otel-*` (OTel `googlecloudmonitoring` receiver). Dashboard: [GCP OTel] BigQuery.\n- GCP publishes BigQuery metrics with a delay, so the look-back is longer than the condition and unpublished minutes are never treated as drained.\n- The query returns at most 50 breaching rows; each returned row is one alert. Thresholds are marked `// Customize:` in the query."
+          }
+        },
+        {
+          "id": "gcp_bigquery_otel-batch-job-backlog-not-draining-v2-dashboard-0",
+          "type": "dashboard",
+          "data": {
+            "dashboard_id": "gcp_bigquery_otel-600aa5b2-b9c4-4a6f-88a6-065d465b968d"
+          }
+        }
+      ]
+    }
+  }
+}
