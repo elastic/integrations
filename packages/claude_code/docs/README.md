@@ -66,7 +66,9 @@ Claude Code has four environment variables that control how much detail is inclu
 | `OTEL_LOG_USER_PROMPTS` | Include the `prompt` text in `user_prompt` events and spans. | Off |
 | `OTEL_LOG_TOOL_DETAILS` | Include `tool_parameters` and `tool_input` in tool events and spans. | Off |
 | `OTEL_LOG_TOOL_CONTENT` | Include `tool_result` content in tool events and spans. | Off |
-| `OTEL_LOG_RAW_API_BODIES` | Include raw API request/response bodies. | Off |
+| `OTEL_LOG_RAW_API_BODIES` | Include raw API request and response bodies. | Off |
+
+Set `OTEL_LOG_RAW_API_BODIES=1` to collect input and output messages. Claude Code then emits `api_request_body` and `api_response_body` events, and the pipeline maps those bodies to `gen_ai.input.messages` and `gen_ai.output.messages`.
 
 Enabling these gates provides richer forensic data but indexes potentially sensitive content (commands, file contents, prompts). When a gate is disabled, the corresponding fields are absent from the document — the pipeline handles this gracefully.
 
@@ -290,13 +292,13 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-06T03:25:40.439Z",
+    "@timestamp": "2026-11-27T12:34:16.067Z",
     "claude_code": {
         "events": {
             "event": {
                 "name": "user_prompt",
                 "sequence": 0,
-                "timestamp": "2026-07-06T03:25:40.439Z"
+                "timestamp": "2026-11-27T12:34:16.067Z"
             },
             "has_hooks": true,
             "has_mcp": true,
@@ -319,7 +321,7 @@ An example event for `events` looks as following:
     },
     "data_stream": {
         "dataset": "claude_code.events.otel",
-        "namespace": "55955",
+        "namespace": "37976",
         "type": "logs"
     },
     "ecs": {
@@ -329,13 +331,16 @@ An example event for `events` looks as following:
         "action": "user_prompt",
         "agent_id_status": "missing",
         "dataset": "claude_code.events.otel",
-        "ingested": "2026-07-06T03:25:50Z",
+        "ingested": "2026-11-27T12:34:26Z",
         "kind": "event",
-        "original": "{\"observed_timestamp\":\"1783308340439.840708\",\"@timestamp\":\"1783308340439.834018\",\"resource\":{\"attributes\":{\"service.name\":\"claude-code\",\"service.version\":\"2.1.175\",\"host.arch\":\"amd64\",\"os.type\":\"linux\",\"os.version\":\"6.17.0-14-generic\"}},\"data_stream\":{\"namespace\":\"55955\",\"type\":\"logs\",\"dataset\":\"claude_code.events.otel\"},\"scope\":{\"name\":\"com.anthropic.claude_code.events\",\"version\":\"2.1.175\"},\"event_name\":\"user_prompt\",\"attributes\":{\"user.id\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2\",\"user.account_uuid\":\"00000000-1111-2222-3333-444444444444\",\"terminal.type\":\"xterm-256color\",\"event.name\":\"user_prompt\",\"event.timestamp\":\"2026-07-06T03:25:40.439819114Z\",\"prompt.id\":\"11111111-2222-3333-4444-555555555555\",\"event.sequence\":0,\"user.email\":\"test@example.com\",\"prompt_length\":18,\"elastic.preserve_original_event\":\"true\",\"organization.id\":\"00000000-0000-0000-0000-000000000001\",\"has_mcp\":\"true\",\"user.account_id\":\"user_01ExampleAccountId00000\",\"prompt\":\"What is 2 plus 2?\",\"session.id\":\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\",\"has_hooks\":\"true\"},\"body\":{\"text\":\"claude_code.user_prompt\"},\"event\":{},\"_version_type\":\"internal\",\"_index\":\"logs-claude_code.events.otel-55955\",\"_id\":null,\"_version\":-4}",
+        "original": "{\"observed_timestamp\":\"1795782856067.310005\",\"@timestamp\":\"1795782856067.307546\",\"resource\":{\"attributes\":{\"service.name\":\"claude-code\",\"service.version\":\"2.1.175\",\"host.arch\":\"amd64\",\"os.type\":\"linux\",\"os.version\":\"6.17.0-14-generic\"}},\"data_stream\":{\"namespace\":\"37976\",\"type\":\"logs\",\"dataset\":\"claude_code.events.otel\"},\"scope\":{\"name\":\"com.anthropic.claude_code.events\",\"version\":\"2.1.175\"},\"event_name\":\"user_prompt\",\"attributes\":{\"user.id\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2\",\"user.account_uuid\":\"00000000-1111-2222-3333-444444444444\",\"terminal.type\":\"xterm-256color\",\"event.name\":\"user_prompt\",\"event.timestamp\":\"2026-11-27T12:34:16.067288046Z\",\"prompt.id\":\"11111111-2222-3333-4444-555555555555\",\"event.sequence\":0,\"user.email\":\"test@example.com\",\"prompt_length\":18,\"elastic.preserve_original_event\":\"true\",\"organization.id\":\"00000000-0000-0000-0000-000000000001\",\"has_mcp\":\"true\",\"user.account_id\":\"user_01ExampleAccountId00000\",\"prompt\":\"What is 2 plus 2?\",\"session.id\":\"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\",\"has_hooks\":\"true\"},\"body\":{\"text\":\"claude_code.user_prompt\"},\"event\":{},\"_version_type\":\"internal\",\"_index\":\"logs-claude_code.events.otel-37976\",\"_id\":null,\"_version\":-4}",
         "outcome": "unknown",
         "provider": "claude-code"
     },
     "gen_ai": {
+        "conversation": {
+            "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        },
         "provider": {
             "name": "anthropic"
         }
@@ -348,7 +353,7 @@ An example event for `events` looks as following:
             "version": "6.17.0-14-generic"
         }
     },
-    "observed_timestamp": "2026-07-06T03:25:40.439840708Z",
+    "observed_timestamp": "2026-11-27T12:34:16.067310005Z",
     "organization": {
         "id": "00000000-0000-0000-0000-000000000001"
     },
@@ -465,6 +470,7 @@ An example event for `events` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
@@ -481,7 +487,10 @@ An example event for `events` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
-| gen_ai.operation.name | Source or type of the generative AI operation. | keyword |
+| gen_ai.conversation.id | Conversation identifier. Copied from the Claude Code session id. | keyword |
+| gen_ai.input.messages | Input messages from an api_request_body event. | flattened |
+| gen_ai.operation.name | Model operation. api_request events are chat. | keyword |
+| gen_ai.output.messages | Output messages from an api_response_body event. | flattened |
 | gen_ai.provider.name | Generative AI provider name. | constant_keyword |
 | gen_ai.request.model | Model used for the generative AI request. | keyword |
 | gen_ai.response.id | Identifier for the generative AI response. | keyword |
@@ -512,7 +521,7 @@ An example event for `traces` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-07T17:19:12.905Z",
+    "@timestamp": "2026-11-27T12:34:59.146Z",
     "attributes": {
         "interaction": {
             "duration_ms": 12545,
@@ -544,7 +553,7 @@ An example event for `traces` looks as following:
     },
     "data_stream": {
         "dataset": "claude_code.otel",
-        "namespace": "44902",
+        "namespace": "61141",
         "type": "traces"
     },
     "duration": 12545000000,
@@ -557,7 +566,7 @@ An example event for `traces` looks as following:
             "session"
         ],
         "dataset": "claude_code.otel",
-        "ingested": "2026-10-07T17:19:35Z",
+        "ingested": "2026-11-27T12:35:22Z",
         "kind": "event",
         "type": [
             "info"
@@ -621,18 +630,18 @@ An example event for `traces` looks as following:
         "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
     },
     "span": {
-        "id": "4a33403362f74185",
+        "id": "c6abe39f3eb844da",
         "name": "claude_code.interaction",
         "type": "interaction"
     },
-    "span_id": "4a33403362f74185",
+    "span_id": "c6abe39f3eb844da",
     "terminal": {
         "type": "xterm-256color"
     },
     "trace": {
-        "id": "84487adcee70a28b25f95b793b93b3fc"
+        "id": "a60ce72aff1e3da37b29d1f5f98aa4c9"
     },
-    "trace_id": "84487adcee70a28b25f95b793b93b3fc",
+    "trace_id": "a60ce72aff1e3da37b29d1f5f98aa4c9",
     "user": {
         "account_id": "user_01ExampleAccountId00000",
         "account_uuid": "00000000-1111-2222-3333-444444444444",

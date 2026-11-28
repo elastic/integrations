@@ -81,6 +81,23 @@ processors:
       field: url.full
       copy_from: attributes.tool_parameters_flattened.url
       if: ctx.attributes?.tool_parameters_flattened?.url != null
+  - script:
+      tag: script_destination_address
+      description: Hostname from url.full for web tool calls.
+      lang: painless
+      if: ctx.url?.full instanceof String && ctx.url.full.contains('://')
+      source: |
+        String rest = ctx.url.full.substring(ctx.url.full.indexOf('://') + 3);
+        int at = rest.indexOf('@');
+        if (at >= 0) { rest = rest.substring(at + 1); }
+        int slash = rest.indexOf('/');
+        if (slash >= 0) { rest = rest.substring(0, slash); }
+        int colon = rest.indexOf(':');
+        if (colon >= 0) { rest = rest.substring(0, colon); }
+        if (rest.length() > 0) {
+          ctx.destination = ctx.destination ?: new HashMap();
+          ctx.destination.address = rest;
+        }
 
   - script:
       tag: ecs_categorization
@@ -371,11 +388,27 @@ processors:
       field: claude_code.events.cache_creation_tokens
       target_field: gen_ai.usage.cache_creation.input_tokens
       ignore_missing: true
+  - set:
+      tag: set_gen_ai_conversation_id
+      field: gen_ai.conversation.id
+      copy_from: claude_code.events.session.id
+      if: ctx.claude_code?.events?.session?.id != null
+  - set:
+      tag: set_gen_ai_operation_name_chat
+      field: gen_ai.operation.name
+      value: chat
+      if: ctx.claude_code?.events?.event?.name == 'api_request'
+  - remove:
+      tag: remove_query_source_api_request
+      field: claude_code.events.query_source
+      ignore_missing: true
+      if: ctx.claude_code?.events?.event?.name == 'api_request'
   - rename:
       tag: rename_gen_ai_operation_name
       field: claude_code.events.query_source
       target_field: gen_ai.operation.name
       ignore_missing: true
+      if: ctx.claude_code?.events?.event?.name != 'api_request'
   - rename:
       tag: rename_gen_ai_tool_name_mcp
       field: claude_code.events.mcp_tool_name
@@ -530,6 +563,11 @@ processors:
             });
         }
         handleMap(ctx);
+
+  - pipeline:
+      name: '{{ IngestPipeline "genai" }}'
+      tag: pipeline_genai
+      if: "ctx.claude_code?.events?.event?.name == 'api_request_body' || ctx.claude_code?.events?.event?.name == 'api_response_body'"
 
   - set:
       tag: set_pipeline_error_to_event_kind

@@ -1,0 +1,88 @@
+---
+description: Map raw Messages API bodies to gen_ai input and output messages.
+processors:
+  - json:
+      tag: json_parse_api_body
+      field: claude_code.events.body
+      target_field: _temp.body
+      if: ctx.claude_code?.events?.body instanceof String && ctx.claude_code.events.body.startsWith('{')
+      on_failure:
+        - append:
+            tag: tag_gen_ai_body_truncated
+            field: tags
+            value: gen_ai_body_truncated
+            allow_duplicates: false
+
+  - script:
+      tag: script_gen_ai_messages_from_body
+      description: Copy request messages and response content into ECS gen_ai message fields.
+      lang: painless
+      if: ctx._temp?.body instanceof Map
+      source: |
+        List toParts(def content) {
+          List out = new ArrayList();
+          if (content instanceof String) {
+            if (content.length() > 0) { out.add(['type': 'text', 'content': content]); }
+            return out;
+          }
+          if (!(content instanceof List)) { return out; }
+          for (def block : content) {
+            if (!(block instanceof Map)) { continue; }
+            if (block.type == 'text' && block.text != null) {
+              out.add(['type': 'text', 'content': block.text]);
+            } else if (block.type == 'tool_use') {
+              Map call = ['type': 'tool_call', 'id': block.id, 'name': block.name];
+              if (block.input instanceof Map) { call.arguments = block.input; }
+              out.add(call);
+            } else if (block.type == 'tool_result') {
+              out.add(['type': 'tool_call_response', 'id': block.tool_use_id, 'response': block.content]);
+            } else if (block.type != null) {
+              out.add(['type': block.type]);
+            }
+          }
+          return out;
+        }
+        Map body = ctx._temp.body;
+        ctx.gen_ai = ctx.gen_ai ?: new HashMap();
+        if (body.messages instanceof List) {
+          List messages = new ArrayList();
+          for (def message : body.messages) {
+            if (!(message instanceof Map) || !(message.role instanceof String)) { continue; }
+            messages.add(['role': message.role, 'parts': toParts(message.content)]);
+          }
+          if (messages.size() > 0) {
+            Map input = ctx.gen_ai.input instanceof Map ? ctx.gen_ai.input : new HashMap();
+            input.messages = messages;
+            ctx.gen_ai.input = input;
+          }
+        }
+        String eventName = ctx.claude_code?.events?.event?.name;
+        if (eventName == 'api_response_body' && body.content != null) {
+          String role = body.role instanceof String ? body.role : 'assistant';
+          Map output = ctx.gen_ai.output instanceof Map ? ctx.gen_ai.output : new HashMap();
+          output.messages = [['role': role, 'parts': toParts(body.content)]];
+          ctx.gen_ai.output = output;
+        }
+
+  - remove:
+      tag: remove_temp_body
+      field: _temp
+      ignore_missing: true
+on_failure:
+  - remove:
+      tag: remove_temp_body_on_failure
+      field: _temp
+      ignore_missing: true
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.pipeline}}}
+        failed with message:
+        {{{_ingest.on_failure_message}}}
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
