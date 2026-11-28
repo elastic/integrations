@@ -12,6 +12,242 @@ rules:
             "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgVXNlciIsImlhdCI6MTUxNjIzOTAyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
             "expires_at": "2099-12-31T23:59:59.999Z"
           }
+  # Paging recovery (test-resume-config.yml, url .../resume). Results are newest first, as the
+  # documented resume method implies. Page 2 is rejected, so the program must start a new
+  # search bounded by before_time (oldest event_time received + 1ms) instead of retrying the
+  # rejected Pit-Id forever.
+  # 1. Any request that carries the Pit-Id from page 1 is rejected with the body Greenhouse
+  #    returns in production.
+  - path: /resume/events
+    methods: ["GET"]
+    request_headers:
+      Pit-Id:
+        - "pit-resume"
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {"code":"invalid_request","error":"The Pit-Id or Search-After header isn't valid. Send the Pit-Id and next_search_after values from the previous response unchanged."}
+  # 2. The resumed search. It repeats the boundary rejection action (same event_time as the
+  #    last event of page 1), holds that action's RejectionDetails sibling, which shares the
+  #    same millisecond and would be skipped if before_time were the exact event_time, and one
+  #    older event. This is the last page.
+  - path: /resume/events
+    methods: ["GET"]
+    query_params:
+      before_time: "2023-06-03T10:00:00.001Z"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "paging": {
+              "pit_id": "pit-resume-2",
+              "search_after": null,
+              "size": "500",
+              "next_search_after": null
+            },
+            "hits": 3,
+            "results": [
+              {
+                "request": {
+                  "id": "res3ID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Three",
+                    "username": "recruiter.three@omniva-corp.com"
+                  },
+                  "id": 44444,
+                  "ip_address": "198.51.100.7",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Candidate or Prospect rejected",
+                  "type": "action"
+                },
+                "event_time": "2023-06-03T10:00:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "res3ID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Three",
+                    "username": "recruiter.three@omniva-corp.com"
+                  },
+                  "id": 44444,
+                  "ip_address": "198.51.100.7",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": {
+                    "application_id": 294326368002,
+                    "id": 221864428002
+                  },
+                  "target_type": "RejectionDetails",
+                  "type": "data_change_create",
+                  "target_id": 221864428002
+                },
+                "event_time": "2023-06-03T10:00:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "res4ID",
+                  "type": "email_settings#create_organization_email"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Allison Jamie",
+                    "username": "allison.j@omniva-corp.com"
+                  },
+                  "id": 12345,
+                  "ip_address": "192.168.0.1",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": {
+                    "id": [
+                      null,
+                      4321
+                    ],
+                    "value": [
+                      null,
+                      "sam.r@omniva-corp.com"
+                    ]
+                  },
+                  "target_type": "OrganizationEmail",
+                  "type": "data_change_create",
+                  "target_id": 4321
+                },
+                "event_time": "2023-06-03T09:00:00.000Z"
+              }
+            ]
+          }
+  # 3. Page 1 of the window. The rejection action res2ID and its sibling are both here, so the
+  #    action is held in the cursor across the rejected page 2 and must still be enriched.
+  - path: /resume/events
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "paging": {
+              "pit_id": "pit-resume",
+              "search_after": null,
+              "size": "500",
+              "next_search_after": "1685786400000,res3ID,3"
+            },
+            "hits": 4,
+            "results": [
+              {
+                "request": {
+                  "id": "res1ID",
+                  "type": "email_settings#create_organization_email"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Allison Jamie",
+                    "username": "allison.j@omniva-corp.com"
+                  },
+                  "id": 12345,
+                  "ip_address": "192.168.0.1",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Global Email Added",
+                  "type": "action"
+                },
+                "event_time": "2023-06-03T12:00:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "res2ID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Four",
+                    "username": "recruiter.four@omniva-corp.com"
+                  },
+                  "id": 55555,
+                  "ip_address": "198.51.100.8",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": {
+                    "application_id": 300000000001,
+                    "id": 333000000001
+                  },
+                  "target_type": "RejectionDetails",
+                  "type": "data_change_create",
+                  "target_id": 333000000001
+                },
+                "event_time": "2023-06-03T11:00:00.050Z"
+              },
+              {
+                "request": {
+                  "id": "res2ID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Four",
+                    "username": "recruiter.four@omniva-corp.com"
+                  },
+                  "id": 55555,
+                  "ip_address": "198.51.100.8",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Candidate or Prospect rejected",
+                  "type": "action"
+                },
+                "event_time": "2023-06-03T11:00:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "res3ID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter Three",
+                    "username": "recruiter.three@omniva-corp.com"
+                  },
+                  "id": 44444,
+                  "ip_address": "198.51.100.7",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Candidate or Prospect rejected",
+                  "type": "action"
+                },
+                "event_time": "2023-06-03T10:00:00.000Z"
+              }
+            ]
+          }
   # Audit log, page 2. Matched first on the Search-After header that page 1 hands out.
   # Holds the RejectionDetails siblings for the actions on page 1, so correlation must span pages.
   - path: /events

@@ -1,0 +1,70 @@
+# Verify that a rejected page does not stop collection, end to end, against the /resume routes
+# of the package mock in _dev/deploy/docker. Greenhouse answers the page 2 request with HTTP 400
+# (the body returned in production). The input must drop the Pit-Id and resume with a new search
+# bounded by before_time (oldest event_time received + 1ms) instead of resending the rejected
+# Pit-Id on every poll. The mock serves the resumed search only for that exact before_time.
+#   - page 1: res1ID, res2ID RejectionDetails, res2ID rejection action, res3ID rejection action.
+#   - page 2: HTTP 400 invalid_request.
+#   - resumed search: res3ID rejection action again (boundary, same event_time), the res3ID
+#     RejectionDetails sharing that millisecond, and res4ID.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Reuse the package's system test mock. The directory name must match the compose service
+# name (greenhouse), which is also the hostname the policy below points at.
+exec ln -s ${PACKAGE_ROOT}/_dev/deploy/docker greenhouse
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} greenhouse
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Six distinct events. Hold steady so that the boundary event repeated by the resumed search,
+# and the windows re-read on later polls, are shown not to create extra documents.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 30s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '.hits.total.value' got_docs.json
+stdout '^6$'
+
+# Events from both sides of the rejected page are present.
+exec jq -r '[.hits.hits[]._source | "\(.event.id)/\(.greenhouse.audit.event.target_type)"] | sort | join(",")' got_docs.json
+stdout '^res1ID/Global Email Added,res2ID/Candidate or Prospect rejected,res2ID/RejectionDetails,res3ID/Candidate or Prospect rejected,res3ID/RejectionDetails,res4ID/OrganizationEmail$'
+
+# The rejected page leaves no error document behind.
+exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
+stdout '^0$'
+
+# res2ID: action and sibling were both on page 1; the action was held in the cursor across the
+# rejected page and is still enriched (reason lookup 404 in the mock, notes attached).
+exec jq -r '.hits.hits[]._source | select(.event.id == "res2ID" and .greenhouse.audit.event.target_type == "Candidate or Prospect rejected") | .greenhouse.audit.event.rejection | "\(.application_id)|\(.reason.error)|\(.notes)"' got_docs.json
+stdout '^300000000001\|rejection_reason fetch failed: HTTP 404\|Interview feedback was negative\.$'
+
+# res3ID: the action ended page 1 and its sibling, with the same event_time, was only returned
+# by the resumed search.
+exec jq -r '.hits.hits[]._source | select(.event.id == "res3ID" and .greenhouse.audit.event.target_type == "Candidate or Prospect rejected") | .greenhouse.audit.event.rejection | "\(.application_id)|\(.reason.id)|\(.reason.name)|\(.notes)|\(.error)"' got_docs.json
+stdout '^294326368002\|555\|Not a fit\|Candidate lacked required experience with distributed systems\.\|null$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down greenhouse
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://greenhouse:8080/resume
+  token_url: http://greenhouse:8080/token
+  harvest_url: http://greenhouse:8080
+  client_id: test_client_id
+  client_secret: test_client_secret
+  user_id: "12345"
+data_stream:
+  vars:
+    preserve_original_event: true
+    initial_interval: 24h
+    batch_size: 500
+    enrich_rejections: true
+    interval: 10s
