@@ -424,7 +424,9 @@ processors:
             domains.add(parts[1]);
           }
         }
-        ctx.related.hosts = domains;
+        def hostsList = new ArrayList(domains);
+        Collections.sort(hostsList);
+        ctx.related.hosts = hostsList;
       on_failure:
         - append:
             tag: append_error_message_4ca25338
@@ -521,7 +523,9 @@ processors:
           ctx.email.attachments = emailAttachments;
         }
         ctx.related = ctx.related ?: [:];
-        ctx.related.hash = hashes;
+        def hashList = new ArrayList(hashes);
+        Collections.sort(hashList);
+        ctx.related.hash = hashList;
       on_failure:
         - append:
             tag: append_error_message_47c81822
