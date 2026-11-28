@@ -71,8 +71,10 @@ for tid in $(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_transform/logs-ch
   curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_transform/${tid}" >/dev/null || true
 done
 
-for p in cb-migrate-billing-enrichment cb-migrate-usage-metadata; do
+for p in cb-migrate-billing-enrichment cb-migrate-enrichment-only-rows cb-migrate-usage-metadata; do
   curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_ingest/pipeline/${p}" >/dev/null || true
+done
+for p in cb-migrate-billing-enrichment cb-migrate-existing-realized-pool cb-migrate-usage-metadata; do
   curl -sS -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_enrich/policy/${p}" >/dev/null || true
 done
 
@@ -95,10 +97,13 @@ for name in chargeback_currency_lookup billing_enrichment usage_deployment_metad
   [ -n "$TID" ] && [ "$TID" != "null" ]
 done
 
-# Seed historical (expired raw ILM) 0.7.0 rows in primary and additive -1 lookup indices.
+# Seed historical (expired raw ILM) 0.7.0 rows in primary and additive -1 lookup indices,
+# including an AI/Synthetics-only day present only in dest_billing_enrichment-1 (no realized_pool-1 row).
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_billing_realized_pool-1/_doc/aged_pool?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","deployment_id":"dep-aged","deployment_name":"aged-existing","deployment_group":"team-existing","is_onprem":false,"data_tier_capacity_ecu":100.0,"realized_chargeable_units":100.0,"total_chargeable_units":100.0}' >/dev/null
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_billing_enrichment-1/_doc/aged_enr?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","deployment_id":"dep-aged","deployment_name":"aged-existing","deployment_group":"team-existing","ai_chargeable_units":4.5,"synthetics_chargeable_units":1.2,"synthetics_pings_units":1.2,"synthetics_executions_units":0.0,"group_first_seen":"2026-01-15T00:00:00Z"}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_billing_enrichment-1/_doc/aged_ai_only?refresh=true" -d '{"@timestamp":"2026-01-14T00:00:00Z","composite_key":"2026-01-14_dep-ai-only","deployment_id":"dep-ai-only","deployment_name":"ai-only-prod","deployment_group":"team-ai","ai_chargeable_units":7.5,"synthetics_chargeable_units":0.0,"synthetics_pings_units":0.0,"synthetics_executions_units":0.0,"group_first_seen":"2026-01-14T00:00:00Z"}' >/dev/null
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_cluster_deployment_contribution-1/_doc/aged_dep?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","cluster_name":"dep-aged","deployment_id":"dep-aged","usage_source":"native","deployment_sum_indexing_time":120,"deployment_sum_query_time":240,"deployment_sum_store_size":4096,"deployment_sum_data_set_store_size":2048}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_aliases" -d '{"actions":[{"add":{"index":"chargeback_lookup.dest_cluster_deployment_contribution-1","alias":"chargeback_lookup.cluster_deployment_contribution"}}]}' >/dev/null || true
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/chargeback_lookup.dest_usage_deployment_metadata-1/_doc/aged_meta?refresh=true" -d '{"@timestamp":"2026-01-15T00:00:00Z","composite_key":"2026-01-15_dep-aged","cluster_name":"dep-aged","deployment_id":"dep-aged","deployment_name":"aged-existing","deployment_group":"team-existing"}' >/dev/null
 
 -- scripts/verify_080_from_070.sh --
@@ -138,10 +143,20 @@ done
 DEP2_CODE=$(curl -sS -o /dev/null -w "%{http_code}" -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2/_mapping")
 if [ "$DEP2_CODE" != "200" ]; then
   curl -sSf -u elastic:changeme --cacert "$CA" -X PUT "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2" >/dev/null
-  curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_aliases" -d '{"actions":[{"add":{"index":"chargeback_lookup.dest_cluster_deployment_contribution-2","alias":"chargeback_lookup.cluster_deployment_contribution"}}]}' >/dev/null
+  ALIAS_ACTIONS=$(curl -sS -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.cluster_deployment_contribution" | jq -c '
+    (if type == "object" and (.error == null) then
+      [keys[] | select(. != "chargeback_lookup.dest_cluster_deployment_contribution-2") | {remove: {index: ., alias: "chargeback_lookup.cluster_deployment_contribution"}}]
+    else [] end)
+    + [{add: {index: "chargeback_lookup.dest_cluster_deployment_contribution-2", alias: "chargeback_lookup.cluster_deployment_contribution"}}]
+    | {actions: .}')
+  curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_aliases" -d "$ALIAS_ACTIONS" >/dev/null
 fi
 
-# 3. Execute documented 0.7.0 -> 0.8.0 _reindex + enrich-merge migration by composite_key.
+# Verify cluster_deployment_contribution alias resolves solely to dest_cluster_deployment_contribution-2.
+DEP_ALIAS=$(curl -sSf -u elastic:changeme --cacert "$CA" "$ES/_alias/chargeback_lookup.cluster_deployment_contribution" | jq -c 'keys | sort')
+[ "$DEP_ALIAS" = '["chargeback_lookup.dest_cluster_deployment_contribution-2"]' ]
+
+# 3. Execute documented 0.7.0 -> 0.8.0 _reindex + enrich-merge + enrichment-only backfill migration by composite_key.
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_reindex?refresh=true" -d '{"source":{"index":"chargeback_lookup.dest_billing_realized_pool-1","query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}},"dest":{"index":"chargeback_lookup.dest_billing_realized_pool-2","op_type":"create"},"conflicts":"proceed"}' >/dev/null
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_reindex?refresh=true" -d '{"source":{"index":"chargeback_lookup.dest_cluster_deployment_contribution-1","query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}},"dest":{"index":"chargeback_lookup.dest_cluster_deployment_contribution-2","op_type":"create"},"conflicts":"proceed"}' >/dev/null
 
@@ -150,21 +165,35 @@ curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_enrich/policy/cb-migr
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_ingest/pipeline/cb-migrate-billing-enrichment" -d '{"processors":[{"enrich":{"policy_name":"cb-migrate-billing-enrichment","field":"composite_key","target_field":"_enr","ignore_missing":true}},{"script":{"lang":"painless","source":"if (ctx._enr instanceof Map) { for (String k : [\u0027ai_chargeable_units\u0027, \u0027synthetics_chargeable_units\u0027, \u0027synthetics_pings_units\u0027, \u0027synthetics_executions_units\u0027, \u0027group_first_seen\u0027]) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove(\u0027_enr\u0027); }"}}]}' >/dev/null
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/chargeback_lookup.dest_billing_realized_pool-2/_update_by_query?pipeline=cb-migrate-billing-enrichment&refresh=true" -d '{"query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}}' >/dev/null
 
+# Backfill AI/Synthetics-only days from dest_billing_enrichment-1 that had no 0.7.0 realized_pool-1 row.
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_enrich/policy/cb-migrate-existing-realized-pool" -d '{"match":{"indices":"chargeback_lookup.dest_billing_realized_pool-2","match_field":"composite_key","enrich_fields":["composite_key"]}}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_enrich/policy/cb-migrate-existing-realized-pool/_execute" >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_ingest/pipeline/cb-migrate-enrichment-only-rows" -d '{"processors":[{"enrich":{"policy_name":"cb-migrate-existing-realized-pool","field":"composite_key","target_field":"_existing","ignore_missing":true}},{"drop":{"if":"ctx._existing != null"}},{"script":{"lang":"painless","source":"if (ctx.data_tier_capacity_ecu == null) { ctx.data_tier_capacity_ecu = 0.0; } if (ctx.realized_chargeable_units == null) { ctx.realized_chargeable_units = 0.0; } if (ctx.total_chargeable_units == null) { ctx.total_chargeable_units = 0.0; } if (ctx.is_onprem == null) { ctx.is_onprem = false; }"}}]}' >/dev/null
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/_reindex?refresh=true" -d '{"source":{"index":"chargeback_lookup.dest_billing_enrichment-1","query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}},"dest":{"index":"chargeback_lookup.dest_billing_realized_pool-2","pipeline":"cb-migrate-enrichment-only-rows"}}' >/dev/null
+
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_enrich/policy/cb-migrate-usage-metadata" -d '{"match":{"indices":"chargeback_lookup.dest_usage_deployment_metadata-1","match_field":"composite_key","enrich_fields":["deployment_name","deployment_group"]}}' >/dev/null
 curl -sSf -u elastic:changeme --cacert "$CA" -X POST "$ES/_enrich/policy/cb-migrate-usage-metadata/_execute" >/dev/null
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X PUT "$ES/_ingest/pipeline/cb-migrate-usage-metadata" -d '{"processors":[{"enrich":{"policy_name":"cb-migrate-usage-metadata","field":"composite_key","target_field":"_enr","ignore_missing":true}},{"script":{"lang":"painless","source":"if (ctx._enr instanceof Map) { for (String k : [\u0027deployment_name\u0027, \u0027deployment_group\u0027]) { if (ctx._enr.get(k) != null) { ctx[k] = ctx._enr.get(k); } } ctx.remove(\u0027_enr\u0027); }"}}]}' >/dev/null
 curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2/_update_by_query?pipeline=cb-migrate-usage-metadata&refresh=true" -d '{"query":{"range":{"@timestamp":{"lt":"2026-02-01T00:00:00Z"}}}}' >/dev/null
 
-# 4. Verify historical enrichment & usage metadata are preserved on the migrated -2 rows.
+# 4. Verify historical enrichment, AI-only day backfill (no duplicates), & usage metadata are preserved on -2.
 curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_billing_realized_pool-2/_doc/aged_pool" > pool_doc.json
 jq -e '._source.ai_chargeable_units == 4.5 and ._source.synthetics_chargeable_units == 1.2 and ._source.synthetics_pings_units == 1.2 and ._source.group_first_seen == "2026-01-15T00:00:00Z"' pool_doc.json >/dev/null || { cat pool_doc.json >&2; exit 1; }
+
+AGED_CNT=$(curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/chargeback_lookup.dest_billing_realized_pool-2/_count" -d '{"query":{"term":{"composite_key":"2026-01-15_dep-aged"}}}' | jq -r '.count')
+[ "$AGED_CNT" = "1" ]
+
+curl -sSf -u elastic:changeme --cacert "$CA" -H "Content-Type: application/json" -X POST "$ES/chargeback_lookup.dest_billing_realized_pool-2/_search" -d '{"query":{"term":{"composite_key":"2026-01-14_dep-ai-only"}}}' > ai_only_doc.json
+jq -e '.hits.total.value == 1 and .hits.hits[0]._source.ai_chargeable_units == 7.5 and .hits.hits[0]._source.data_tier_capacity_ecu == 0 and .hits.hits[0]._source.realized_chargeable_units == 0 and .hits.hits[0]._source.total_chargeable_units == 0 and .hits.hits[0]._source.group_first_seen == "2026-01-14T00:00:00Z"' ai_only_doc.json >/dev/null || { cat ai_only_doc.json >&2; exit 1; }
 
 curl -sSf -u elastic:changeme --cacert "$CA" "$ES/chargeback_lookup.dest_cluster_deployment_contribution-2/_doc/aged_dep" > dep_doc.json
 jq -e '._source.deployment_name == "aged-existing" and ._source.deployment_group == "team-existing" and ._source.deployment_sum_indexing_time == 120' dep_doc.json >/dev/null || { cat dep_doc.json >&2; exit 1; }
 
 # 5. Clean up temporary migration pipelines and enrich policies.
-for p in cb-migrate-billing-enrichment cb-migrate-usage-metadata; do
+for p in cb-migrate-billing-enrichment cb-migrate-enrichment-only-rows cb-migrate-usage-metadata; do
   curl -sSf -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_ingest/pipeline/${p}" >/dev/null
+done
+for p in cb-migrate-billing-enrichment cb-migrate-existing-realized-pool cb-migrate-usage-metadata; do
   curl -sSf -u elastic:changeme --cacert "$CA" -X DELETE "$ES/_enrich/policy/${p}" >/dev/null
 done
 

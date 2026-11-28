@@ -386,6 +386,60 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
      }
    }
 
+   PUT /_enrich/policy/cb-migrate-existing-realized-pool
+   {
+     "match": {
+       "indices": "chargeback_lookup.dest_billing_realized_pool-2",
+       "match_field": "composite_key",
+       "enrich_fields": ["composite_key"]
+     }
+   }
+
+   POST /_enrich/policy/cb-migrate-existing-realized-pool/_execute
+
+   PUT /_ingest/pipeline/cb-migrate-enrichment-only-rows
+   {
+     "processors": [
+       {
+         "enrich": {
+           "policy_name": "cb-migrate-existing-realized-pool",
+           "field": "composite_key",
+           "target_field": "_existing",
+           "ignore_missing": true
+         }
+       },
+       {
+         "drop": {
+           "if": "ctx._existing != null"
+         }
+       },
+       {
+         "script": {
+           "lang": "painless",
+           "source": "if (ctx.data_tier_capacity_ecu == null) { ctx.data_tier_capacity_ecu = 0.0; } if (ctx.realized_chargeable_units == null) { ctx.realized_chargeable_units = 0.0; } if (ctx.total_chargeable_units == null) { ctx.total_chargeable_units = 0.0; } if (ctx.is_onprem == null) { ctx.is_onprem = false; }"
+         }
+       }
+     ]
+   }
+
+   POST _reindex?refresh=true
+   {
+     "source": {
+       "index": "chargeback_lookup.dest_billing_enrichment-1",
+       "query": {
+         "range": {
+           "@timestamp": {
+             "lt": "<earliest-retained-raw-billing-timestamp>"
+           }
+         }
+       }
+     },
+     "dest": {
+       "index": "chargeback_lookup.dest_billing_realized_pool-2",
+       "pipeline": "cb-migrate-enrichment-only-rows"
+     }
+   }
+
    PUT /_enrich/policy/cb-migrate-usage-metadata
    {
      "match": {
@@ -429,7 +483,7 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
    }
    ```
 
-   After verifying the merged rows in `-2`, remove the temporary migration pipelines and enrich policies (`DELETE /_ingest/pipeline/cb-migrate-billing-enrichment`, `DELETE /_enrich/policy/cb-migrate-billing-enrichment`, `DELETE /_ingest/pipeline/cb-migrate-usage-metadata`, `DELETE /_enrich/policy/cb-migrate-usage-metadata`).
+   After verifying the merged and backfilled rows in `-2` (including any historical AI/Synthetics-only days that had no `0.7.0` data-tier realized-pool row), remove the temporary migration pipelines and enrich policies (`DELETE /_ingest/pipeline/cb-migrate-billing-enrichment`, `DELETE /_enrich/policy/cb-migrate-billing-enrichment`, `DELETE /_ingest/pipeline/cb-migrate-enrichment-only-rows`, `DELETE /_enrich/policy/cb-migrate-existing-realized-pool`, `DELETE /_ingest/pipeline/cb-migrate-usage-metadata`, `DELETE /_enrich/policy/cb-migrate-usage-metadata`).
 5. **Post-upgrade cleanup:** After verifying that `chargeback_lookup.chargeback_conf`, `chargeback_lookup.billing_realized_pool`, and `chargeback_lookup.cluster_deployment_contribution` point to their `-2` indices and contain your expected configuration and historical rows, delete the retired `-1` indices (`chargeback_lookup.dest_chargeback_conf-1`, `chargeback_lookup.dest_billing_realized_pool-1`, `chargeback_lookup.dest_cluster_deployment_contribution-1`, and if upgrading from `0.7.0`, `chargeback_lookup.dest_chargeback_currency-1`, `chargeback_lookup.dest_billing_enrichment-1`, and `chargeback_lookup.dest_usage_deployment_metadata-1`) to reclaim cluster shards.
 
 ### Upgrading to 0.7.0
