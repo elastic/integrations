@@ -154,6 +154,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure-eventhub.sequence_number | Sequence number | long |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.eventhub.properties.raw | Raw properties as a string, if the `properties` field is a string. | keyword |
+| azure.eventhub.tenantId | Tenant ID from the parsed message envelope (`parse_message` only), kept for backward compatibility. Prefer `azure.tenant_id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
