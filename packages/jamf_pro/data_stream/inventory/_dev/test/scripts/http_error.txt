@@ -1,0 +1,95 @@
+# The first request fails with a 401. Without the fix every later poll fails
+# with "no such key" and nothing is collected.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} jamf-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# One error and two computers, steady over several polls.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 45s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_docs.json
+stdout '^1$'
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+stdout 'HTTP response code: 401'
+exec jq '[.hits.hits[]._source | select(.jamf_pro.inventory != null)] | length' got_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down jamf-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  api_host: http://jamf-mock:8080
+  client_id: test_client_id
+  client_secret: test_client_secret
+data_stream:
+  vars:
+    interval: 10s
+    page_size: 2
+    enable_request_tracer: false
+    enable_section_hardware: false
+    enable_section_operating_system: false
+-- jamf-mock/docker-compose.yml --
+version: '2.3'
+services:
+  jamf-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: jamf-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- jamf-mock/config.yml --
+rules:
+  - path: /api/oauth/token
+    methods: [POST]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"access_token":"xxxx","expires_in":3600,"token_type":"Bearer"}
+  # Requests with a cursor: nothing newer.
+  - path: /api/v1/computers-inventory
+    methods: [GET]
+    query_params:
+      filter: "{filter:.+}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"totalCount":0,"results":[]}
+  # First request fails, then the page is returned.
+  - path: /api/v1/computers-inventory
+    methods: [GET]
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"httpStatus":401,"errors":[{"code":"INVALID_TOKEN","description":"Unauthorized"}]}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"totalCount":2,"results":[{"id":"1","udid":"5982CE36-4526-580B-B4B9-ECC6782535B1","general":{"name":"acme-1","platform":"Mac","reportDate":"2024-06-19T15:54:37.680Z"}},{"id":"2","udid":"5982CE36-4526-580B-B4B9-ECC6782535B2","general":{"name":"acme-2","platform":"Mac","reportDate":"2024-06-19T15:54:37.690Z"}}]}
