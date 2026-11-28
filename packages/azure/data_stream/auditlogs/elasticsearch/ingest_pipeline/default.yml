@@ -63,15 +63,8 @@ processors:
       type: long
       ignore_missing: true
       ignore_failure: true
-      if: "ctx.azure?.auditlogs?.durationMs != null && ctx.azure.auditlogs.durationMs instanceof String"
-      description: 'Convert durationMs to event.duration as long (if it is a string).'
-  - rename:
-      tag: rename_azure_auditlogs_durationMs_to_event_duration_bf0133b9
-      field: azure.auditlogs.durationMs
-      target_field: event.duration
-      ignore_missing: true
-      if: "ctx.azure?.auditlogs?.durationMs != null && !(ctx.azure.auditlogs.durationMs instanceof String)"
-      description: 'Rename durationMs to event.duration (if it is not a string).'
+      if: ctx.azure?.auditlogs?.durationMs != null
+      description: 'Convert durationMs (string or number) to event.duration as long, so the nanosecond scaling below does not overflow.'
   - remove:
       tag: remove_azure_auditlogs_durationMs_5ae676a0
       field: azure.auditlogs.durationMs
