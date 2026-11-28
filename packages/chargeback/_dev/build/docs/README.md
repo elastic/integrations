@@ -61,7 +61,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 
 ## Configuration
 
-Credentials, currency settings, optional credit commitments, and cost/utilization weights are configured in Kibana under **Management -> Fleet -> Agent Policies -> Chargeback** and synced into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` for Elastic Cloud ECU and `_id: config_onprem` for On-Premises `mERU`) by the `chargeback_conf_lookup` continuous transform when `sync_fleet_config` is enabled.
+Credentials, currency settings, optional credit commitments, and cost/utilization weights are configured in Kibana under **Management -> Fleet -> Agent Policies -> Chargeback** and synced into `chargeback_lookup.dest_chargeback_conf-1` (aliased as `chargeback_lookup.chargeback_conf`, `_id: config` for Elastic Cloud ECU and `_id: config_onprem` for On-Premises `mERU`) by the `chargeback_conf_lookup` continuous transform when `sync_fleet_config` is enabled. Because Fleet installs transforms as cluster-wide package assets rather than per-policy UI settings, you can adjust the `1m` polling `frequency` on an installed cluster under **Stack Management** > **Data** > **Transforms** (this override persists until a future package upgrade bumps `fleet_transform_version`).
 
 ### Shared Connection Settings (`Elastic Cloud & Cluster Access`)
 
