@@ -1,0 +1,168 @@
+---
+description: >-
+  Maps the ViaQ Kubernetes metadata of container logs to the field names used
+  by the Kubernetes integration and ECS.
+processors:
+  - rename:
+      tag: rename_namespace_name
+      field: kubernetes.namespace_name
+      target_field: kubernetes.namespace
+      ignore_missing: true
+  - rename:
+      tag: rename_namespace_id
+      field: kubernetes.namespace_id
+      target_field: kubernetes.namespace_uid
+      ignore_missing: true
+  - rename:
+      tag: rename_pod_name
+      field: kubernetes.pod_name
+      target_field: kubernetes.pod.name
+      ignore_missing: true
+  - rename:
+      tag: rename_pod_id
+      field: kubernetes.pod_id
+      target_field: kubernetes.pod.uid
+      ignore_missing: true
+  - rename:
+      tag: rename_pod_ip
+      field: kubernetes.pod_ip
+      target_field: kubernetes.pod.ip
+      ignore_missing: true
+  - append:
+      tag: append_related_ip_pod_ip
+      field: related.ip
+      value: '{{{kubernetes.pod.ip}}}'
+      allow_duplicates: false
+      if: ctx.kubernetes?.pod?.ip != null
+  - rename:
+      tag: rename_container_name
+      field: kubernetes.container_name
+      target_field: kubernetes.container.name
+      ignore_missing: true
+  - set:
+      tag: set_container_name
+      field: container.name
+      copy_from: kubernetes.container.name
+      ignore_empty_value: true
+  - rename:
+      tag: rename_container_image
+      field: kubernetes.container_image
+      target_field: container.image.name
+      ignore_missing: true
+  - dissect:
+      tag: dissect_container_id
+      description: Splits "cri-o://<id>" or "containerd://<id>" into the runtime and the ID.
+      field: kubernetes.container_id
+      pattern: '%{container.runtime}://%{container.id}'
+      if: ctx.kubernetes?.container_id instanceof String && ctx.kubernetes.container_id.contains('://')
+  - rename:
+      tag: rename_container_id
+      field: kubernetes.container_id
+      target_field: container.id
+      ignore_missing: true
+      if: ctx.container?.id == null
+  - remove:
+      tag: remove_container_id_source
+      field: kubernetes.container_id
+      ignore_missing: true
+  - rename:
+      tag: rename_container_iostream
+      field: kubernetes.container_iostream
+      target_field: stream
+      ignore_missing: true
+  - set:
+      tag: set_kubernetes_node_name
+      field: kubernetes.node.name
+      copy_from: host.name
+      ignore_empty_value: true
+  - dissect:
+      tag: dissect_pod_owner
+      description: Splits the pod owner reference "<Kind>/<name>", for example "ReplicaSet/frontend-7d9f8c6b5".
+      field: kubernetes.pod_owner
+      pattern: '%{_tmp.owner_kind}/%{_tmp.owner_name}'
+      if: ctx.kubernetes?.pod_owner instanceof String && ctx.kubernetes.pod_owner.contains('/')
+  - lowercase:
+      tag: lowercase_owner_kind
+      field: _tmp.owner_kind
+      ignore_missing: true
+  - set:
+      tag: set_kubernetes_owner_name
+      field: 'kubernetes.{{{_tmp.owner_kind}}}.name'
+      value: '{{{_tmp.owner_name}}}'
+      if: >-
+        ctx._tmp?.owner_kind != null &&
+        ['replicaset', 'statefulset', 'daemonset', 'job', 'deployment', 'cronjob'].contains(ctx._tmp.owner_kind)
+  - remove:
+      tag: remove_known_pod_owner
+      description: The owner is kept in kubernetes.pod_owner only when its kind has no dedicated field.
+      field: kubernetes.pod_owner
+      if: >-
+        ctx._tmp?.owner_kind != null &&
+        ['replicaset', 'statefulset', 'daemonset', 'job', 'deployment', 'cronjob'].contains(ctx._tmp.owner_kind)
+  - script:
+      tag: script_dedot_annotations
+      description: >-
+        Replaces dots in annotation keys with underscores, as the Kubernetes
+        integration does. The collector already de-dots labels.
+      lang: painless
+      if: ctx.kubernetes?.annotations instanceof Map
+      source: |
+        Map annotations = ctx.kubernetes.annotations;
+        Map dedotted = new HashMap();
+        for (def entry : annotations.entrySet()) {
+          dedotted.put(entry.getKey().replace('.', '_'), entry.getValue());
+        }
+        ctx.kubernetes.annotations = dedotted;
+  - convert:
+      tag: convert_scalar_structured_to_message
+      description: >-
+        The collector's JSON parse filter also accepts JSON that is not an
+        object, such as `123` or `"text"`, and then drops `message`. Keep such
+        a line as the message; only objects fit the flattened field.
+      field: structured
+      target_field: message
+      type: string
+      if: ctx.structured != null && !(ctx.structured instanceof Map) && ctx.message == null
+  - remove:
+      tag: remove_scalar_structured
+      field: structured
+      if: ctx.structured != null && !(ctx.structured instanceof Map)
+  - rename:
+      tag: rename_structured
+      description: The collector's JSON parse filter puts the parsed application log line here.
+      field: structured
+      target_field: openshift.structured
+      ignore_missing: true
+  - set:
+      tag: set_message_from_structured_message
+      description: The collector drops `message` when the line was parsed as JSON.
+      field: message
+      copy_from: openshift.structured.message
+      if: ctx.message == null && ctx.openshift?.structured instanceof Map && ctx.openshift.structured.message instanceof String
+  - set:
+      tag: set_message_from_structured_msg
+      field: message
+      copy_from: openshift.structured.msg
+      if: ctx.message == null && ctx.openshift?.structured instanceof Map && ctx.openshift.structured.msg instanceof String
+  - remove:
+      tag: remove_tmp
+      field: _tmp
+      ignore_missing: true
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,284 @@
+dashboards:
+  - name: '[Logs OpenShift] Overview'
+    id: openshift-overview
+    minimum_kibana_version: '9.4.0'
+    description: >-
+      Application and infrastructure logs forwarded by the OpenShift Logging collector: log volume, levels, namespaces, nodes, pods with errors, and node journald units.
+    time_range:
+      from: now-24h
+      to: now
+    query:
+      kql: ''
+    filters:
+      - field: data_stream.dataset
+        in:
+          - openshift.application
+          - openshift.infrastructure
+    controls:
+      - type: options
+        label: Namespace
+        data_view: logs-*
+        field: kubernetes.namespace
+      - type: options
+        label: Node
+        data_view: logs-*
+        field: host.name
+      - type: options
+        label: Log level
+        data_view: logs-*
+        field: log.level
+    panels:
+      - title: ''
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: openshift-overview
+            - label: Audit
+              dashboard: openshift-audit
+      - title: ''
+        hide_title: true
+        size: {w: 16, h: 8}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [Logs OpenShift] Overview
+
+            Logs of OpenShift workloads (`openshift.application`) and of the platform namespaces and nodes
+            (`openshift.infrastructure`), forwarded by the OpenShift Logging collector.
+
+            Audit events are on the **Audit** dashboard.
+          font_size: 12
+          links_in_new_tab: false
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.application-*
+            | STATS application_logs = COUNT(*)
+          time_field: '@timestamp'
+          primary:
+            field: application_logs
+            label: Application logs
+            format:
+              type: number
+              decimals: 0
+              compact: true
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.infrastructure-*
+            | STATS infrastructure_logs = COUNT(*)
+          time_field: '@timestamp'
+          primary:
+            field: infrastructure_logs
+            label: Infrastructure logs
+            format:
+              type: number
+              decimals: 0
+              compact: true
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.application-*, logs-openshift.infrastructure-*
+            | WHERE log.level IN ("error", "err", "fatal", "critical", "crit", "alert", "emergency", "emerg")
+            | STATS error_logs = COUNT(*)
+          time_field: '@timestamp'
+          primary:
+            field: error_logs
+            label: Error logs
+            format:
+              type: number
+              decimals: 0
+              compact: true
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 40, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.application-*, logs-openshift.infrastructure-*
+            | WHERE kubernetes.namespace IS NOT NULL
+            | STATS namespaces = COUNT_DISTINCT(kubernetes.namespace)
+          time_field: '@timestamp'
+          primary:
+            field: namespaces
+            label: Namespaces
+            format:
+              type: number
+              decimals: 0
+      - title: Log volume over time
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 10}
+        esql:
+          type: area
+          query: |
+            FROM logs-openshift.application-*, logs-openshift.infrastructure-*
+            | EVAL source = CONCAT(openshift.log_type, " / ", openshift.log_source)
+            | STATS logs = COUNT(*) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), source
+            | SORT time_bucket ASC
+          time_field: '@timestamp'
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: logs
+              label: Logs
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: source
+      - title: Breakdowns
+        section:
+          panels:
+            - title: Top namespaces
+              size: {w: 24, h: 13}
+              position: {x: 0, y: 0}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.application-*, logs-openshift.infrastructure-*
+                  | WHERE kubernetes.namespace IS NOT NULL
+                  | STATS logs = COUNT(*) BY kubernetes.namespace, openshift.log_type
+                  | SORT logs DESC
+                  | LIMIT 20
+                mode: stacked
+                dimension:
+                  field: kubernetes.namespace
+                  label: Namespace
+                metrics:
+                  - field: logs
+                    label: Logs
+                    format:
+                      type: number
+                      decimals: 0
+                breakdown:
+                  field: openshift.log_type
+            - title: Log levels
+              size: {w: 24, h: 13}
+              position: {x: 24, y: 0}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.application-*, logs-openshift.infrastructure-*
+                  | EVAL level = COALESCE(log.level, "unknown")
+                  | STATS logs = COUNT(*) BY level, openshift.log_type
+                  | SORT logs DESC
+                  | LIMIT 20
+                mode: stacked
+                dimension:
+                  field: level
+                  label: Log level
+                metrics:
+                  - field: logs
+                    label: Logs
+                    format:
+                      type: number
+                      decimals: 0
+                breakdown:
+                  field: openshift.log_type
+            - title: Logs by node
+              size: {w: 24, h: 13}
+              position: {x: 0, y: 13}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.application-*, logs-openshift.infrastructure-*
+                  | STATS logs = COUNT(*) BY host.name, openshift.log_source
+                  | SORT logs DESC
+                  | LIMIT 20
+                mode: stacked
+                dimension:
+                  field: host.name
+                  label: Node
+                metrics:
+                  - field: logs
+                    label: Logs
+                    format:
+                      type: number
+                      decimals: 0
+                breakdown:
+                  field: openshift.log_source
+            - title: Pods with the most errors
+              size: {w: 24, h: 13}
+              position: {x: 24, y: 13}
+              esql:
+                type: datatable
+                query: |
+                  FROM logs-openshift.application-*, logs-openshift.infrastructure-*
+                  | WHERE kubernetes.pod.name IS NOT NULL
+                  | WHERE log.level IN ("error", "err", "fatal", "critical", "crit", "alert", "emergency", "emerg")
+                  | STATS errors = COUNT(*) BY kubernetes.namespace, kubernetes.pod.name, kubernetes.container.name
+                  | SORT errors DESC
+                  | LIMIT 20
+                breakdowns:
+                  - field: kubernetes.namespace
+                    label: Namespace
+                  - field: kubernetes.pod.name
+                    label: Pod
+                  - field: kubernetes.container.name
+                    label: Container
+                metrics:
+                  - field: errors
+                    label: Errors
+      - title: Node logs
+        section:
+          panels:
+            - title: Top systemd units
+              size: {w: 24, h: 13}
+              position: {x: 0, y: 0}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.infrastructure-*
+                  | WHERE openshift.log_source == "node"
+                  | EVAL unit = COALESCE(systemd.unit, log.syslog.appname, "unknown")
+                  | STATS logs = COUNT(*) BY unit
+                  | SORT logs DESC
+                  | LIMIT 15
+                dimension:
+                  field: unit
+                  label: Unit
+                metrics:
+                  - field: logs
+                    label: Logs
+                    format:
+                      type: number
+                      decimals: 0
+            - title: Recent node errors
+              size: {w: 24, h: 13}
+              position: {x: 24, y: 0}
+              esql:
+                type: datatable
+                query: |
+                  FROM logs-openshift.infrastructure-*
+                  | WHERE openshift.log_source == "node"
+                  | WHERE log.level IN ("error", "err", "crit", "critical", "alert", "emerg", "emergency", "warning", "warn")
+                  | STATS logs = COUNT(*) BY host.name, systemd.unit, log.level
+                  | SORT logs DESC
+                  | LIMIT 20
+                breakdowns:
+                  - field: host.name
+                    label: Node
+                  - field: systemd.unit
+                    label: Unit
+                  - field: log.level
+                    label: Level
+                metrics:
+                  - field: logs
+                    label: Logs

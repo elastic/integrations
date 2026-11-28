@@ -1,0 +1,18 @@
+# The collector sends no data_stream fields, so the namespace reference falls
+# back to the namespace of the index the record was written to, for example
+# logs-openshift-prod -> logs-openshift.application-prod. Do not add a literal
+# fallback such as "default": it would always win over the index namespace.
+- source_dataset: openshift
+  rules:
+    - target_dataset: openshift.application
+      if: ctx.log_type == 'application'
+      namespace:
+        - "{{data_stream.namespace}}"
+    - target_dataset: openshift.infrastructure
+      if: ctx.log_type == 'infrastructure'
+      namespace:
+        - "{{data_stream.namespace}}"
+    - target_dataset: openshift.audit
+      if: ctx.log_type == 'audit'
+      namespace:
+        - "{{data_stream.namespace}}"

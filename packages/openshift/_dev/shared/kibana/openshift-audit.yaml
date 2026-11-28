@@ -1,0 +1,381 @@
+dashboards:
+  - name: '[Logs OpenShift] Audit'
+    id: openshift-audit
+    minimum_kibana_version: '9.4.0'
+    description: >-
+      OpenShift audit logs: Kubernetes and OpenShift API server requests by user, verb, and resource; denied requests; Linux audit records of the nodes; and OVN-Kubernetes network policy decisions.
+    time_range:
+      from: now-24h
+      to: now
+    query:
+      kql: ''
+    filters:
+      - field: data_stream.dataset
+        equals: openshift.audit
+    controls:
+      - type: options
+        label: Audit source
+        data_view: logs-*
+        field: openshift.log_source
+      - type: options
+        label: User
+        data_view: logs-*
+        field: user.name
+      - type: options
+        label: Namespace
+        data_view: logs-*
+        field: orchestrator.namespace
+    panels:
+      - title: ''
+        size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: openshift-overview
+            - label: Audit
+              dashboard: openshift-audit
+      - title: ''
+        hide_title: true
+        size: {w: 16, h: 8}
+        position: {x: 0, y: 2}
+        markdown:
+          content: |
+            ## [Logs OpenShift] Audit
+
+            Audit logs forwarded by the OpenShift Logging collector (`openshift.audit`):
+            - API server audit events (`kubeAPI`, `openshiftAPI`)
+            - Linux audit records of the nodes (`auditd`)
+            - OVN-Kubernetes ACL logs (`ovn`)
+          font_size: 12
+          links_in_new_tab: false
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.audit-*
+            | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI")
+            | STATS api_requests = COUNT(*)
+          time_field: '@timestamp'
+          primary:
+            field: api_requests
+            label: API requests
+            format:
+              type: number
+              decimals: 0
+              compact: true
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.audit-*
+            | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI") AND event.outcome == "failure"
+            | STATS failed_requests = COUNT(*)
+          time_field: '@timestamp'
+          primary:
+            field: failed_requests
+            label: Failed API requests
+            format:
+              type: number
+              decimals: 0
+              compact: true
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.audit-*
+            | WHERE openshift.log_source == "auditd"
+            | STATS audit_records = COUNT(*)
+          time_field: '@timestamp'
+          primary:
+            field: audit_records
+            label: Linux audit records
+            format:
+              type: number
+              decimals: 0
+              compact: true
+      - title: ''
+        hide_title: true
+        size: {w: 8, h: 8}
+        position: {x: 40, y: 2}
+        esql:
+          type: metric
+          query: |
+            FROM logs-openshift.audit-*
+            | WHERE openshift.log_source == "ovn" AND event.action IN ("drop", "reject")
+            | STATS dropped = COUNT(*)
+          time_field: '@timestamp'
+          primary:
+            field: dropped
+            label: Dropped by network policy
+            format:
+              type: number
+              decimals: 0
+              compact: true
+      - title: Audit events over time
+        size: {w: 48, h: 12}
+        position: {x: 0, y: 10}
+        esql:
+          type: area
+          query: |
+            FROM logs-openshift.audit-*
+            | STATS events = COUNT(*) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), openshift.log_source
+            | SORT time_bucket ASC
+          time_field: '@timestamp'
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: events
+              label: Events
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: openshift.log_source
+      - title: API server
+        section:
+          panels:
+            - title: Requests by verb and outcome
+              size: {w: 24, h: 13}
+              position: {x: 0, y: 0}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI")
+                  | EVAL outcome = COALESCE(event.outcome, "unknown")
+                  | STATS requests = COUNT(*) BY event.action, outcome
+                  | SORT requests DESC
+                  | LIMIT 20
+                mode: stacked
+                dimension:
+                  field: event.action
+                  label: Verb
+                metrics:
+                  - field: requests
+                    label: Requests
+                    format:
+                      type: number
+                      decimals: 0
+                breakdown:
+                  field: outcome
+                color:
+                  assignments:
+                    - value: failure
+                      color: '#BD271E'
+                    - value: success
+                      color: '#54B399'
+            - title: Top users
+              size: {w: 24, h: 13}
+              position: {x: 24, y: 0}
+              esql:
+                type: datatable
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI") AND user.name IS NOT NULL
+                  | STATS requests = COUNT(*), failed = COUNT(*) WHERE event.outcome == "failure" BY user.name
+                  | SORT requests DESC
+                  | LIMIT 20
+                breakdowns:
+                  - field: user.name
+                    label: User
+                metrics:
+                  - field: requests
+                    label: Requests
+                  - field: failed
+                    label: Failed
+            - title: Changed resources
+              size: {w: 24, h: 13}
+              position: {x: 0, y: 13}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI")
+                  | WHERE event.action IN ("create", "update", "patch", "delete", "deletecollection")
+                  | STATS changes = COUNT(*) BY orchestrator.resource.type, event.action
+                  | SORT changes DESC
+                  | LIMIT 20
+                mode: stacked
+                dimension:
+                  field: orchestrator.resource.type
+                  label: Resource
+                metrics:
+                  - field: changes
+                    label: Changes
+                    format:
+                      type: number
+                      decimals: 0
+                breakdown:
+                  field: event.action
+            - title: Denied requests
+              size: {w: 24, h: 13}
+              position: {x: 24, y: 13}
+              esql:
+                type: datatable
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI") AND http.response.status_code == 403
+                  | EVAL acting_as = COALESCE(user.effective.name, user.name)
+                  | STATS requests = COUNT(*) BY acting_as, event.action, orchestrator.resource.type, orchestrator.namespace
+                  | SORT requests DESC
+                  | LIMIT 20
+                breakdowns:
+                  - field: acting_as
+                    label: User
+                  - field: event.action
+                    label: Verb
+                  - field: orchestrator.resource.type
+                    label: Resource
+                  - field: orchestrator.namespace
+                    label: Namespace
+                metrics:
+                  - field: requests
+                    label: Requests
+            - title: Source IPs
+              size: {w: 48, h: 13}
+              position: {x: 0, y: 26}
+              esql:
+                type: datatable
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source IN ("kubeAPI", "openshiftAPI") AND source.ip IS NOT NULL
+                  | STATS requests = COUNT(*), users = COUNT_DISTINCT(user.name), failed = COUNT(*) WHERE event.outcome == "failure" BY source.ip
+                  | SORT requests DESC
+                  | LIMIT 20
+                breakdowns:
+                  - field: source.ip
+                    label: Source IP
+                metrics:
+                  - field: requests
+                    label: Requests
+                  - field: failed
+                    label: Failed
+                  - field: users
+                    label: Users
+      - title: Linux audit (auditd)
+        section:
+          panels:
+            - title: Record types by outcome
+              size: {w: 24, h: 13}
+              position: {x: 0, y: 0}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source == "auditd"
+                  | EVAL outcome = COALESCE(event.outcome, "unknown")
+                  | STATS records = COUNT(*) BY event.action, outcome
+                  | SORT records DESC
+                  | LIMIT 25
+                mode: stacked
+                dimension:
+                  field: event.action
+                  label: Record type
+                metrics:
+                  - field: records
+                    label: Records
+                    format:
+                      type: number
+                      decimals: 0
+                breakdown:
+                  field: outcome
+                color:
+                  assignments:
+                    - value: failure
+                      color: '#BD271E'
+                    - value: success
+                      color: '#54B399'
+            - title: Authentication records
+              size: {w: 24, h: 13}
+              position: {x: 24, y: 0}
+              esql:
+                type: datatable
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source == "auditd"
+                  | WHERE event.action IN ("user_auth", "user_acct", "user_login", "user_logout", "login", "cred_acq", "cred_disp", "cred_refr")
+                  | STATS records = COUNT(*), failed = COUNT(*) WHERE event.outcome == "failure" BY host.name, user.name, source.ip
+                  | SORT failed DESC, records DESC
+                  | LIMIT 20
+                breakdowns:
+                  - field: host.name
+                    label: Node
+                  - field: user.name
+                    label: User
+                  - field: source.ip
+                    label: Source IP
+                metrics:
+                  - field: records
+                    label: Records
+                  - field: failed
+                    label: Failed
+      - title: Network policies (OVN)
+        section:
+          panels:
+            - title: Verdicts by policy kind
+              size: {w: 24, h: 13}
+              position: {x: 0, y: 0}
+              esql:
+                type: bar
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source == "ovn"
+                  | EVAL policy_kind = COALESCE(rule.ruleset, "other")
+                  | STATS packets = COUNT(*) BY policy_kind, event.action
+                  | SORT packets DESC
+                  | LIMIT 20
+                mode: stacked
+                dimension:
+                  field: policy_kind
+                  label: Policy kind
+                metrics:
+                  - field: packets
+                    label: Logged packets
+                    format:
+                      type: number
+                      decimals: 0
+                breakdown:
+                  field: event.action
+                color:
+                  assignments:
+                    - value: drop
+                      color: '#BD271E'
+                    - value: allow
+                      color: '#54B399'
+            - title: Dropped traffic
+              size: {w: 24, h: 13}
+              position: {x: 24, y: 0}
+              esql:
+                type: datatable
+                query: |
+                  FROM logs-openshift.audit-*
+                  | WHERE openshift.log_source == "ovn" AND event.action IN ("drop", "reject")
+                  | STATS packets = COUNT(*) BY rule.name, source.ip, destination.ip, destination.port, network.transport
+                  | SORT packets DESC
+                  | LIMIT 20
+                breakdowns:
+                  - field: rule.name
+                    label: ACL
+                  - field: source.ip
+                    label: Source IP
+                  - field: destination.ip
+                    label: Destination IP
+                  - field: destination.port
+                    label: Port
+                  - field: network.transport
+                    label: Protocol
+                metrics:
+                  - field: packets
+                    label: Logged packets

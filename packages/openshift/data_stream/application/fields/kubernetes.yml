@@ -1,0 +1,67 @@
+- name: stream
+  type: keyword
+  description: Container log stream (stdout or stderr).
+- name: kubernetes
+  type: group
+  fields:
+    - name: namespace
+      type: keyword
+      description: Kubernetes namespace.
+    - name: namespace_uid
+      type: keyword
+      description: Kubernetes namespace UID.
+    - name: namespace_labels.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Kubernetes namespace labels map. The collector replaces dots and slashes in label keys with underscores.
+    - name: labels.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Kubernetes pod labels map. The collector replaces dots and slashes in label keys with underscores.
+    - name: annotations.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: Kubernetes pod annotations map. Dots in annotation keys are replaced with underscores.
+    - name: pod.name
+      type: keyword
+      description: Kubernetes pod name.
+    - name: pod.uid
+      type: keyword
+      description: Kubernetes pod UID.
+    - name: pod.ip
+      type: ip
+      description: Kubernetes pod IP.
+    - name: pod_owner
+      type: keyword
+      description: >-
+        Owner reference of the pod in the form `Kind/name`. Only set when the owner kind has no dedicated field, for example a custom controller.
+    - name: container.name
+      type: keyword
+      description: Kubernetes container name.
+    - name: node.name
+      type: keyword
+      description: Kubernetes node name.
+    - name: replicaset.name
+      type: keyword
+      description: Kubernetes replicaset name.
+    - name: deployment.name
+      type: keyword
+      description: Kubernetes deployment name.
+    - name: statefulset.name
+      type: keyword
+      description: Kubernetes statefulset name.
+    - name: daemonset.name
+      type: keyword
+      description: Kubernetes daemonset name.
+    - name: job.name
+      type: keyword
+      description: Kubernetes job name.
+    - name: cronjob.name
+      type: keyword
+      description: Kubernetes cronjob name.
+    - name: event
+      type: flattened
+      description: Kubernetes event collected by the OpenShift event router and attached by the collector.
