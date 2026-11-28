@@ -3,14 +3,22 @@ description: Pipeline for parsing Nginx Ingress Controller access logs. Requires
   geoip and user_agent plugins.
 processors:
   - set:
+      tag: set_ecs_version_d65ca3ba
       field: ecs.version
       value: '8.4.0'
   - rename:
+      tag: rename_message_aab56b71
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_e563e9c5
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_77a90d3f
       field: event.original
       patterns:
       - (%{NGINX_HOST} )?"?(?:%{NGINX_ADDRESS_LIST:nginx_ingress_controller.access.remote_ip_list}|%{NOTSPACE:source.address})
@@ -32,57 +40,70 @@ processors:
         IP: (?:\[?%{IPV6}\]?|%{IPV4})
       ignore_missing: true
   - grok:
+      tag: grok_nginx_ingress_controller_access_info_9a108a6f
       field: nginx_ingress_controller.access.info
       patterns:
       - '%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}'
       - ""
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_url_original_1ee854e8
       field: url.original
       ignore_failure: true
   - set:
+      tag: set_url_domain_4c7151a2
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
   - split:
+      tag: split_nginx_ingress_controller_access_remote_ip_list_479097da
       field: nginx_ingress_controller.access.remote_ip_list
       separator: '"?,?\s+'
       ignore_missing: true
   - split:
+      tag: split_nginx_ingress_controller_access_upstream_address_list_2fa7e049
       field: nginx_ingress_controller.access.upstream_address_list
       separator: '"?,?\s+'
       ignore_missing: true
   - split:
+      tag: split_nginx_ingress_controller_access_upstream_response_length_list_8760b2b6
       field: nginx_ingress_controller.access.upstream.response.length_list
       separator: '"?,?\s+'
       ignore_missing: true
   - split:
+      tag: split_nginx_ingress_controller_access_upstream_response_time_list_6017a09b
       field: nginx_ingress_controller.access.upstream.response.time_list
       separator: '"?,?\s+'
       ignore_missing: true
   - split:
+      tag: split_nginx_ingress_controller_access_upstream_response_status_code_list_ba8f698f
       field: nginx_ingress_controller.access.upstream.response.status_code_list
       separator: '"?,?\s+'
       ignore_missing: true
   - split:
+      tag: split_nginx_ingress_controller_access_origin_3f507e23
       field: nginx_ingress_controller.access.origin
       separator: '"?,?\s+'
       ignore_missing: true
   - set:
+      tag: set_source_address_3ea71db3
       field: source.address
       if: ctx.source?.address == null
       value: ""
   - set:
+      tag: set_http_request_id_433841ee
       field: http.request.id
       value: '{{{nginx_ingress_controller.access.http.request.id}}}'
       ignore_empty_value: true
       ignore_failure: true
   - convert:
+      tag: convert_nginx_ingress_controller_access_http_request_length_4dfb1473
       field: nginx_ingress_controller.access.http.request.length
       target_field: http.request.bytes
       type: long
       ignore_missing: true
   - script:
+      tag: script_7e0f0891
       if: ctx.nginx_ingress_controller?.access?.upstream?.response?.length_list != null && ctx.nginx_ingress_controller.access.upstream.response.length_list.length > 0
       lang: painless
       source: >-
@@ -100,6 +121,7 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.response.length = null;
         }
   - script:
+      tag: script_72bedd92
       if: ctx.nginx_ingress_controller?.access?.upstream?.response?.time_list != null && ctx.nginx_ingress_controller.access.upstream.response.time_list.length > 0
       lang: painless
       source: >-
@@ -117,6 +139,7 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.response.time = null;
         }
   - script:
+      tag: script_4acdd2d8
       if: ctx.nginx_ingress_controller?.access?.upstream?.response?.status_code_list != null && ctx.nginx_ingress_controller.access.upstream.response.status_code_list.length > 0
       lang: painless
       source: >-
@@ -134,6 +157,7 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.response.status_code = null;
         }
   - script:
+      tag: script_cb43452b
       if: ctx.nginx_ingress_controller?.access?.upstream_address_list != null && ctx.nginx_ingress_controller.access.upstream_address_list.length > 0
       lang: painless
       source: >-
@@ -152,6 +176,7 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.address = null;
         }
   - grok:
+      tag: grok_nginx_ingress_controller_access_upstream_address_25d3d897
       field: nginx_ingress_controller.access.upstream.address
       patterns:
         - "^%{IPV4:nginx_ingress_controller.access.upstream.ip}:%{NUMBER:nginx_ingress_controller.access.upstream.port}$"
@@ -165,20 +190,25 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_nginx_ingress_controller_access_upstream_ip_f9aa01f2
       field: nginx_ingress_controller.access.upstream.ip
       type: ip
       ignore_missing: true
       on_failure:
       - remove:
+          tag: remove_nginx_ingress_controller_access_upstream_ip_4175596f
           field: nginx_ingress_controller.access.upstream.ip
   - convert:
+      tag: convert_nginx_ingress_controller_access_upstream_port_ff127bc3
       field: nginx_ingress_controller.access.upstream.port
       type: long
       ignore_missing: true
       on_failure:
       - remove:
+          tag: remove_nginx_ingress_controller_access_upstream_port_cc46175a
           field: nginx_ingress_controller.access.upstream.port
   - script:
+      tag: script_d223d45d
       if: ctx.nginx_ingress_controller?.access?.remote_ip_list != null && ctx.nginx_ingress_controller.access.remote_ip_list.length > 0
       lang: painless
       source: >-
@@ -228,31 +258,38 @@ processors:
       params:
         dot: .
   - convert:
+      tag: convert_source_address_04f0561a
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_created_8aa09e60
       copy_from: "@timestamp"
       field: event.created
   - date:
+      tag: date_nginx_ingress_controller_access_time_18c96031
       field: nginx_ingress_controller.access.time
       target_field: '@timestamp'
       formats:
       - dd/MMM/yyyy:H:m:s Z
       on_failure:
       - append:
+          tag: append_error_message_66aa154e
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - user_agent:
+      tag: user_agent_user_agent_original_7d4b23f9
       field: user_agent.original
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_6cc94764
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_db136dc1
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -261,57 +298,70 @@ processors:
       - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_7d7f13ea
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_1847f74f
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_76c61e50
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_71b8b8ec
       field: event.category
       value: web
   - append:
+      tag: append_event_type_0d18c3fd
       field: event.type
       value: info
   - set:
+      tag: set_event_outcome_a48a76db
       field: event.outcome
       value: success
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
+      tag: set_event_outcome_6fc4be4b
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - append:
+      tag: append_related_ip_e38e9ba3
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_related_ip_9617eebf
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_related_ip_35442bc4
       field: related.ip
       value: "{{nginx_ingress_controller.access.upstream.ip}}"
       if: "ctx?.nginx_ingress_controller?.access.upstream?.ip != null"
       allow_duplicates: false
   - append:
+      tag: append_related_user_3c4aa359
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
       allow_duplicates: false
   - remove:
+      tag: remove_nginx_ingress_controller_access_time_a73e3f86
       field:
         - nginx_ingress_controller.access.time
         - nginx_ingress_controller.access.info
         - nginx_ingress_controller.access.upstream.address
       ignore_missing: true
   - script:
+      tag: script_4015530a
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -337,5 +387,14 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_b7218626
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_5a4c090c
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

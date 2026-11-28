@@ -2,14 +2,22 @@
 description: Pipeline for parsing the Nginx Ingress Controller error logs
 processors:
   - set:
+      tag: set_ecs_version_6eabdddd
       field: ecs.version
       value: '8.4.0'
   - rename:
+      tag: rename_message_47d7a796
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_f2238331
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_6251fcca
       field: event.original
       patterns:
         - '%{LOG_LEVEL:log.level}%{MONTHNUM2:timestamp_month}%{MONTHDAY:timestamp_day} %{HOUR:timestamp_hour}:%{MINUTE:timestamp_minute}:%{SECOND:timestamp_second}.%{NANOS:timestamp_nano}%{SPACE}%{NUMBER:nginx_ingress_controller.error.thread_id} %{SOURCE_FILE:nginx_ingress_controller.error.source.file}:%{NUMBER:nginx_ingress_controller.error.source.line_number}\] %{GREEDYMULTILINE:message}'
@@ -20,47 +28,61 @@ processors:
         GREEDYMULTILINE: "(.|\\n)*"
       ignore_missing: true
   - rename:
+      tag: rename_timestamp_5946b7ff
       field: '@timestamp'
       target_field: event.created
   - set:
+      tag: set_event_kind_b69752cf
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_df57ea73
       field: event.category
       value: web
   - append:
+      tag: append_event_type_157f3355
       if: 'ctx.log.level == "E" || ctx.log.level == "F"'
       field: event.type
       value: error
   - append:
+      tag: append_event_type_c25c2b90
       if: 'ctx.log.level != "E" && ctx.log.level != "F"'
       field: event.type
       value: info
   - convert:
+      tag: convert_nginx_ingress_controller_error_thread_id_503c694c
       field: "nginx_ingress_controller.error.thread_id"
       type: "integer"
   - convert:
+      tag: convert_nginx_ingress_controller_error_source_line_number_09b367f0
       field: "nginx_ingress_controller.error.source.line_number"
       type: "integer"
   - convert:
+      tag: convert_timestamp_month_ae490580
       field: "timestamp_month"
       type: "integer"
   - convert:
+      tag: convert_timestamp_day_825910a2
       field: "timestamp_day"
       type: "integer"
   - convert:
+      tag: convert_timestamp_hour_85b995e7
       field: "timestamp_hour"
       type: "integer"
   - convert:
+      tag: convert_timestamp_minute_50eb0f7c
       field: "timestamp_minute"
       type: "integer"
   - convert:
+      tag: convert_timestamp_second_157a1250
       field: "timestamp_second"
       type: "integer"
   - convert:
+      tag: convert_timestamp_nano_f19c531f
       field: "timestamp_nano"
       type: "integer"
   - script:
+      tag: script_e7ca5c0c
       lang: painless
       source: >-
         ZoneId zid = ZoneId.of(ctx.event.timezone);
@@ -74,9 +96,11 @@ processors:
                  .withZoneSameLocal(zid);
         ctx.timestamp = zdt;
   - rename:
+      tag: rename_timestamp_8d892337
       field: timestamp
       target_field: '@timestamp'
   - remove:
+      tag: remove_timestamp_month_3b68318d
       field:
         - timestamp_month
         - timestamp_day
@@ -86,5 +110,14 @@ processors:
         - timestamp_nano
 on_failure:
   - set:
+      tag: set_event_kind_54702281
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_696a467c
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
