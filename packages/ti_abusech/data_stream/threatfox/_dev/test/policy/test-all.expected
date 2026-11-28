@@ -56,7 +56,7 @@ inputs:
                           has(state.?token.access_token) && has(state.?token.expires) && now() < timestamp(int(state.token.expires) - 60) ?
                             state.token
                           :
-                            request(
+                            try(request(
                               "POST",
                               base_url + "/v1/login",
                               {
@@ -70,7 +70,19 @@ inputs:
                                   "Content-Type": ["application/json"],
                                 },
                               }
-                            ).do_request().as(auth_resp, auth_resp.StatusCode == 200 ?
+                            ).do_request()).as(auth_resp,
+                              type(auth_resp) == string ?
+                                {
+                                  "events": {
+                                    "error": {
+                                      "code": "connection_error",
+                                      "id": "transport_error",
+                                      "message": "POST " + base_url + "/v1/login: " + string(auth_resp),
+                                    },
+                                  },
+                                  "want_more": false,
+                                }
+                              : auth_resp.StatusCode == 200 ?
                               auth_resp.Body.decode_json().as(auth_body,
                                 {
                                   "access_token": auth_body.token,
@@ -97,7 +109,7 @@ inputs:
                         ).as(token, !has(token.access_token) ?
                           token
                         :
-                          request(
+                          try(request(
                             "GET",
                             base_url + "/threatfox/v1/iocs?" + {
                               "since": [since],
@@ -110,7 +122,19 @@ inputs:
                                 "Authorization": ["Bearer " + token.access_token],
                               },
                             }
-                          ).do_request().as(resp, resp.StatusCode == 200 ?
+                          ).do_request()).as(resp,
+                            type(resp) == string ?
+                              {
+                                "events": {
+                                  "error": {
+                                    "code": "connection_error",
+                                    "id": "transport_error",
+                                    "message": "GET " + base_url + "/threatfox/v1/iocs: " + string(resp),
+                                  },
+                                },
+                                "want_more": false,
+                              }
+                            : resp.StatusCode == 200 ?
                             resp.Body.decode_json().as(body,
                               {
                                 "events": body.items.map(ind,
@@ -173,31 +197,56 @@ inputs:
                       "want_more": false,
                     }
                   :
-                    request(
-                      "POST",
-                      state.url,
-                      "{ \"query\": \"get_iocs\", \"days\": " + state.?cursor.days.orValue(state.initial_interval) + " }"
-                    ).with(
-                      {
-                        "Header": {
-                          "Content-Type": ["application/json"],
-                          "Auth-Key": [state.auth_key],
-                        },
-                      }
-                    ).as(req,
-                      req.do_request().as(resp, resp.StatusCode == 200 ?
-                        resp.Body.decode_json().as(body,
-                          {
-                            "events": has(body.data) ?
-                              body.data.map(ind, {"message": ind.encode_json()})
-                            :
-                              [],
-                            "cursor": {
-                              "days": "1",
-                            },
-                          }
+                    (
+                      has(state.?cursor.last_success) ?
+                        (now - timestamp(state.cursor.last_success)).as(elapsed,
+                          elapsed <= duration("24h") ? 1
+                          : elapsed <= duration("48h") ? 2
+                          : elapsed <= duration("72h") ? 3
+                          : elapsed <= duration("96h") ? 4
+                          : elapsed <= duration("120h") ? 5
+                          : elapsed <= duration("144h") ? 6
+                          : 7
                         )
                       :
+                        int(state.?cursor.days.orValue(state.initial_interval))
+                    ).as(lookback,
+                      try(request(
+                        "POST",
+                        state.url,
+                        "{ \"query\": \"get_iocs\", \"days\": " + string(lookback) + " }"
+                      ).with(
+                        {
+                          "Header": {
+                            "Content-Type": ["application/json"],
+                            "Auth-Key": [state.auth_key],
+                          },
+                        }
+                      ).do_request()).as(resp,
+                        type(resp) == string ?
+                          {
+                            "events": {
+                              "error": {
+                                "code": "connection_error",
+                                "id": "transport_error",
+                                "message": "POST " + state.url.trim_right("/") + ":" + string(resp),
+                              },
+                            },
+                            "want_more": false,
+                          }
+                        : resp.StatusCode == 200 ?
+                          resp.Body.decode_json().as(body,
+                            {
+                              "events": has(body.data) ?
+                                body.data.map(ind, {"message": ind.encode_json()})
+                              :
+                                [],
+                              "cursor": {
+                                "last_success": now.format(time_layout.RFC3339),
+                              },
+                            }
+                          )
+                        :
                         {
                           "events": {
                             "error": {
