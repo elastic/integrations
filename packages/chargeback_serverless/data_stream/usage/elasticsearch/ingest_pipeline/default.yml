@@ -106,33 +106,36 @@ processors:
           }
           String strippedDsStr = ctx.datastream.toString();
           String strippedBiStr = rawBiStr;
-          for (int i = 0; i < 4; i++) {
+          for (int i = 0; i < 6; i++) {
             String prev = strippedDsStr;
             if (strippedDsStr.startsWith('partial-')) { strippedDsStr = strippedDsStr.substring(8); }
-            if (strippedDsStr.startsWith('restored-')) { strippedDsStr = strippedDsStr.substring(9); }
-            def sm = /^shrink-.{4}-(.*)$/.matcher(strippedDsStr);
-            if (sm.matches()) { strippedDsStr = sm.group(1); }
+            else if (strippedDsStr.startsWith('restored-')) { strippedDsStr = strippedDsStr.substring(9); }
+            else {
+              def sm = /^(?:shrink-.{4}|downsample-[^-]+)-(.*)$/.matcher(strippedDsStr);
+              if (sm.matches()) { strippedDsStr = sm.group(1); }
+            }
             if (strippedDsStr.equals(prev)) { break; }
           }
-          for (int i = 0; i < 4; i++) {
+          if (strippedDsStr.startsWith('.ds-')) { strippedDsStr = strippedDsStr.substring(4); }
+          for (int i = 0; i < 6; i++) {
             String prev = strippedBiStr;
             if (strippedBiStr.startsWith('partial-')) { strippedBiStr = strippedBiStr.substring(8); }
-            if (strippedBiStr.startsWith('restored-')) { strippedBiStr = strippedBiStr.substring(9); }
-            def bm = /^shrink-.{4}-(.*)$/.matcher(strippedBiStr);
-            if (bm.matches()) { strippedBiStr = bm.group(1); }
+            else if (strippedBiStr.startsWith('restored-')) { strippedBiStr = strippedBiStr.substring(9); }
+            else {
+              def bm = /^(?:shrink-.{4}|downsample-[^-]+)-(.*)$/.matcher(strippedBiStr);
+              if (bm.matches()) { strippedBiStr = bm.group(1); }
+            }
             if (strippedBiStr.equals(prev)) { break; }
           }
-          if (rawDsStr.contains('metrics-chargeback_serverless.') || rawDsStr.contains('logs-chargeback_serverless.')
-              || rawDsStr.contains('metrics-chargeback.') || rawDsStr.contains('logs-chargeback.')
-              || rawBiStr.contains('metrics-chargeback_serverless.') || rawBiStr.contains('logs-chargeback_serverless.')
-              || rawBiStr.contains('metrics-chargeback.') || rawBiStr.contains('logs-chargeback.')
-              || strippedDsStr.contains('metrics-chargeback_serverless.') || strippedDsStr.contains('logs-chargeback_serverless.')
-              || strippedDsStr.contains('metrics-chargeback.') || strippedDsStr.contains('logs-chargeback.')
+          if (strippedBiStr.startsWith('.ds-')) { strippedBiStr = strippedBiStr.substring(4); }
+          if (strippedDsStr.startsWith('metrics-chargeback_serverless.') || strippedDsStr.startsWith('logs-chargeback_serverless.')
+              || strippedDsStr.startsWith('metrics-chargeback.') || strippedDsStr.startsWith('logs-chargeback.')
+              || strippedBiStr.startsWith('metrics-chargeback_serverless.') || strippedBiStr.startsWith('logs-chargeback_serverless.')
+              || strippedBiStr.startsWith('metrics-chargeback.') || strippedBiStr.startsWith('logs-chargeback.')
               || strippedDsStr.startsWith('chargeback_lookup.') || strippedBiStr.startsWith('chargeback_lookup.')
               || (strippedDsStr.startsWith('serverless_') && (strippedDsStr.endsWith('_lookup') || strippedDsStr.contains('_lookup-') || strippedDsStr.startsWith('serverless_billing_credits_lines')))
               || (strippedBiStr.startsWith('serverless_') && (strippedBiStr.endsWith('_lookup') || strippedBiStr.contains('_lookup-') || strippedBiStr.startsWith('serverless_billing_credits_lines')))
               || strippedDsStr.startsWith('monitoring-indices') || strippedBiStr.startsWith('monitoring-indices')
-              || rawDsStr.startsWith('.ds-ilm-history') || strippedBiStr.startsWith('.ds-ilm-history')
               || strippedDsStr.startsWith('ilm-history') || strippedBiStr.startsWith('ilm-history')) {
             ctx._drop_internal = true;
             return;

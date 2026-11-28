@@ -1,0 +1,17 @@
+# Declared so `elastic-package test pipeline` allows `lookup_billing` and `lookup_credits`
+# (which write to `serverless_*_lookup` indices via named pipelines, never to
+# `logs-chargeback_serverless.lookup-*`) to emit `data_stream.dataset` / `event.dataset`
+# values (`ess_billing.billing` and `ess_billing.credits`) required by stock ESS Billing
+# dashboards when opt-in compatibility aliases are configured.
+# `if: "false"` ensures Fleet's default lookup ingest pipeline never reroutes documents
+# into `logs-ess_billing.*-default`.
+- source_dataset: chargeback_serverless.lookup
+  rules:
+    - target_dataset: ess_billing.billing
+      if: "false"
+      namespace:
+        - default
+    - target_dataset: ess_billing.credits
+      if: "false"
+      namespace:
+        - default

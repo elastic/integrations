@@ -191,49 +191,54 @@ source:
       type: boolean
       script:
         source: |
+          String normIdx(String raw) {
+            String s = raw != null ? raw.trim() : '';
+            for (int i = 0; i < 6; i++) {
+              String prev = s;
+              if (s.startsWith('partial-')) { s = s.substring(8); }
+              else if (s.startsWith('restored-')) { s = s.substring(9); }
+              else {
+                def sm = /^(?:shrink-.{4}|downsample-[^-]+)-(.*)$/.matcher(s);
+                if (sm.matches()) { s = sm.group(1); }
+              }
+              if (s.equals(prev)) { break; }
+            }
+            if (s.startsWith('.ds-')) { s = s.substring(4); }
+            return s;
+          }
+          boolean isExcluded(String raw) {
+            String s = normIdx(raw);
+            if (s == '') { return false; }
+            return s.startsWith('metrics-chargeback_serverless.')
+              || s.startsWith('logs-chargeback_serverless.')
+              || s.startsWith('metrics-chargeback.')
+              || s.startsWith('logs-chargeback.')
+              || (s.startsWith('serverless_') && (s.endsWith('_lookup') || s.contains('_lookup-')))
+              || s.startsWith('serverless_billing_credits_lines')
+              || s.startsWith('chargeback_lookup.')
+              || s.startsWith('monitoring-indices')
+              || s.startsWith('ilm-history');
+          }
           if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') {
             String v = '';
             if (doc.containsKey('datastream') && !doc['datastream'].empty) { v = doc['datastream'].value.toString().trim(); }
             else if (params._source?.datastream != null) { v = params._source.datastream.toString().trim(); }
-            if (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
-                || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
-                || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
-                || v.startsWith('serverless_billing_credits_lines')
-                || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')) {
-              emit(true);
-            } else {
-              emit(false);
-            }
+            emit(isExcluded(v));
             return;
           }
           try {
             if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
                 && doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage') {
               for (String f : ['datastream.keyword', 'datastream', 'backing_index.keyword', 'backing_index']) {
-                String v = '';
-                if (doc.containsKey(f) && !doc[f].empty) { v = doc[f].value.toString().trim(); }
-                if (v != '' && (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
-                    || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
-                    || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
-                    || v.startsWith('serverless_billing_credits_lines')
-                    || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')
-                    || v.startsWith('.ds-ilm-history') || v.startsWith('ilm-history'))) {
+                if (doc.containsKey(f) && !doc[f].empty && isExcluded(doc[f].value.toString())) {
                   emit(true);
                   return;
                 }
               }
               for (String sf : ['datastream', 'backing_index']) {
-                if (params._source != null && params._source.get(sf) != null) {
-                  String v = params._source.get(sf).toString().trim();
-                  if (v.contains('metrics-chargeback_serverless.') || v.contains('logs-chargeback_serverless.')
-                      || v.contains('metrics-chargeback.') || v.contains('logs-chargeback.')
-                      || (v.startsWith('serverless_') && (v.endsWith('_lookup') || v.contains('_lookup-')))
-                      || v.startsWith('serverless_billing_credits_lines')
-                      || v.startsWith('chargeback_lookup.') || v.startsWith('monitoring-indices')
-                      || v.startsWith('.ds-ilm-history') || v.startsWith('ilm-history')) {
-                    emit(true);
-                    return;
-                  }
+                if (params._source != null && params._source.get(sf) != null && isExcluded(params._source.get(sf).toString())) {
+                  emit(true);
+                  return;
                 }
               }
               emit(false);
@@ -253,38 +258,8 @@ source:
             name = params._source.elasticsearch.index.name.toString().trim();
           }
           if (name != '') {
-            String stripped = name;
-            for (int i = 0; i < 4; i++) {
-              String prev = stripped;
-              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
-              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
-              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
-              if (sm.matches()) { stripped = sm.group(1); }
-              if (stripped.equals(prev)) { break; }
-            }
-            if ((name.startsWith('.') && !name.startsWith('.ds-'))
-                || (stripped.startsWith('.') && !stripped.startsWith('.ds-'))
-                || name.startsWith('.ds-.')
-                || stripped.startsWith('.ds-.')
-                || name.startsWith('.ds-ilm-history')
-                || stripped.startsWith('.ds-ilm-history')
-                || (name.startsWith('serverless_') && (name.endsWith('_lookup') || name.contains('_lookup-')))
-                || (stripped.startsWith('serverless_') && (stripped.endsWith('_lookup') || stripped.contains('_lookup-')))
-                || name.startsWith('serverless_billing_credits_lines')
-                || stripped.startsWith('serverless_billing_credits_lines')
-                || name.startsWith('monitoring-indices')
-                || stripped.startsWith('monitoring-indices')
-                || name.contains('metrics-chargeback_serverless.')
-                || stripped.contains('metrics-chargeback_serverless.')
-                || name.contains('logs-chargeback_serverless.')
-                || stripped.contains('logs-chargeback_serverless.')
-                || name.contains('metrics-chargeback.')
-                || stripped.contains('metrics-chargeback.')
-                || name.contains('logs-chargeback.')
-                || stripped.contains('logs-chargeback.')
-                || name.startsWith('chargeback_lookup.')
-                || stripped.startsWith('chargeback_lookup.')
-                || stripped.startsWith('ilm-history')) {
+            String norm = normIdx(name);
+            if (norm.startsWith('.') || isExcluded(name)) {
               emit(true);
               return;
             }

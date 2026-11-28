@@ -692,11 +692,7 @@ inputs:
             (is_live_day ?
             rows.filter(row,
             (!row.index.startsWith(".") || row.index.startsWith(".ds-")) &&
-            !row.index.contains("metrics-chargeback_serverless.") &&
-            !row.index.contains("logs-chargeback_serverless.") &&
-            !row.index.contains("metrics-chargeback.") &&
-            !row.index.contains("logs-chargeback.") &&
-            !row.index.matches("^(?:partial-|restored-|shrink-.{4}-)*(?:\\.ds-ilm-history|ilm-history|monitoring-indices|chargeback_lookup\\.|serverless_billing_credits_lines|serverless_.*_lookup(?:-[0-9]+)?$)")
+            !row.index.matches("^(?:partial-|restored-|shrink-.{4}-|downsample-[^-]+-)*(?:\\.ds-)?(?:(?:metrics|logs)-chargeback(?:_serverless)?\\.|ilm-history|monitoring-indices|chargeback_lookup\\.|serverless_billing_credits_lines|serverless_.*_lookup(?:-[0-9]+)?$)")
             ).map(row,
             string(row.index).as(raw_idx,
             (raw_idx.startsWith("partial-") ? raw_idx.substring(8, size(raw_idx)) : raw_idx).as(s1,
