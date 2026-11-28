@@ -101,6 +101,8 @@ Use either SQS notifications or direct bucket polling for a given input, not bot
 | akamai.siem.request.headers | HTTP Request headers | flattened |
 | akamai.siem.response.headers | HTTP response headers | flattened |
 | akamai.siem.rule_actions | Actions taken for this request. | keyword |
+| akamai.siem.rule_ids | IDs of the rules that triggered for this request. A non-nested copy of akamai.siem.rules.rules. | keyword |
+| akamai.siem.rule_messages | Messages of the rules that triggered for this request. A non-nested copy of akamai.siem.rules.ruleMessages. | keyword |
 | akamai.siem.rule_tags | The set of categories for the triggered rule. | keyword |
 | akamai.siem.rules | Rules triggered by this request | nested |
 | akamai.siem.rules.ruleActions | Actions of rules that triggered for this request. | keyword |
