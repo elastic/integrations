@@ -1,3 +1,6 @@
+- name: doc_type
+  type: keyword
+  description: Event type (billing_line_item, config_snapshot, credit_line_item).
 - name: composite_key
   type: keyword
   description: Date and project ID composite key (YYYY-MM-DD_project_id).
@@ -9,7 +12,7 @@
   description: Serverless project name.
 - name: project_type
   type: keyword
-  description: Serverless project type (elasticsearch, observability, security).
+  description: Serverless project type (elasticsearch, observability, security, vectordb, search).
 - name: sku
   type: keyword
   description: Elastic Cloud billing SKU.
@@ -21,7 +24,7 @@
   description: Specific cost component (ingest-vcu, search-vcu, retained, ml-vcu, inference, and others).
 - name: allocation_driver
   type: keyword
-  description: Workload allocation driver (indexing, query, storage, none).
+  description: Workload allocation driver (indexing, query, storage, ai, synthetics, none).
 - name: is_allocatable
   type: boolean
   description: True if charge is allocatable to project data streams.
@@ -34,6 +37,15 @@
 - name: quantity_value
   type: double
   description: Raw billing quantity.
+- name: conf_sync_enabled
+  type: boolean
+  description: Whether Fleet configuration sync is enabled on the emitting policy.
+- name: conf_owner_id
+  type: keyword
+  description: Optional multi-policy configuration owner identifier.
+- name: conf_effective_from
+  type: keyword
+  description: Optional UTC day-boundary effective start date for configuration rate periods.
 - name: conf_chargeable_unit_rate
   type: double
   description: Configured currency conversion multiplier.
@@ -43,6 +55,54 @@
 - name: conf_currency_symbol
   type: keyword
   description: Configured currency display symbol (for example $, €, R, £).
+- name: credit_line_id
+  type: keyword
+  description: Identifier for an Elastic Cloud credit commitment line item.
+- name: ess.billing.organization_id
+  type: keyword
+  description: Elastic Cloud organization ID on credit commitment events.
+- name: ess.billing.start
+  type: date
+  description: Start timestamp of a credit commitment contract window.
+- name: ess.billing.end
+  type: date
+  description: End timestamp of a credit commitment contract window.
+- name: ess.billing.ecu_quantity
+  type: double
+  description: Total contracted ECU quantity on a credit commitment.
+- name: ess.billing.ecu_balance
+  type: double
+  description: Remaining ECU balance on a credit commitment.
+- name: ess.billing.active
+  type: boolean
+  description: Whether a credit commitment line item is currently active.
+- name: ess.billing.type
+  type: keyword
+  description: Billing line item or credit commitment type (for example capacity, data_out, data_in, ingest, storage, support, usage).
+- name: ess.billing.kind
+  type: keyword
+  description: Resource kind for ESS Billing compatibility (elasticsearch, observability, security, vectordb, search).
+- name: billing_type
+  type: keyword
+  description: Raw billing line item type from Elastic Cloud Billing API.
+- name: billing_kind
+  type: keyword
+  description: Raw billing line item resource kind from Elastic Cloud Billing API.
+- name: ess.billing.unit
+  type: keyword
+  description: Unit of the resource being billed (for example, hour, GB) for ESS Billing compatibility.
+- name: billing_unit
+  type: keyword
+  description: Unit of the resource being billed from Elastic Cloud Billing API.
+- name: cloud.account.id
+  type: keyword
+  description: Elastic Cloud organization account ID.
+- name: cloud.region
+  type: keyword
+  description: Cloud region where the Serverless project is deployed.
+- name: conf_policy_id
+  type: keyword
+  description: Stable cursor-scoped policy identifier emitted on configuration, credit commitment, and billing snapshots to isolate multi-policy agents.
 - name: event.ingested
   type: date
   description: Ingest pipeline execution timestamp.

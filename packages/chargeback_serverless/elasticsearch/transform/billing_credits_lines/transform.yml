@@ -1,0 +1,328 @@
+description: Stage-1 transform that deduplicates keyed native credit line items without a per-bucket cap and sums unkeyed legacy credit polls with full line multiplicity.
+source:
+  index:
+    - metrics-chargeback_serverless.billing-*
+    - metrics-ess_billing.credits-*
+    - -metrics-ess_billing.credits-chargeback*
+    - -serverless_*_lookup*
+    - -serverless_billing_credits_lines*
+  query:
+    bool:
+      filter:
+        - exists:
+            field: ess.billing.ecu_quantity
+      should:
+        - term:
+            doc_type: credit_line_item
+        - term:
+            data_stream.dataset: ess_billing.credits
+        - term:
+            event.dataset: ess_billing.credits
+      minimum_should_match: 1
+  runtime_mappings:
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_ecu_quantity_whole:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
+            emit(((Number)doc['ess.billing.ecu_quantity'].value).longValue());
+          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
+            emit(((Number)params._source.ess.billing.ecu_quantity).longValue());
+          }
+    cb_credit_ts:
+      type: long
+      script:
+        source: |
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          emit(ts);
+    cb_ing_ts:
+      type: long
+      script:
+        source: |
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          long ingTs = ts;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              ingTs = doc['event.created'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          emit(ingTs);
+    cb_qty:
+      type: double
+      script:
+        source: |
+          double qty = 0.0;
+          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
+            qty = ((Number)doc['ess.billing.ecu_quantity'].value).doubleValue();
+          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
+            qty = ((Number)params._source.ess.billing.ecu_quantity).doubleValue();
+          }
+          emit(qty);
+    cb_bal:
+      type: double
+      script:
+        source: |
+          double bal = 0.0;
+          if (doc.containsKey('ess.billing.ecu_balance') && !doc['ess.billing.ecu_balance'].empty) {
+            bal = ((Number)doc['ess.billing.ecu_balance'].value).doubleValue();
+          } else if (params._source?.ess?.billing?.ecu_balance instanceof Number) {
+            bal = ((Number)params._source.ess.billing.ecu_balance).doubleValue();
+          }
+          emit(bal);
+    cb_is_active:
+      type: boolean
+      script:
+        source: |
+          boolean act = false;
+          if (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty) {
+            act = doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
+          } else if (params._source?.ess?.billing?.active != null) {
+            act = params._source.ess.billing.active.toString().equalsIgnoreCase('true');
+          }
+          emit(act);
+    cb_credit_entry_key:
+      type: keyword
+      script:
+        source: |
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('doc_type') && !doc['doc_type'].empty) {
+              isNat = doc['doc_type'].value.toString() == 'credit_line_item';
+            } else if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
+            } else if (params._source?.doc_type != null) {
+              isNat = params._source.doc_type.toString() == 'credit_line_item';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
+            }
+          } catch (Exception e) {}
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          String agentId = '';
+          try {
+            if (doc.containsKey('agent.id') && !doc['agent.id'].empty) {
+              agentId = doc['agent.id'].value.toString();
+            } else if (params._source?.agent?.id != null) {
+              agentId = params._source.agent.id.toString();
+            }
+          } catch (Exception e) {}
+          String dsNs = 'default';
+          try {
+            if (doc.containsKey('data_stream.namespace') && !doc['data_stream.namespace'].empty) {
+              dsNs = doc['data_stream.namespace'].value.toString();
+            } else if (params._source?.data_stream?.namespace != null) {
+              dsNs = params._source.data_stream.namespace.toString();
+            }
+          } catch (Exception e) {}
+          String policyId = '';
+          if (isNat) {
+            try {
+              if (doc.containsKey('conf_policy_id') && !doc['conf_policy_id'].empty) {
+                policyId = doc['conf_policy_id'].value.toString();
+              } else if (params._source?.conf_policy_id != null) {
+                policyId = params._source.conf_policy_id.toString();
+              }
+            } catch (Exception e) {}
+          }
+          String lineId = '';
+          for (String lf : ['credit_line_id', 'credit_line_id.keyword', 'ess.billing.id', 'ess.billing.id.keyword']) {
+            try {
+              if (doc.containsKey(lf) && !doc[lf].empty) {
+                lineId = doc[lf].value.toString().trim();
+                if (lineId != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (lineId == '' && params._source != null) {
+            if (params._source.get('credit_line_id') != null) {
+              lineId = params._source.get('credit_line_id').toString().trim();
+            } else if (params._source.get('ess') instanceof Map && ((Map)params._source.get('ess')).get('billing') instanceof Map && ((Map)((Map)params._source.get('ess')).get('billing')).get('id') != null) {
+              lineId = ((Map)((Map)params._source.get('ess')).get('billing')).get('id').toString().trim();
+            }
+          }
+          String sep = Character.toString((char)31);
+          String pollOwner = (agentId + '|' + dsNs + '|' + policyId).replace(sep, '');
+          if (lineId != '') {
+            emit((isNat ? 'nat_line' : 'leg_line') + sep + pollOwner + sep + lineId.replace(sep, ''));
+          } else {
+            emit((isNat ? 'nat_poll' : 'leg_poll') + sep + pollOwner + sep + Long.toString(ts));
+          }
+    cb_line_state_rec:
+      type: keyword
+      script:
+        source: |
+          String lineId = '';
+          for (String lf : ['credit_line_id', 'credit_line_id.keyword', 'ess.billing.id', 'ess.billing.id.keyword']) {
+            try {
+              if (doc.containsKey(lf) && !doc[lf].empty) {
+                lineId = doc[lf].value.toString().trim();
+                if (lineId != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (lineId == '' && params._source != null) {
+            if (params._source.get('credit_line_id') != null) {
+              lineId = params._source.get('credit_line_id').toString().trim();
+            } else if (params._source.get('ess') instanceof Map && ((Map)params._source.get('ess')).get('billing') instanceof Map && ((Map)((Map)params._source.get('ess')).get('billing')).get('id') != null) {
+              lineId = ((Map)((Map)params._source.get('ess')).get('billing')).get('id').toString().trim();
+            }
+          }
+          if (lineId == '') { return; }
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          long ingTs = ts;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              ingTs = doc['event.created'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          double qty = 0.0;
+          if (doc.containsKey('ess.billing.ecu_quantity') && !doc['ess.billing.ecu_quantity'].empty) {
+            qty = ((Number)doc['ess.billing.ecu_quantity'].value).doubleValue();
+          } else if (params._source?.ess?.billing?.ecu_quantity instanceof Number) {
+            qty = ((Number)params._source.ess.billing.ecu_quantity).doubleValue();
+          }
+          double bal = 0.0;
+          if (doc.containsKey('ess.billing.ecu_balance') && !doc['ess.billing.ecu_balance'].empty) {
+            bal = ((Number)doc['ess.billing.ecu_balance'].value).doubleValue();
+          } else if (params._source?.ess?.billing?.ecu_balance instanceof Number) {
+            bal = ((Number)params._source.ess.billing.ecu_balance).doubleValue();
+          }
+          boolean act = false;
+          if (doc.containsKey('ess.billing.active') && !doc['ess.billing.active'].empty) {
+            act = doc['ess.billing.active'].value.toString().equalsIgnoreCase('true');
+          } else if (params._source?.ess?.billing?.active != null) {
+            act = params._source.ess.billing.active.toString().equalsIgnoreCase('true');
+          }
+          String sep = Character.toString((char)31);
+          emit(Long.toString(ts) + sep + Long.toString(ingTs) + sep + Double.toString(qty) + sep + Double.toString(bal) + sep + (act ? '1' : '0'));
+dest:
+  index: serverless_billing_credits_lines-1
+  aliases:
+    - alias: serverless_billing_credits_lines
+      move_on_creation: true
+  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_credits_lines" }}'
+frequency: 15m
+sync:
+  time:
+    field: cb_sync_ts
+    delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    snapshot_day:
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    organization_id:
+      terms:
+        field: ess.billing.organization_id
+    credit_start:
+      terms:
+        field: ess.billing.start
+        missing_bucket: true
+    credit_end:
+      terms:
+        field: ess.billing.end
+        missing_bucket: true
+    credit_type:
+      terms:
+        field: ess.billing.type
+        missing_bucket: true
+    ecu_quantity:
+      terms:
+        field: cb_ecu_quantity_whole
+    credit_entry_key:
+      terms:
+        field: cb_credit_entry_key
+  aggregations:
+    max_poll_ts:
+      max:
+        field: cb_credit_ts
+    max_ing_ts:
+      max:
+        field: cb_ing_ts
+    sum_act_qty:
+      filter:
+        term:
+          cb_is_active: true
+      aggs:
+        val:
+          sum:
+            field: cb_qty
+    sum_act_bal:
+      filter:
+        term:
+          cb_is_active: true
+      aggs:
+        val:
+          sum:
+            field: cb_bal
+    cnt_act:
+      filter:
+        term:
+          cb_is_active: true
+      aggs:
+        val:
+          value_count:
+            field: cb_credit_ts
+    sum_all_qty:
+      sum:
+        field: cb_qty
+    sum_all_bal:
+      sum:
+        field: cb_bal
+    cnt_all:
+      value_count:
+        field: cb_credit_ts
+    line_states:
+      terms:
+        field: cb_line_state_rec
+        size: 50
+        order:
+          max_ing: desc
+      aggs:
+        max_ing:
+          max:
+            field: cb_ing_ts
+settings:
+  deduce_mappings: false
+  unattended: true
+  max_page_search_size: 500
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.2.0
+  order: 1

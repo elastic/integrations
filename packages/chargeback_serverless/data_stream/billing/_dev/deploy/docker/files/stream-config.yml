@@ -1,4 +1,28 @@
 rules:
+  - path: /api/v1/billing/organization/1111/line_items
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "ApiKey test-cloud-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+            [
+              {
+                "active": true,
+                "type": "prepaid",
+                "ecu_balance": 34200.5,
+                "ecu_quantity": 50000.25,
+                "start": "2026-01-01T00:00:00Z",
+                "end": "2026-12-31T23:59:59Z"
+              }
+            ]
+          `}}
+
   - path: /api/v2/billing/organizations/1111/costs/instances
     methods: ['GET']
     request_headers:

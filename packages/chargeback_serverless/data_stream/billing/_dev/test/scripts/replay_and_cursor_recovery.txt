@@ -25,7 +25,7 @@ add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
 # Across four 5s polls on the same policy (preserving cursor.recent_day_keys):
-# - Poll 1: HTTP 400 on /costs/instances -> 1 error document (error.code == "400"), cursor held.
+# - Poll 1: 1 config_snapshot doc + HTTP 400 on /costs/instances -> 1 error document (error.code == "400"), cursor held.
 # - Poll 2: HTTP 403 on /api/v1/serverless/projects/observability -> 1 error document (error.id == "project_discovery_failed"), cursor held.
 # - Poll 3 (initial backfill): 3 documents:
 #     * proj-1 (es.search-vcu = 80.0)
@@ -36,8 +36,11 @@ add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_
 #     * deleted_or_unassociated_elasticsearch (es.search-vcu = 0.0)
 #     * deleted_or_unassociated_observability (oblt.ingest-vcu = 0.0)
 # - Poll 5+: gated by replay_completed_to == latest_ready_to_str (0 additional documents).
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 8 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 9 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
+
+exec jq -r '[.hits.hits[]._source | select(.doc_type == "config_snapshot")] | length' got_docs.json
+stdout '^1$'
 
 exec jq -r '[.hits.hits[]._source.error.id // empty] | map(select(. == "project_discovery_failed")) | length' got_docs.json
 stdout '^1$'

@@ -1,0 +1,334 @@
+---
+description: Post-process Chargeback Serverless configuration from Fleet configuration snapshot events while preserving manual or historical rows when Fleet sync is inactive.
+processors:
+  - script:
+      description: Handle manual configuration rows and parse Fleet configuration snapshot owners and emitters
+      lang: painless
+      tag: process_chargeback_conf_parse
+      source: |
+        // Pass manual operator documents (without transform 'snapshots' output) straight through
+        // so operators can update rates directly via POST serverless_chargeback_conf_lookup/_update/config.
+        if (!ctx.containsKey('snapshots')) {
+          if (ctx.config_join_key == null || ctx.config_join_key.toString().trim() == '') {
+            ctx.config_join_key = 'chargeback_config';
+          }
+          if (ctx.conf_chargeable_unit_rate_unit != null) {
+            String uTrim = ctx.conf_chargeable_unit_rate_unit.toString().trim();
+            if (uTrim == '') { ctx.remove('conf_chargeable_unit_rate_unit'); }
+            else { ctx.conf_chargeable_unit_rate_unit = uTrim.toUpperCase(Locale.ROOT); }
+          }
+          if (ctx.conf_currency_symbol != null) {
+            String sTrim = ctx.conf_currency_symbol.toString().trim();
+            if (sTrim == '') { ctx.remove('conf_currency_symbol'); }
+            else { ctx.conf_currency_symbol = sTrim; }
+          }
+          ctx._cb_manual = true;
+          return;
+        }
+        ctx._from_transform = true;
+        if (ctx.snapshots instanceof Map) {
+          Map snaps = (Map)ctx.snapshots;
+          if (snaps.latest instanceof Map) {
+            ctx._cb_snap_root = (Map)snaps.latest;
+          } else if (snaps.containsKey('owners') || snaps.containsKey('emitters') || snaps.containsKey('doc_cnt')) {
+            String sep = Character.toString((char)31);
+            Map mergedEmitters = [:];
+            if (snaps.emitters instanceof Map) {
+              for (def ee : ((Map)snaps.emitters).entrySet()) {
+                String kStr = ee.getKey().toString();
+                int sIdx = kStr.indexOf(sep);
+                if (sIdx < 0) { continue; }
+                String eid = kStr.substring(0, sIdx);
+                String eok = kStr.substring(sIdx + 1);
+                long ets = (ee.getValue() instanceof Map && ((Map)ee.getValue()).get('max_ts') instanceof Number)
+                  ? Math.round(((Number)((Map)ee.getValue()).get('max_ts')).doubleValue())
+                  : -1L;
+                Map dstEm = (Map)mergedEmitters.get(eid);
+                if (dstEm == null) {
+                  dstEm = [:];
+                  mergedEmitters.put(eid, dstEm);
+                }
+                long curEts = dstEm.get(eok) instanceof Number ? ((Number)dstEm.get(eok)).longValue() : -1L;
+                if (ets > curEts) {
+                  dstEm.put(eok, ets);
+                }
+              }
+            }
+            Map mergedOwners = [:];
+            if (snaps.owners instanceof Map) {
+              for (def oe : ((Map)snaps.owners).entrySet()) {
+                String ok = oe.getKey().toString();
+                if (!(oe.getValue() instanceof Map)) { continue; }
+                Map oBucket = (Map)oe.getValue();
+                boolean isExp = ok.startsWith('explicit:');
+                long bestTs = -1L;
+                boolean bestSync = false;
+                Map bestOwnerSnap = [:];
+                if (oBucket.snaps instanceof Map) {
+                  for (def se : ((Map)oBucket.snaps).entrySet()) {
+                    String recKey = se.getKey().toString();
+                    List parts = new ArrayList();
+                    int pStart = 0;
+                    while (true) {
+                      int pIdx = recKey.indexOf(sep, pStart);
+                      if (pIdx < 0) {
+                        parts.add(recKey.substring(pStart));
+                        break;
+                      }
+                      parts.add(recKey.substring(pStart, pIdx));
+                      pStart = pIdx + 1;
+                    }
+                    long sTs = 0L;
+                    try { sTs = parts.size() > 0 ? Long.parseLong(parts.get(0).toString()) : 0L; } catch (Exception e) {}
+                    boolean sSync = parts.size() > 1 && parts.get(1).toString() == '1';
+                    if (sTs > bestTs || (sTs == bestTs && !sSync)) {
+                      bestTs = sTs;
+                      bestSync = sSync;
+                      bestOwnerSnap = [:];
+                      String rStr = parts.size() > 2 ? parts.get(2).toString().trim() : '';
+                      String uStr = parts.size() > 3 ? parts.get(3).toString().trim() : '';
+                      String yStr = parts.size() > 4 ? parts.get(4).toString().trim() : '';
+                      String eStr = parts.size() > 5 ? parts.get(5).toString().trim() : '';
+                      if (rStr != '') { bestOwnerSnap.put('conf_chargeable_unit_rate', rStr); }
+                      if (uStr != '') { bestOwnerSnap.put('conf_chargeable_unit_rate_unit', uStr); }
+                      if (yStr != '') { bestOwnerSnap.put('conf_currency_symbol', yStr); }
+                      if (eStr != '') { bestOwnerSnap.put('conf_effective_from', eStr); }
+                    }
+                  }
+                }
+                if (bestTs >= 0L) {
+                  mergedOwners.put(ok, [
+                    'explicit': isExp,
+                    'newestTs': bestTs,
+                    'newestSync': bestSync,
+                    'snap': bestOwnerSnap
+                  ]);
+                }
+              }
+            }
+            ctx._cb_emitters = mergedEmitters;
+            ctx._cb_owners = mergedOwners;
+          } else {
+            ctx._cb_snap_root = snaps;
+          }
+        }
+  - script:
+      description: Select active configuration snapshot owner with stale-emitter and conflict checks
+      if: "ctx._cb_manual != true && ctx._cb_snap_root == null && (ctx._cb_owners instanceof Map || ctx._cb_emitters instanceof Map)"
+      lang: painless
+      tag: process_chargeback_conf_select
+      source: |
+        Map mergedEmitters = ctx._cb_emitters instanceof Map ? (Map)ctx._cb_emitters : [:];
+        Map mergedOwners = ctx._cb_owners instanceof Map ? (Map)ctx._cb_owners : [:];
+        Map snapRoot = null;
+        if (mergedOwners.isEmpty()) {
+          snapRoot = ['has_snapshots': false, 'policy_sync_enabled': false, 'owner_conflict': false, 'snap': [:]];
+        } else {
+          Set currentEmitterKeys = new HashSet();
+          Map supersededAt = [:];
+          for (def ee : mergedEmitters.entrySet()) {
+            Map em = (Map)ee.getValue();
+            long maxEmTs = -1L;
+            for (def v : em.values()) {
+              long vts = v instanceof Number ? ((Number)v).longValue() : -1L;
+              if (vts > maxEmTs) { maxEmTs = vts; }
+            }
+            for (def oke : em.entrySet()) {
+              String kName = oke.getKey().toString();
+              long kts = oke.getValue() instanceof Number ? ((Number)oke.getValue()).longValue() : -1L;
+              if (kts >= 0L && kts == maxEmTs) {
+                currentEmitterKeys.add(kName);
+              } else if (kts >= 0L && kts < maxEmTs) {
+                long prevSup = supersededAt.get(kName) instanceof Number ? ((Number)supersededAt.get(kName)).longValue() : -1L;
+                if (kts > prevSup) {
+                  supersededAt.put(kName, kts);
+                }
+              }
+            }
+          }
+          Map activeOwners = [:];
+          for (def e : mergedOwners.entrySet()) {
+            String ok = e.getKey().toString();
+            Map ov = (Map)e.getValue();
+            long ovTs = ((Number)ov.get('newestTs')).longValue();
+            long supTs = supersededAt.get(ok) instanceof Number ? ((Number)supersededAt.get(ok)).longValue() : -1L;
+            if (!currentEmitterKeys.contains(ok) && supTs >= 0L && ovTs <= supTs) {
+              continue;
+            }
+            activeOwners.put(ok, ov);
+          }
+          if (activeOwners.isEmpty()) {
+            activeOwners = mergedOwners;
+          }
+          long maxActiveTs = -1L;
+          for (def ovObj : activeOwners.values()) {
+            long tsVal = ((Number)((Map)ovObj).get('newestTs')).longValue();
+            if (tsVal > maxActiveTs) { maxActiveTs = tsVal; }
+          }
+          long staleCutoffMs = 172800000L;
+          List enabledExplicit = new ArrayList();
+          List enabledImplicit = new ArrayList();
+          for (def e : activeOwners.entrySet()) {
+            String ok = e.getKey().toString();
+            Map ov = (Map)e.getValue();
+            if (!Boolean.TRUE.equals(ov.get('newestSync'))) { continue; }
+            long ovTs = ((Number)ov.get('newestTs')).longValue();
+            if (maxActiveTs > 0L && ovTs >= 0L && (maxActiveTs - ovTs) > staleCutoffMs) { continue; }
+            if (Boolean.TRUE.equals(ov.get('explicit'))) {
+              enabledExplicit.add(ok);
+            } else {
+              enabledImplicit.add(ok);
+            }
+          }
+          String selectedOwner = null;
+          boolean ownerConflict = false;
+          if (enabledExplicit.size() == 1) {
+            selectedOwner = enabledExplicit.get(0).toString();
+          } else if (enabledExplicit.size() > 1) {
+            ownerConflict = true;
+          } else if (enabledImplicit.size() == 1) {
+            selectedOwner = enabledImplicit.get(0).toString();
+          } else if (enabledImplicit.size() > 1) {
+            ownerConflict = true;
+          }
+          boolean policySyncEnabled = false;
+          Map bestSnap = [:];
+          if (!ownerConflict && selectedOwner != null) {
+            Map sel = (Map)activeOwners.get(selectedOwner);
+            policySyncEnabled = Boolean.TRUE.equals(sel.get('newestSync'));
+            if (policySyncEnabled && sel.get('snap') instanceof Map) {
+              bestSnap = new HashMap((Map)sel.get('snap'));
+            }
+          }
+          snapRoot = [
+            'has_snapshots': true,
+            'policy_sync_enabled': policySyncEnabled,
+            'owner_conflict': ownerConflict,
+            'owner_key': selectedOwner != null ? selectedOwner : '',
+            'snap': bestSnap
+          ];
+        }
+        ctx._cb_snap_root = snapRoot;
+  - script:
+      description: Gate on active Fleet sync marker and validate rate, currency, symbol, and effective start date
+      if: "ctx._cb_manual != true"
+      lang: painless
+      tag: process_chargeback_conf
+      source: |
+        ctx.remove('snapshots');
+        ctx.remove('_cb_emitters');
+        ctx.remove('_cb_owners');
+        Map snapRoot = ctx._cb_snap_root instanceof Map ? (Map)ctx._cb_snap_root : null;
+        ctx.remove('_cb_snap_root');
+        if (snapRoot == null) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        boolean hasSnaps = snapRoot.get('has_snapshots') != null && snapRoot.get('has_snapshots').toString().equalsIgnoreCase('true');
+        boolean policySyncEnabled = snapRoot.get('policy_sync_enabled') != null && snapRoot.get('policy_sync_enabled').toString().equalsIgnoreCase('true');
+        boolean ownerConflict = snapRoot.get('owner_conflict') != null && snapRoot.get('owner_conflict').toString().equalsIgnoreCase('true');
+        if (!hasSnaps || !policySyncEnabled || ownerConflict || !(snapRoot.get('snap') instanceof Map)) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        Map m = (Map)snapRoot.get('snap');
+        double rate = 1.0;
+        try {
+          if (m.conf_chargeable_unit_rate instanceof Number) {
+            rate = ((Number)m.conf_chargeable_unit_rate).doubleValue();
+          } else if (m.conf_chargeable_unit_rate != null && m.conf_chargeable_unit_rate.toString().trim() != '') {
+            rate = Double.parseDouble(m.conf_chargeable_unit_rate.toString().trim());
+          }
+        } catch (NumberFormatException e) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+        if (Double.isNaN(rate) || Double.isInfinite(rate) || rate < 0.0) {
+          ctx._skip_conf_write = true;
+          return;
+        }
+
+        long startMillis = 1262304000000L;
+        long endMillis = 2430518399999L;
+        String effFrom = m.conf_effective_from != null ? m.conf_effective_from.toString().trim() : '';
+        if (effFrom != '') {
+          try {
+            ZonedDateTime parsedEff = effFrom.contains('T') ? ZonedDateTime.parse(effFrom) : ZonedDateTime.parse(effFrom + 'T00:00:00Z');
+            String checkDate = effFrom.contains('T') ? effFrom.substring(0, effFrom.indexOf('T')) : effFrom;
+            ZonedDateTime utcEff = parsedEff.withZoneSameInstant(ZoneOffset.UTC);
+            if (!utcEff.toLocalDate().toString().equals(checkDate)) {
+              ctx._skip_conf_write = true;
+              return;
+            }
+            startMillis = utcEff.toInstant().toEpochMilli();
+          } catch (DateTimeException e) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+          if (startMillis < 0L || (startMillis % 86400000L) != 0L || startMillis >= endMillis) {
+            ctx._skip_conf_write = true;
+            return;
+          }
+        }
+
+        String u = (m.conf_chargeable_unit_rate_unit != null && m.conf_chargeable_unit_rate_unit.toString().trim() != '') ? m.conf_chargeable_unit_rate_unit.toString().trim() : 'USD';
+        String uUp = u.toUpperCase(Locale.ROOT);
+        String symFallback = (uUp == 'EUR' ? '€' : (uUp == 'GBP' ? '£' : (uUp == 'ZAR' ? 'R' : '$')));
+        ctx.conf_chargeable_unit_rate = rate;
+        ctx.conf_chargeable_unit_rate_unit = uUp;
+        ctx.conf_currency_symbol = (m.conf_currency_symbol != null && m.conf_currency_symbol.toString().trim() != '') ? m.conf_currency_symbol.toString().trim() : symFallback;
+        ctx.conf_start_date = startMillis;
+        ctx.conf_end_date = endMillis;
+  - remove:
+      field:
+        - _cb_manual
+        - _cb_emitters
+        - _cb_owners
+        - _cb_snap_root
+      ignore_missing: true
+      tag: cleanup_conf_scratch
+  - drop:
+      if: "ctx._skip_conf_write == true"
+      tag: preserve_existing_manual_config
+  - remove:
+      field: "@timestamp"
+      ignore_missing: true
+      tag: remove_conf_timestamp
+  - set:
+      field: _id
+      value: config
+      if: "ctx._from_transform == true"
+      override: true
+      tag: set_config_document_id
+  - remove:
+      field: _from_transform
+      ignore_missing: true
+      tag: remove_transform_flag
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup@custom
+      tag: lookup_custom_pipeline
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless conf lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup-conf@custom
+      tag: lookup_conf_custom_pipeline
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,166 @@
+description: Stage-2 transform aggregating stage-1 credit line and poll snapshots into daily Elastic Cloud credit commitment buckets without double-counting or truncation.
+source:
+  index:
+    - serverless_billing_credits_lines-1
+  runtime_mappings:
+    cb_nat_poll_key:
+      type: keyword
+      script:
+        source: |
+          String srcKind = 'leg';
+          if (doc.containsKey('source_kind') && !doc['source_kind'].empty) {
+            srcKind = doc['source_kind'].value.toString();
+          } else if (params._source?.source_kind != null) {
+            srcKind = params._source.source_kind.toString();
+          }
+          if (srcKind != 'nat') { return; }
+          String pollOwner = '';
+          if (doc.containsKey('poll_owner') && !doc['poll_owner'].empty) {
+            pollOwner = doc['poll_owner'].value.toString();
+          } else if (params._source?.poll_owner != null) {
+            pollOwner = params._source.poll_owner.toString();
+          }
+          long pollTs = 0L;
+          if (doc.containsKey('poll_ts') && !doc['poll_ts'].empty) {
+            pollTs = ((Number)doc['poll_ts'].value).longValue();
+          } else if (params._source?.poll_ts instanceof Number) {
+            pollTs = ((Number)params._source.poll_ts).longValue();
+          }
+          String sep = Character.toString((char)31);
+          emit(pollOwner.replace(sep, '') + sep + Long.toString(pollTs));
+    cb_leg_poll_key:
+      type: keyword
+      script:
+        source: |
+          String srcKind = 'leg';
+          if (doc.containsKey('source_kind') && !doc['source_kind'].empty) {
+            srcKind = doc['source_kind'].value.toString();
+          } else if (params._source?.source_kind != null) {
+            srcKind = params._source.source_kind.toString();
+          }
+          if (srcKind == 'nat') { return; }
+          String pollOwner = '';
+          if (doc.containsKey('poll_owner') && !doc['poll_owner'].empty) {
+            pollOwner = doc['poll_owner'].value.toString();
+          } else if (params._source?.poll_owner != null) {
+            pollOwner = params._source.poll_owner.toString();
+          }
+          long pollTs = 0L;
+          if (doc.containsKey('poll_ts') && !doc['poll_ts'].empty) {
+            pollTs = ((Number)doc['poll_ts'].value).longValue();
+          } else if (params._source?.poll_ts instanceof Number) {
+            pollTs = ((Number)params._source.poll_ts).longValue();
+          }
+          String sep = Character.toString((char)31);
+          emit(pollOwner.replace(sep, '') + sep + Long.toString(pollTs));
+dest:
+  index: serverless_billing_credits_lookup-1
+  aliases:
+    - alias: serverless_billing_credits_lookup
+      move_on_creation: true
+  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_credits" }}'
+frequency: 15m
+sync:
+  time:
+    field: event.ingested
+    delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    snapshot_day:
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    organization_id:
+      terms:
+        field: organization_id
+    credit_start:
+      terms:
+        field: credit_start
+        missing_bucket: true
+    credit_end:
+      terms:
+        field: credit_end
+        missing_bucket: true
+    credit_type:
+      terms:
+        field: credit_type
+        missing_bucket: true
+    ecu_quantity:
+      terms:
+        field: ecu_quantity
+  aggregations:
+    nat_credit_polls:
+      terms:
+        field: cb_nat_poll_key
+        size: 500
+        order:
+          max_poll_ts: desc
+      aggs:
+        max_poll_ts:
+          max:
+            field: poll_ts
+        max_ing_ts:
+          max:
+            field: ing_ts
+        act_qty:
+          sum:
+            field: active_ecu_quantity
+        act_bal:
+          sum:
+            field: active_ecu_balance
+        act_cnt:
+          sum:
+            field: active_line_count
+        all_qty:
+          sum:
+            field: total_ecu_quantity
+        all_bal:
+          sum:
+            field: total_ecu_balance
+        all_cnt:
+          sum:
+            field: total_line_count
+    leg_credit_polls:
+      terms:
+        field: cb_leg_poll_key
+        size: 500
+        order:
+          max_poll_ts: desc
+      aggs:
+        max_poll_ts:
+          max:
+            field: poll_ts
+        max_ing_ts:
+          max:
+            field: ing_ts
+        act_qty:
+          sum:
+            field: active_ecu_quantity
+        act_bal:
+          sum:
+            field: active_ecu_balance
+        act_cnt:
+          sum:
+            field: active_line_count
+        all_qty:
+          sum:
+            field: total_ecu_quantity
+        all_bal:
+          sum:
+            field: total_ecu_balance
+        all_cnt:
+          sum:
+            field: total_line_count
+settings:
+  deduce_mappings: false
+  unattended: true
+  max_page_search_size: 500
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.2.0
+  order: 2

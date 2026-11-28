@@ -1,0 +1,833 @@
+---
+description: >-
+  Chargeback Serverless: build composite_key, classify Serverless SKUs, set
+  allocation_driver (indexing | query | storage | ai | synthetics | none), and
+  populate ESS Billing compatibility fields on billing lookup rows.
+processors:
+  - script:
+      lang: painless
+      tag: set_composite_key_init_and_nat
+      source: |
+        if (ctx.project_name instanceof Map) {
+          def picked = null;
+          def buckets = ctx.project_name.buckets;
+          if (buckets instanceof List && buckets.size() > 0) {
+            for (def b : buckets) {
+              if (b.key != null && b.key != '' && b.key != ctx.project_id) {
+                picked = b.key;
+                break;
+              }
+            }
+            if (picked == null && buckets[0].key != null) {
+              picked = buckets[0].key;
+            }
+          } else {
+            for (def k : ctx.project_name.keySet()) {
+              if (k != null && k != '' && k != ctx.project_id) {
+                picked = k;
+                break;
+              }
+            }
+            if (picked == null) {
+              def keys = new ArrayList(ctx.project_name.keySet());
+              if (keys.size() > 0) {
+                picked = keys[0];
+              }
+            }
+          }
+          ctx.project_name = picked != null ? picked : ctx.project_id;
+        }
+        if (ctx.project_type instanceof Map) {
+          def buckets = ctx.project_type.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.project_type = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.project_type.keySet());
+            ctx.project_type = keys.size() > 0 ? keys[0] : 'elasticsearch';
+          }
+        }
+        ctx._cb_has_nat_snap = false;
+        if (ctx.nat_snapshots instanceof Map && !((Map)ctx.nat_snapshots).isEmpty()) {
+          String sep = Character.toString((char)31);
+          Map bestNat = null;
+          String bestNatKey = '';
+            Map natMap = (Map)ctx.nat_snapshots;
+            List natKeys = new ArrayList();
+            if (natMap.get('buckets') instanceof List) {
+              for (def bObj : (List)natMap.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  natKeys.add(((Map)bObj).get('key').toString());
+                }
+              }
+            } else {
+              for (def kObj : natMap.keySet()) {
+                if (kObj != null) { natKeys.add(kObj.toString()); }
+              }
+            }
+            for (def keyObj : natKeys) {
+              String recKey = keyObj.toString();
+              List parts = new ArrayList();
+              int pStart = 0;
+              while (true) {
+                int pIdx = recKey.indexOf(sep, pStart);
+                if (pIdx < 0) {
+                  parts.add(recKey.substring(pStart));
+                  break;
+                }
+                parts.add(recKey.substring(pStart, pIdx));
+                pStart = pIdx + 1;
+              }
+              if (parts.size() < 13) { continue; }
+              Map cand = [
+                'ing_ts': Long.parseLong(parts.get(0).toString()),
+                'total_ecu': Double.parseDouble(parts.get(1).toString()),
+                'quantity_value': Double.parseDouble(parts.get(2).toString()),
+                'project_name': parts.get(3).toString(),
+                'project_type': parts.get(4).toString(),
+                'organization_id': parts.get(5).toString(),
+                'cloud_region': parts.get(6).toString(),
+                'billing_type': parts.get(7).toString(),
+                'billing_kind': parts.get(8).toString(),
+                'billing_unit': parts.get(9).toString(),
+                'conf_chargeable_unit_rate': Double.parseDouble(parts.get(10).toString()),
+                'conf_chargeable_unit_rate_unit': parts.get(11).toString(),
+                'conf_currency_symbol': parts.get(12).toString()
+              ];
+              if (bestNat == null) {
+                bestNat = cand;
+                bestNatKey = recKey;
+              } else {
+                long cTs = ((Number)cand.get('ing_ts')).longValue();
+                long bTs = ((Number)bestNat.get('ing_ts')).longValue();
+                double cEcu = ((Number)cand.get('total_ecu')).doubleValue();
+                double bEcu = ((Number)bestNat.get('total_ecu')).doubleValue();
+                int cPos = (cEcu > 0.0 ? 1 : 0);
+                int bPos = (bEcu > 0.0 ? 1 : 0);
+                int cMeta = (cand.get('project_name') != '' ? 1 : 0);
+                int bMeta = (bestNat.get('project_name') != '' ? 1 : 0);
+                if (cTs > bTs || (cTs == bTs && (cPos > bPos || (cPos == bPos && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestNatKey) > 0)))))))) {
+                  bestNat = cand;
+                  bestNatKey = recKey;
+                }
+              }
+            }
+          if (bestNat != null) {
+            ctx._cb_has_nat_snap = true;
+            bestNat.remove('ing_ts');
+            if (((Number)bestNat.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
+              bestNat.remove('conf_chargeable_unit_rate');
+            }
+            ctx.latest_snapshot = bestNat;
+          }
+        }
+  - script:
+      lang: painless
+      tag: set_composite_key_leg_intervals
+      source: |
+        if (ctx.latest_snapshot == null && ctx.leg_intervals instanceof Map && !((Map)ctx.leg_intervals).isEmpty()) {
+          String sep = Character.toString((char)31);
+            Map legMap = (Map)ctx.leg_intervals;
+            List ivList = new ArrayList();
+            if (legMap.get('buckets') instanceof List) {
+              for (def bObj : (List)legMap.get('buckets')) {
+                if (bObj instanceof Map) { ivList.add(bObj); }
+              }
+            } else {
+              for (def vObj : legMap.values()) {
+                if (vObj instanceof Map) { ivList.add(vObj); }
+              }
+            }
+            List legWinners = new ArrayList();
+            for (def ivObj : ivList) {
+              if (!(ivObj instanceof Map) || !(((Map)ivObj).get('snaps') instanceof Map)) { continue; }
+              Map snapsMap = (Map)((Map)ivObj).get('snaps');
+              List snapKeys = new ArrayList();
+              if (snapsMap.get('buckets') instanceof List) {
+                for (def sbObj : (List)snapsMap.get('buckets')) {
+                  if (sbObj instanceof Map && ((Map)sbObj).get('key') != null) {
+                    snapKeys.add(((Map)sbObj).get('key').toString());
+                  }
+                }
+              } else {
+                for (def skObj : snapsMap.keySet()) {
+                  if (skObj != null) { snapKeys.add(skObj.toString()); }
+                }
+              }
+              Map bestRec = null;
+              String bestRecKey = '';
+              for (def keyObj : snapKeys) {
+                String recKey = keyObj.toString();
+                List parts = new ArrayList();
+                int pStart = 0;
+                while (true) {
+                  int pIdx = recKey.indexOf(sep, pStart);
+                  if (pIdx < 0) {
+                    parts.add(recKey.substring(pStart));
+                    break;
+                  }
+                  parts.add(recKey.substring(pStart, pIdx));
+                  pStart = pIdx + 1;
+                }
+                if (parts.size() < 13) { continue; }
+                Map cand = [
+                  'ing_ts': Long.parseLong(parts.get(0).toString()),
+                  'total_ecu': Double.parseDouble(parts.get(1).toString()),
+                  'quantity_value': Double.parseDouble(parts.get(2).toString()),
+                  'project_name': parts.get(3).toString(),
+                  'project_type': parts.get(4).toString(),
+                  'organization_id': parts.get(5).toString(),
+                  'cloud_region': parts.get(6).toString(),
+                  'billing_type': parts.get(7).toString(),
+                  'billing_kind': parts.get(8).toString(),
+                  'billing_unit': parts.get(9).toString(),
+                  'conf_chargeable_unit_rate': Double.parseDouble(parts.get(10).toString()),
+                  'conf_chargeable_unit_rate_unit': parts.get(11).toString(),
+                  'conf_currency_symbol': parts.get(12).toString()
+                ];
+                if (bestRec == null) {
+                  bestRec = cand;
+                  bestRecKey = recKey;
+                } else {
+                  long cTs = ((Number)cand.get('ing_ts')).longValue();
+                  long bTs = ((Number)bestRec.get('ing_ts')).longValue();
+                  int cMeta = (cand.get('project_name') != '' ? 1 : 0);
+                  int bMeta = (bestRec.get('project_name') != '' ? 1 : 0);
+                  double cEcu = ((Number)cand.get('total_ecu')).doubleValue();
+                  double bEcu = ((Number)bestRec.get('total_ecu')).doubleValue();
+                  if (cTs > bTs || (cTs == bTs && (cMeta > bMeta || (cMeta == bMeta && (cEcu > bEcu || (cEcu == bEcu && recKey.compareTo(bestRecKey) > 0)))))) {
+                    bestRec = cand;
+                    bestRecKey = recKey;
+                  }
+                }
+              }
+              if (bestRec != null) { legWinners.add(bestRec); }
+            }
+            if (!legWinners.isEmpty()) {
+              double sumEcu = 0.0;
+              double sumQty = 0.0;
+              long bestTs = -1L;
+              String pName = '';
+              String pType = '';
+              String pOrgId = '';
+              String pRegion = '';
+              String pBType = '';
+              String pBKind = '';
+              String pBUnit = '';
+              double cRate = -1.0;
+              String cUnit = '';
+              String cSym = '';
+              for (def recObj : legWinners) {
+                Map rec = (Map)recObj;
+                sumEcu += ((Number)rec.get('total_ecu')).doubleValue();
+                sumQty += ((Number)rec.get('quantity_value')).doubleValue();
+                long rTs = ((Number)rec.get('ing_ts')).longValue();
+                boolean isNewer = rTs >= bestTs;
+                if (isNewer) { bestTs = rTs; }
+                if (rec.get('project_name') != '' && (pName == '' || isNewer)) { pName = rec.get('project_name').toString(); }
+                if (rec.get('project_type') != '' && (pType == '' || isNewer)) { pType = rec.get('project_type').toString(); }
+                if (rec.get('organization_id') != '' && (pOrgId == '' || isNewer)) { pOrgId = rec.get('organization_id').toString(); }
+                if (rec.get('cloud_region') != '' && (pRegion == '' || isNewer)) { pRegion = rec.get('cloud_region').toString(); }
+                if (rec.get('billing_type') != '' && (pBType == '' || isNewer)) { pBType = rec.get( 'billing_type').toString(); }
+                if (rec.get('billing_kind') != '' && (pBKind == '' || isNewer)) { pBKind = rec.get('billing_kind').toString(); }
+                if (rec.get('billing_unit') != '' && (pBUnit == '' || isNewer)) { pBUnit = rec.get('billing_unit').toString(); }
+                double rr = ((Number)rec.get('conf_chargeable_unit_rate')).doubleValue();
+                if (rr >= 0.0 && (cRate < 0.0 || isNewer)) { cRate = rr; }
+                if (rec.get('conf_chargeable_unit_rate_unit') != '' && (cUnit == '' || isNewer)) { cUnit = rec.get('conf_chargeable_unit_rate_unit').toString(); }
+                if (rec.get('conf_currency_symbol') != '' && (cSym == '' || isNewer)) { cSym = rec.get('conf_currency_symbol').toString(); }
+              }
+              Map legOut = [
+                'project_name': pName,
+                'project_type': pType,
+                'total_ecu': sumEcu,
+                'quantity_value': sumQty,
+                'organization_id': pOrgId,
+                'cloud_region': pRegion,
+                'billing_type': pBType,
+                'billing_kind': pBKind,
+                'billing_unit': pBUnit
+              ];
+              if (cRate >= 0.0) { legOut.put('conf_chargeable_unit_rate', cRate); }
+              if (cUnit != '') { legOut.put('conf_chargeable_unit_rate_unit', cUnit); }
+              if (cSym != '') { legOut.put('conf_currency_symbol', cSym); }
+              ctx.latest_snapshot = legOut;
+            }
+        }
+  - script:
+      lang: painless
+      tag: set_composite_key_v1_and_cleanup
+      source: |
+        if (ctx.latest_snapshot == null && ctx.v1_carryover instanceof Map && !((Map)ctx.v1_carryover).isEmpty()) {
+          String sep = Character.toString((char)31);
+            Map vc = (Map)ctx.v1_carryover;
+            List vcKeys = new ArrayList();
+            if (vc.get('buckets') instanceof List) {
+              for (def bObj : (List)vc.get('buckets')) {
+                if (bObj instanceof Map && ((Map)bObj).get('key') != null) {
+                  vcKeys.add(((Map)bObj).get('key').toString());
+                }
+              }
+            } else {
+              for (def kObj : vc.keySet()) {
+                if (kObj != null) { vcKeys.add(kObj.toString()); }
+              }
+            }
+            Map bestV1 = null;
+            String bestV1Key = '';
+            for (def rkObj : vcKeys) {
+              String recKey = rkObj.toString();
+              List parts = new ArrayList();
+              int pStart = 0;
+              while (true) {
+                int pIdx = recKey.indexOf(sep, pStart);
+                if (pIdx < 0) {
+                  parts.add(recKey.substring(pStart));
+                  break;
+                }
+                parts.add(recKey.substring(pStart, pIdx));
+                pStart = pIdx + 1;
+              }
+              if (parts.size() < 13) { continue; }
+              Map cand = [
+                'ing_ts': Long.parseLong(parts.get(0).toString()),
+                'total_ecu': Double.parseDouble(parts.get(1).toString()),
+                'quantity_value': Double.parseDouble(parts.get(2).toString()),
+                'project_name': parts.get(3).toString(),
+                'project_type': parts.get(4).toString(),
+                'organization_id': parts.get(5).toString(),
+                'cloud_region': parts.get(6).toString(),
+                'billing_type': parts.get(7).toString(),
+                'billing_kind': parts.get(8).toString(),
+                'billing_unit': parts.get(9).toString(),
+                'conf_chargeable_unit_rate': Double.parseDouble(parts.get(10).toString()),
+                'conf_chargeable_unit_rate_unit': parts.get(11).toString(),
+                'conf_currency_symbol': parts.get(12).toString()
+              ];
+              if (bestV1 == null) {
+                bestV1 = cand;
+                bestV1Key = recKey;
+              } else {
+                long cTs = ((Number)cand.get('ing_ts')).longValue();
+                long bTs = ((Number)bestV1.get('ing_ts')).longValue();
+                if (cTs > bTs || (cTs == bTs && recKey.compareTo(bestV1Key) > 0)) {
+                  bestV1 = cand;
+                  bestV1Key = recKey;
+                }
+              }
+            }
+            if (bestV1 != null) {
+              bestV1.remove('ing_ts');
+              if (((Number)bestV1.get('conf_chargeable_unit_rate')).doubleValue() < 0.0) {
+                bestV1.remove('conf_chargeable_unit_rate');
+              }
+              ctx.latest_snapshot = bestV1;
+            }
+        }
+        ctx.remove('nat_snapshots');
+        ctx.remove('leg_intervals');
+        ctx.remove('v1_carryover');
+  - script:
+      lang: painless
+      tag: set_composite_key_extract_and_norm
+      source: |
+        String orgId = '';
+        String cRegion = '';
+        String bType = '';
+        String bKind = '';
+        String bUnit = '';
+        boolean hasNatSnap = (ctx._cb_has_nat_snap == true);
+        if (ctx.latest_snapshot instanceof Map) {
+          def snap = ctx.latest_snapshot;
+          if (snap.top instanceof List && snap.top.size() > 0 && snap.top[0] instanceof Map && snap.top[0].metrics instanceof Map) {
+            snap = snap.top[0].metrics;
+          }
+          if (snap.project_name != null && snap.project_name.toString() != '') {
+            ctx.project_name = snap.project_name.toString();
+          }
+          if (snap.project_type != null && snap.project_type.toString() != '') {
+            ctx.project_type = snap.project_type.toString();
+          }
+          if (snap.organization_id != null && snap.organization_id.toString() != '') {
+            orgId = snap.organization_id.toString();
+          }
+          if (snap.cloud_region != null && snap.cloud_region.toString() != '') {
+            cRegion = snap.cloud_region.toString();
+          }
+          if (snap.billing_type != null && snap.billing_type.toString() != '') {
+            bType = snap.billing_type.toString();
+          }
+          if (snap.billing_kind != null && snap.billing_kind.toString() != '') {
+            bKind = snap.billing_kind.toString();
+          }
+          if (snap.billing_unit != null && snap.billing_unit.toString() != '') {
+            bUnit = snap.billing_unit.toString();
+          }
+          if (snap.total_ecu instanceof Number) {
+            ctx.total_ecu = ((Number)snap.total_ecu).doubleValue();
+          } else if (snap.total_ecu != null && snap.total_ecu.toString() != '') {
+            ctx.total_ecu = Double.parseDouble(snap.total_ecu.toString());
+          }
+          if (snap.quantity_value instanceof Number) {
+            ctx.quantity_value = ((Number)snap.quantity_value).doubleValue();
+          } else if (snap.quantity_value != null && snap.quantity_value.toString() != '') {
+            ctx.quantity_value = Double.parseDouble(snap.quantity_value.toString());
+          }
+          if (snap.conf_chargeable_unit_rate instanceof Number) {
+            ctx.conf_chargeable_unit_rate = ((Number)snap.conf_chargeable_unit_rate).doubleValue();
+          } else if (snap.conf_chargeable_unit_rate != null && snap.conf_chargeable_unit_rate.toString() != '') {
+            ctx.conf_chargeable_unit_rate = Double.parseDouble(snap.conf_chargeable_unit_rate.toString());
+          }
+          if (snap.conf_chargeable_unit_rate_unit != null && snap.conf_chargeable_unit_rate_unit.toString() != '') {
+            ctx.conf_chargeable_unit_rate_unit = snap.conf_chargeable_unit_rate_unit.toString();
+          }
+          if (snap.conf_currency_symbol != null && snap.conf_currency_symbol.toString() != '') {
+            ctx.conf_currency_symbol = snap.conf_currency_symbol.toString();
+          }
+          ctx.remove('latest_snapshot');
+        }
+        if (ctx.conf_chargeable_unit_rate_unit instanceof Map) {
+          def buckets = ctx.conf_chargeable_unit_rate_unit.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_chargeable_unit_rate_unit = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_chargeable_unit_rate_unit.keySet());
+            ctx.conf_chargeable_unit_rate_unit = keys.size() > 0 ? keys[0] : 'USD';
+          }
+        }
+        if (ctx.conf_currency_symbol instanceof Map) {
+          def buckets = ctx.conf_currency_symbol.buckets;
+          if (buckets instanceof List && buckets.size() > 0 && buckets[0].key != null) {
+            ctx.conf_currency_symbol = buckets[0].key;
+          } else {
+            def keys = new ArrayList(ctx.conf_currency_symbol.keySet());
+            ctx.conf_currency_symbol = keys.size() > 0 ? keys[0] : '$';
+          }
+        }
+        if (ctx.conf_chargeable_unit_rate == null) {
+          ctx.conf_chargeable_unit_rate = 1.0;
+        }
+        String uTrim = ctx.conf_chargeable_unit_rate_unit != null ? ctx.conf_chargeable_unit_rate_unit.toString().trim() : '';
+        ctx.conf_chargeable_unit_rate_unit = uTrim != '' ? uTrim.toUpperCase(Locale.ROOT) : 'USD';
+        String sTrim = ctx.conf_currency_symbol != null ? ctx.conf_currency_symbol.toString().trim() : '';
+        if (sTrim == '') {
+          String uUp = ctx.conf_chargeable_unit_rate_unit.toString().toUpperCase(Locale.ROOT);
+          ctx.conf_currency_symbol = (uUp == 'EUR' ? '€' : (uUp == 'GBP' ? '£' : (uUp == 'ZAR' ? 'R' : '$')));
+        } else {
+          ctx.conf_currency_symbol = sTrim;
+        }
+        if (ctx.project_name == null || ctx.project_name == '') {
+          ctx.project_name = ctx.project_id;
+        }
+        if (ctx.project_type == null || ctx.project_type == '') {
+          ctx.project_type = 'elasticsearch';
+        } else {
+          String ptNorm = ctx.project_type.toString().trim().toLowerCase(Locale.ROOT);
+          if (ptNorm == 'oblt') { ptNorm = 'observability'; }
+          else if (ptNorm == 'sec') { ptNorm = 'security'; }
+          else if (ptNorm == 'vector') { ptNorm = 'vectordb'; }
+          else if (ptNorm == 'es') { ptNorm = 'elasticsearch'; }
+          else if (ptNorm == 'enterprise_search') { ptNorm = 'search'; }
+          ctx.project_type = ptNorm;
+        }
+        if (ctx.has_native_billing == null) {
+          ctx.has_native_billing = hasNatSnap;
+        }
+        if (ctx.total_ecu instanceof Number) {
+          ctx.total_chargeable_units = ((Number)ctx.total_ecu).doubleValue();
+        }
+        if (ctx['@timestamp'] != null && ctx.project_id != null) {
+          def ts = ctx['@timestamp'];
+          def date = (ts instanceof Number)
+            ? Instant.ofEpochMilli(((Number) ts).longValue()).atZone(ZoneOffset.UTC).toLocalDate().toString()
+            : ZonedDateTime.parse(ts.toString()).toLocalDate().toString();
+          ctx.composite_key = date + '_' + ctx.project_id;
+        }
+
+        ctx._cb_org_id = orgId;
+        ctx._cb_region = cRegion;
+        ctx._cb_b_type = bType;
+        ctx._cb_b_kind = bKind;
+        ctx._cb_b_unit = bUnit;
+        ctx.remove('_cb_has_nat_snap');
+  - script:
+      lang: painless
+      tag: set_composite_key_ess_billing
+      source: |
+        String orgId = ctx._cb_org_id != null ? ctx._cb_org_id.toString() : '';
+        String cRegion = ctx._cb_region != null ? ctx._cb_region.toString() : '';
+        String bType = ctx._cb_b_type != null ? ctx._cb_b_type.toString() : '';
+        String bKind = ctx._cb_b_kind != null ? ctx._cb_b_kind.toString() : '';
+        String bUnit = ctx._cb_b_unit != null ? ctx._cb_b_unit.toString() : '';
+        ctx.doc_type = 'billing_line_item';
+        ctx.data_stream = ['type': 'metrics', 'dataset': 'ess_billing.billing', 'namespace': 'default'];
+        if (ctx.event == null) { ctx.event = [:]; }
+        ctx.event.dataset = 'ess_billing.billing';
+
+        String s = ctx.sku != null ? ctx.sku.toString() : '';
+        String sLower = s.toLowerCase(Locale.ROOT);
+        String resolvedOrg = orgId != '' ? orgId : 'unknown';
+        if (ctx.ess == null) { ctx.ess = [:]; }
+        if (ctx.ess.billing == null) { ctx.ess.billing = [:]; }
+        ctx.ess.billing.organization_id = resolvedOrg;
+        ctx.ess.billing.deployment_id = ctx.project_id;
+        ctx.ess.billing.deployment_name = ctx.project_name;
+        ctx.ess.billing.deployment_type = ctx.project_type;
+        ctx.ess.billing.sku = ctx.sku;
+        ctx.ess.billing.total_ecu = ctx.total_ecu instanceof Number ? ((Number)ctx.total_ecu).doubleValue() : 0.0;
+        ctx.ess.billing.quantity = ['value': ctx.quantity_value instanceof Number ? ((Number)ctx.quantity_value).doubleValue() : 0.0];
+        if (bKind != '') {
+          ctx.ess.billing.kind = bKind;
+        } else if (sLower.contains('.es.') || sLower.contains('.es-') || sLower.startsWith('elasticsearch.') || sLower.startsWith('serverless.elasticsearch.') || sLower.startsWith('es.')) {
+          ctx.ess.billing.kind = 'elasticsearch';
+        } else if (sLower.startsWith('observability.') || sLower.startsWith('serverless.observability.') || sLower.contains('.observability.') || sLower.startsWith('oblt.')) {
+          ctx.ess.billing.kind = 'observability';
+        } else if (sLower.startsWith('security.') || sLower.startsWith('serverless.security.') || sLower.contains('.security.') || sLower.startsWith('sec.')) {
+          ctx.ess.billing.kind = 'security';
+        } else if (sLower.startsWith('vectordb.') || sLower.startsWith('serverless.vectordb.') || sLower.contains('.vectordb.')) {
+          ctx.ess.billing.kind = 'vectordb';
+        } else if (sLower.startsWith('search.') || sLower.startsWith('serverless.search.')) {
+          ctx.ess.billing.kind = 'search';
+        } else if (sLower == 'none' && ctx.project_type != null && ctx.project_type != '') {
+          ctx.ess.billing.kind = ctx.project_type.toString();
+        }
+        if (bUnit != '') {
+          ctx.billing_unit = bUnit;
+          ctx.ess.billing.unit = bUnit;
+        } else {
+          ctx.remove('billing_unit');
+        }
+        ctx.remove('billing_type');
+        ctx.remove('billing_kind');
+        String tLower = bType.toLowerCase(Locale.ROOT);
+        if (tLower == '' || tLower == 'vcu' || tLower == 'search ai lake' || tLower == 'synthetics' || tLower == 'data transfer') {
+          if (sLower.contains('data-out') || sLower.contains('data-transfer-out') || sLower.contains('egress')) {
+            bType = 'data_out';
+          } else if (sLower.contains('data-in') || sLower.contains('data-transfer-in') || sLower.contains('ingress')) {
+            bType = 'data_in';
+          } else if (sLower.contains('snapshot') || sLower.contains('retained') || sLower.contains('storage')) {
+            bType = 'storage';
+          } else if (sLower.contains('support')) {
+            bType = 'support';
+          } else if (sLower.contains('vcu') || sLower.contains('complete')) {
+            bType = 'capacity';
+          } else if ((sLower.contains('_ingest') || sLower.contains('.ingest') || sLower.contains('-ingest')) && !sLower.contains('vcu')) {
+            bType = 'ingest';
+          } else {
+            bType = 'usage';
+          }
+        }
+        ctx.ess.billing.type = bType;
+
+        ctx.cloud = [
+          'account': ['id': resolvedOrg],
+          'instance': ['id': ctx.project_id, 'name': ctx.project_name],
+          'provider': 'serverless'
+        ];
+        if (cRegion != '') {
+          ctx.cloud.region = cRegion;
+        }
+        ctx.remove('_cb_org_id');
+        ctx.remove('_cb_region');
+        ctx.remove('_cb_b_type');
+        ctx.remove('_cb_b_kind');
+        ctx.remove('_cb_b_unit');
+  - script:
+      lang: painless
+      tag: set_composite_key
+      source: |
+        String s = ctx.sku != null ? ctx.sku.toString() : '';
+        Map regionGeo = [
+          'gcp-us-central1': ['location': ['lon': -95.8608, 'lat': 41.2619], 'name': 'gcp-us-central1'],
+          'gcp-us-east4': ['location': ['lon': -77.4874, 'lat': 39.0438], 'name': 'gcp-us-east4'],
+          'gcp-us-west1': ['location': ['lon': -121.1787, 'lat': 45.5946], 'name': 'gcp-us-west1'],
+          'gcp-us-west2': ['location': ['lon': -118.2437, 'lat': 34.0522], 'name': 'gcp-us-west2'],
+          'gcp-us-east1': ['location': ['lon': -80.0131, 'lat': 33.1960], 'name': 'gcp-us-east1'],
+          'gcp-northamerica-northeast1': ['location': ['lon': -73.6148, 'lat': 45.5059], 'name': 'gcp-northamerica-northeast1'],
+          'gcp-southamerica-east1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'gcp-southamerica-east1'],
+          'gcp-europe-west1': ['location': ['lon': 3.8189, 'lat': 50.4501], 'name': 'gcp-europe-west1'],
+          'gcp-europe-west2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'gcp-europe-west2'],
+          'gcp-europe-west3': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'gcp-europe-west3'],
+          'gcp-europe-west4': ['location': ['lon': 6.8315, 'lat': 53.4386], 'name': 'gcp-europe-west4'],
+          'gcp-europe-north1': ['location': ['lon': 24.9458, 'lat': 60.1921], 'name': 'gcp-europe-north1'],
+          'gcp-asia-east1': ['location': ['lon': 121.5654, 'lat': 25.0330], 'name': 'gcp-asia-east1'],
+          'gcp-asia-northeast1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'gcp-asia-northeast1'],
+          'gcp-asia-south1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'gcp-asia-south1'],
+          'gcp-asia-southeast1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'gcp-asia-southeast1'],
+          'gcp-australia-southeast1': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'gcp-australia-southeast1'],
+          'gcp-asia-northeast3': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'gcp-asia-northeast3'],
+          'gcp-asia-southeast2': ['location': ['lon': 106.8650, 'lat': -6.2088], 'name': 'gcp-asia-southeast2'],
+          'gcp-europe-west9': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'gcp-europe-west9'],
+          'gcp-me-west1': ['location': ['lon': 34.8516, 'lat': 31.0461], 'name': 'gcp-me-west1'],
+          'aws-us-east-2': ['location': ['lon': -82.9988, 'lat': 39.9612], 'name': 'aws-us-east-2'],
+          'aws-us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'aws-us-east-1'],
+          'us-east-1': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'us-east-1'],
+          'aws-eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'aws-eu-west-1'],
+          'eu-west-1': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'eu-west-1'],
+          'aws-us-west-1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'aws-us-west-1'],
+          'us-west-1': ['location': ['lon': -122.4194, 'lat': 37.7749], 'name': 'us-west-1'],
+          'aws-us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'aws-us-west-2'],
+          'us-west-2': ['location': ['lon': -122.6765, 'lat': 45.5235], 'name': 'us-west-2'],
+          'aws-ca-central-1': ['location': ['lon': -75.6972, 'lat': 45.4215], 'name': 'aws-ca-central-1'],
+          'aws-sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'aws-sa-east-1'],
+          'sa-east-1': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'sa-east-1'],
+          'aws-eu-west-2': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'aws-eu-west-2'],
+          'aws-eu-west-3': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'aws-eu-west-3'],
+          'aws-eu-central-1': ['location': ['lon': 8.6821, 'lat': 50.1109], 'name': 'aws-eu-central-1'],
+          'aws-ap-south-1': ['location': ['lon': 72.8777, 'lat': 19.0760], 'name': 'aws-ap-south-1'],
+          'aws-ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'aws-ap-northeast-1'],
+          'ap-northeast-1': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'ap-northeast-1'],
+          'aws-ap-northeast-2': ['location': ['lon': 126.9780, 'lat': 37.5665], 'name': 'aws-ap-northeast-2'],
+          'aws-ap-east-1': ['location': ['lon': 114.1095, 'lat': 22.3964], 'name': 'aws-ap-east-1'],
+          'aws-ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'aws-ap-southeast-1'],
+          'ap-southeast-1': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'ap-southeast-1'],
+          'aws-ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'aws-ap-southeast-2'],
+          'ap-southeast-2': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'ap-southeast-2'],
+          'aws-af-south-1': ['location': ['lon': 18.4241, 'lat': -33.9249], 'name': 'aws-af-south-1'],
+          'aws-me-south-1': ['location': ['lon': 50.5577, 'lat': 26.0667], 'name': 'aws-me-south-1'],
+          'aws-me-central-1': ['location': ['lon': 55.2708, 'lat': 25.2048], 'name': 'aws-me-central-1'],
+          'aws-eu-south-1': ['location': ['lon': 9.1900, 'lat': 45.4642], 'name': 'aws-eu-south-1'],
+          'aws-eu-north-1': ['location': ['lon': 18.0686, 'lat': 59.3293], 'name': 'aws-eu-north-1'],
+          'aws-eu-central-2': ['location': ['lon': 8.5417, 'lat': 47.3769], 'name': 'aws-eu-central-2'],
+          'eu-central-2': ['location': ['lon': 8.5417, 'lat': 47.3769], 'name': 'eu-central-2'],
+          'azure-eastus2': ['location': ['lon': -78.3875, 'lat': 36.6676], 'name': 'azure-eastus2'],
+          'azure-eastus': ['location': ['lon': -77.0369, 'lat': 38.9072], 'name': 'azure-eastus'],
+          'azure-centralus': ['location': ['lon': -93.6250, 'lat': 41.5868], 'name': 'azure-centralus'],
+          'azure-southcentralus': ['location': ['lon': -97.7431, 'lat': 30.2672], 'name': 'azure-southcentralus'],
+          'azure-westus2': ['location': ['lon': -119.8526, 'lat': 47.2343], 'name': 'azure-westus2'],
+          'azure-northeurope': ['location': ['lon': -6.2603, 'lat': 53.3498], 'name': 'azure-northeurope'],
+          'azure-uksouth': ['location': ['lon': -0.1276, 'lat': 51.5074], 'name': 'azure-uksouth'],
+          'azure-westeurope': ['location': ['lon': 4.9041, 'lat': 52.3676], 'name': 'azure-westeurope'],
+          'azure-francecentral': ['location': ['lon': 2.3522, 'lat': 48.8566], 'name': 'azure-francecentral'],
+          'azure-japaneast': ['location': ['lon': 139.6917, 'lat': 35.6895], 'name': 'azure-japaneast'],
+          'azure-southeastasia': ['location': ['lon': 103.8198, 'lat': 1.3521], 'name': 'azure-southeastasia'],
+          'azure-australiaeast': ['location': ['lon': 151.2093, 'lat': -33.8688], 'name': 'azure-australiaeast'],
+          'azure-canadacentral': ['location': ['lon': -79.3832, 'lat': 43.6532], 'name': 'azure-canadacentral'],
+          'azure-brazilsouth': ['location': ['lon': -46.6333, 'lat': -23.5505], 'name': 'azure-brazilsouth'],
+          'azure-southafricanorth': ['location': ['lon': 28.0473, 'lat': -26.2041], 'name': 'azure-southafricanorth'],
+          'azure-centralindia': ['location': ['lon': 73.8567, 'lat': 18.5204], 'name': 'azure-centralindia']
+        ];
+        def slsMatcher = /^[^.]+\.(.+?)(?:_((?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\d+))?$/.matcher(s);
+        if (slsMatcher.matches()) {
+          ctx.ess.billing.cloud = ['service': ['type': slsMatcher.group(1)]];
+          String r2 = slsMatcher.group(2);
+          if ((ctx.cloud.region == null || ctx.cloud.region == '') && r2 != null && (regionGeo.containsKey(r2) || /^(?:(?:aws|gcp|azure)-[a-z0-9-]+|(?:us|eu|ap|sa|ca|me|af)-[a-z]+-\d+)$/.matcher(r2).matches())) {
+            ctx.cloud.region = r2;
+          }
+        }
+        String reg = ctx.cloud.region != null ? ctx.cloud.region.toString() : '';
+        Map geoEntry = null;
+        if (reg != '') {
+          if (regionGeo.containsKey(reg)) {
+            geoEntry = regionGeo[reg];
+          } else if (reg.startsWith('aws-') && regionGeo.containsKey(reg.substring(4))) {
+            geoEntry = ['location': regionGeo[reg.substring(4)]['location'], 'name': reg];
+          } else if (!reg.startsWith('aws-') && regionGeo.containsKey('aws-' + reg)) {
+            geoEntry = ['location': regionGeo['aws-' + reg]['location'], 'name': reg];
+          }
+        }
+        if (geoEntry != null) {
+          ctx.cloud.geo = geoEntry;
+        } else {
+          ctx.cloud.geo = ['name': reg != '' ? reg : 'unknown', 'location': ['lon': 135.0, 'lat': 90.0]];
+        }
+  - set:
+      field: cost_type
+      value: 'data-transfer'
+      if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.(data-transfer|data-out).*/
+      tag: set_cost_type_data_transfer
+  - set:
+      field: cost_type
+      value: 'snapshots'
+      if: ctx.sku != null && ctx.sku =~ /^(aws|gcp|azure)\.snapshot-storage.*/
+      tag: set_cost_type_snapshots
+  - set:
+      field: cost_type
+      value: 'inference'
+      if: ctx.sku == 'global.inference-chat-input'
+      tag: set_cost_type_inference
+  - script:
+      lang: painless
+      tag: classify_serverless_sku
+      description: >-
+        Serverless-only classification. Sets cost_type, cost_category, is_allocatable,
+        and allocation_driver. Drivers: indexing (ingest VCU / Observability-Security
+        ingest GB), query (search VCU), storage (retained), ai (inference / ML VCU /
+        Agent Builder), synthetics (synthetic pings & executions), none (unallocated).
+      source: |
+        String sku = ctx.sku != null ? ctx.sku.toString().toLowerCase(Locale.ROOT) : '';
+        if (sku == '' || sku == 'none') {
+          ctx.cost_type = 'other';
+          ctx.cost_category = 'other';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        // Elastic Cloud Billing SKUs follow regional/tier patterns (<csp>.<product>-<metric>_<region>,
+        // serverless.<product>.<metric>, or global.<metric>). Any unrecognized future SKU falls through
+        // to the default 'other' / 'none' bucket at the end of this script so total invoice spend is preserved.
+        // Synthetics (singular 'synthetic-' or plural 'synthetics')
+        if (sku.contains('synthetic')) {
+          ctx.cost_type = 'synthetics';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'synthetics';
+          return;
+        }
+
+        // Agent Builder executions
+        if (sku.contains('agent-builder')) {
+          ctx.cost_type = 'agent-builder';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
+          return;
+        }
+
+        // Ingest / indexing VCU (any project type, current or future)
+        if (sku.contains('-ingest-vcu_') || sku.contains('ingest-vcu') || sku.contains('-ingest-vcu') || sku.contains('ingest.ecu') || sku.contains('ingest_ecu') || sku.contains('ingest.vcu')) {
+          ctx.cost_type = 'ingest-vcu';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'indexing';
+          return;
+        }
+
+        // Search / query VCU (any project type, current or future)
+        if (sku.contains('-search-vcu_') || sku.contains('search-vcu') || sku.contains('-search-vcu') || sku.contains('search.ecu') || sku.contains('search_ecu') || sku.contains('search.vcu')) {
+          ctx.cost_type = 'search-vcu';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'query';
+          return;
+        }
+
+        // ML / AI VCU (any project type, current or future)
+        if (sku.contains('-ml-vcu_') || sku.contains('ml-vcu') || sku.contains('-ml-vcu') || sku.contains('ml.ecu') || sku.contains('ml_ecu') || sku.contains('ml.vcu') || sku.contains('ml_inference') || sku.contains('.eis')) {
+          ctx.cost_type = 'ml-vcu';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
+          return;
+        }
+
+        // Retained storage (any project type, current or future; exclude snapshot-storage SKUs)
+        if ((sku.contains('retained') || sku.contains('storage') || sku.contains('retention')) && !sku.contains('snapshot') && ctx.cost_type != 'snapshots') {
+          ctx.cost_type = 'retained';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'storage';
+          return;
+        }
+
+        // Solution-specific ingest/data tier (Observability, Security, Search, etc.)
+        if ((sku.contains('serverless') || (!sku.contains('.es.') && !sku.contains('.apm.') && !sku.contains('.kibana.') && !sku.contains('.integrations_server.') && !sku.contains('.integrationsserver.') && !sku.contains('.enterprise_search.') && !sku.contains('.enterprisesearch.')))
+            && (sku.contains('ingest') || sku.contains('logs') || sku.contains('metrics')
+                || sku.contains('traces') || sku.contains('apm') || sku.contains('siem'))) {
+          ctx.cost_type = 'ingest';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'indexing';
+          return;
+        }
+
+        if (sku.startsWith('serverless.support-')) {
+          ctx.cost_type = 'serverless_premium_support';
+          ctx.cost_category = 'support';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        if (ctx.cost_type == 'data-transfer' || sku.contains('data-transfer')
+            || sku.contains('data-out') || sku.contains('egress')) {
+          ctx.cost_type = 'data-transfer';
+          ctx.cost_category = 'transfer';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (ctx.cost_type == 'snapshots' || sku.contains('snapshot')) {
+          ctx.cost_type = 'snapshots';
+          ctx.cost_category = 'snapshot';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (ctx.cost_type == 'inference' || sku.contains('inference') || sku.contains('llm')) {
+          ctx.cost_type = 'inference';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = 'ai';
+          return;
+        }
+        if (sku.contains('workflow')) {
+          ctx.cost_type = 'workflows';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+        if (sku.contains('cross-project') || sku.contains('cps')) {
+          ctx.cost_type = 'cross-project-search';
+          ctx.cost_category = 'platform';
+          ctx.is_allocatable = false;
+          ctx.allocation_driver = 'none';
+          return;
+        }
+
+        // Solution-prefix data_tier catch-all for Serverless SKUs
+        if (sku.startsWith('observability.') || sku.contains('.observability.')
+            || sku.startsWith('oblt.') || sku.contains('.oblt.')
+            || sku.startsWith('security.') || sku.contains('.security.')
+            || sku.startsWith('sec.') || sku.contains('.sec.')
+            || sku.startsWith('vectordb.') || sku.contains('.vectordb.')
+            || sku.startsWith('serverless.search.') || sku.startsWith('search.')
+            || sku.startsWith('serverless.elasticsearch.') || sku.startsWith('elasticsearch.')) {
+          ctx.cost_type = ctx.cost_type != null ? ctx.cost_type : 'serverless_data_tier';
+          ctx.cost_category = 'data_tier';
+          ctx.is_allocatable = true;
+          ctx.allocation_driver = sku.contains('query') ? 'query' : 'indexing';
+          return;
+        }
+
+        ctx.cost_category = 'other';
+        ctx.is_allocatable = false;
+        ctx.allocation_driver = 'none';
+  - grok:
+      field: sku
+      ignore_failure: true
+      tag: grok_fallback_cost_type
+      patterns:
+        - "%{WORD}.es.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}-vcu_%{GREEDYDATA}"
+        - "%{WORD}.%{WORD:cost_type}.%{GREEDYDATA}"
+        - "%{WORD}.%{DATA:cost_type}_%{GREEDYDATA}"
+      description: Derive a readable fallback cost_type from unknown SKUs
+      if: ctx.cost_type == null && ctx.sku != null
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      tag: set_event_ingested
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup@custom
+      tag: lookup_custom_pipeline
+  - pipeline:
+      description: '[Fleet] Pipeline for Chargeback Serverless billing lookup destination rows'
+      ignore_missing_pipeline: true
+      name: logs-chargeback_serverless.lookup-billing@custom
+      tag: lookup_billing_custom_pipeline
+on_failure:
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: "pipeline_error"
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

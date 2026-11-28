@@ -14,19 +14,19 @@ streams:
         type: password
         title: Hub Project Elasticsearch API Key
         description: >-
-          Optional Elasticsearch API key for the Hub project if harvesting local _cat/indices.
+          Optional Elasticsearch API key for the Hub project if harvesting local _cat/indices. Scope to the Hub project using <project_id>:<encoded_api_key> (or <project_name>:<encoded_api_key>) to restrict transmission exclusively to that project endpoint.
         multi: false
         required: false
-        show_user: false
+        show_user: true
         secret: true
       - name: project_api_keys
         type: password
         title: Remote Project Elasticsearch API Keys
         description: >-
-          Optional comma-separated least-privileged Elasticsearch API keys for remote projects in <project_id>:<encoded_api_key> format.
+          Optional newline- or comma-separated least-privileged Elasticsearch API keys for remote projects in <project_id>:<encoded_api_key> format.
         multi: false
         required: false
-        show_user: false
+        show_user: true
         secret: true
       - name: interval
         type: text
@@ -37,3 +37,22 @@ streams:
         required: false
         show_user: false
         default: 1h
+      - name: tags
+        type: text
+        title: Tags
+        description: List of tags to include in remotely collected usage events.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - chargeback_serverless
+          - usage
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Optional Beat processors applied before events are published.

@@ -8,16 +8,18 @@ vars:
   unit_rate: "1.0"
   billing_api_base: "http://{{{Hostname}}}:{{{Port}}}"
   cloud_api_base: "http://{{{Hostname}}}:{{{Port}}}"
+  sync_fleet_config: true
   enable_request_tracer: true
 data_stream:
   vars:
     lookbehind: 2
+    collect_ess_credits: true
     interval: "1h"
 assert:
   # Day 1 emits 8 Serverless instance line items across 3 discovered projects (excluding 1 Hosted deployment)
-  # plus 1 residual deleted/unassociated SKU from /costs/items = 9 documents (00:00-02:00 UTC).
-  # From 02:00 UTC onward, Day 2 is also ready and emits 3 zero-ECU idle-project rows from cached_projects (12 total).
-  min_count: 9
+  # plus 1 residual deleted/unassociated SKU from /costs/items + 1 config_snapshot + 1 credit_line_item = 11 documents (00:00-02:00 UTC).
+  # From 02:00 UTC onward, Day 2 is also ready and emits 3 zero-ECU idle-project rows from cached_projects (14 total).
+  min_count: 11
   fields_present:
     - composite_key
     - project_id
@@ -34,4 +36,7 @@ assert:
     - conf_chargeable_unit_rate
     - conf_chargeable_unit_rate_unit
     - conf_currency_symbol
+    - credit_line_id
+    - ess.billing.ecu_quantity
+    - ess.billing.ecu_balance
     - event.ingested

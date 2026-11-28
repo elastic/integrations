@@ -1,29 +1,37 @@
 # Chargeback Serverless
 
+_Technical preview: This integration is being developed by Elastic's Customer Engineering team. Report any issues to the Elastician who shared this integration with you._
+
 The **Chargeback Serverless** integration allocates Elastic Cloud Serverless billing costs to **projects**, **data streams**, **namespaces**, **AI models**, and **Synthetics monitors** on an Elastic Cloud Serverless FinOps hub project.
 
-Use this integration when your central FinOps hub runs on **Elastic Cloud Serverless**. For organization-wide billing and ECU credit tracking on an Elastic Cloud Hosted or self-managed monitoring cluster, use the **Elasticsearch Service (ESS) Billing** (`ess_billing`) integration.
+Use this integration when your central FinOps hub runs on **Elastic Cloud Serverless**. For organization-wide billing and deployment/tier/data-stream chargeback on an Elastic Cloud Hosted or self-managed monitoring cluster, use the **Chargeback** (`chargeback`) integration (or the **Elasticsearch Service (ESS) Billing** (`ess_billing`) integration for simple organization-level billing tracking).
 
 ## Overview
 
 - **Single unified Elastic Cloud API key (`cloud_api_key`)**: Authenticates to the Elastic Cloud Billing API (including decommissioned projects that still have billing line items in the window through `GET /api/v2/billing/organizations/{org_id}/costs/instances`), Control Plane project discovery (`/api/v1/serverless/projects`), and the Elasticsearch Data Plane (`GET /_cat/indices` to harvest index and data stream storage, indexing time, and query time) across all Serverless projects in your organization.
-- **Billing classification pipelines (`metrics-chargeback_serverless.billing-<version>` and `metrics-chargeback_serverless.billing-<version>-lookup_billing`)**: Classify Elastic Cloud Serverless Stock Keeping Units (SKUs) into `allocation_driver` (`indexing`, `query`, `storage`, `ai`, `synthetics`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
+- **Billing classification pipelines (`metrics-chargeback_serverless.billing-<version>` and `logs-chargeback_serverless.lookup-<version>-lookup_billing`)**: Classify Elastic Cloud Serverless Stock Keeping Units (SKUs) into `allocation_driver` (`indexing`, `query`, `storage`, `ai`, `synthetics`, or `none`) and `cost_category` (`data_tier`, `platform`, `transfer`, `snapshot`, `support`, or `other`).
 - **Five linked Kibana dashboards**: Reconcile organization-wide invoices, allocate workload and data stream costs, and track AI, Machine Learning (ML), Synthetics, and project harvest health using Elasticsearch Query Language (ES|QL) `LOOKUP JOIN` queries.
 - **Local currency normalization**: Converts Elastic Consumption Units (ECU) into your configured currency (`conf_chargeable_unit_rate` and `conf_chargeable_unit_rate_unit`).
-- **Four FinOps alerting rule templates**: Prebuilt ES|QL alerting rules aligned with Elastic Cloud `costs_alerting` patterns for rolling 30-day organization spend budget (with watermark percentage and projected 30-day overrun detection), per-project daily spend (with optional workload driver filter and driver breakdown), 7-day project daily spend spike detection, and data trust health checks.
-- **Automated 365-day retention**: Enforces Data Stream Lifecycle (DLM) retention (`data_retention: "365d"`) on `metrics-chargeback_serverless.billing-*` and `metrics-chargeback_serverless.usage-*`, paired with transform `retention_policy` (`time.field: "@timestamp"`, `max_age: 365d`) across all seven `serverless_*_lookup` destination indices.
+- **Agentless (default, beta) and Fleet-managed Elastic Agent modes**: Runs out of the box on Elastic Cloud Agentless collectors (`deployment_modes.agentless.is_default: true`) with zero infrastructure to manage, or on a customer-managed Fleet **Elastic Agent (`v9.2.0` or later)** when private proxies, custom SSL certificates, or local request tracing are required.
+- **Dual data input & zero-double-counting cutover**: `billing_cost` reads both native `metrics-chargeback_serverless.billing-*` and legacy `metrics-ess_billing.billing-*`, `billing_credits` reads both native `credit_line_item` snapshots and legacy `metrics-ess_billing.credits-*`, and `ds_contrib` / `proj_contrib` read both native `metrics-chargeback_serverless.usage-*` and legacy `monitoring-indices*`, automatically preferring native streams per `(day, project_id)` bucket to prevent double-counting during migration. Opt-in compatibility aliases (`metrics-ess_billing.billing-chargeback` and `metrics-ess_billing.credits-chargeback`) can point to `serverless_billing_cost_lookup` and `serverless_billing_credits_lookup` for stock ESS Billing dashboards.
+- **Dynamic configuration lookup (`serverless_chargeback_conf_lookup`)**: Continuously syncs Fleet currency unit, symbol, and ECU rate settings (`sync_fleet_config`, `config_owner_id`, `config_effective_from`) into `serverless_chargeback_conf_lookup`, or preserves manual operator updates via `POST serverless_chargeback_conf_lookup/_update/config` when Fleet sync is disabled.
+- **Credit commitment tracking (`serverless_billing_credits_lookup`)**: Optionally collects organization prepaid credit commitments (`collect_ess_credits: true`) alongside legacy `metrics-ess_billing.credits-*`.
+- **Five alerting rule templates**: Four FinOps ES|QL alerts (30-day budget, per-project daily spend, 7-day spike, and data trust health) plus one operational alert for `serverless_*_lookup` transform freshness monitoring.
+- **Automated 365-day retention**: Enforces Data Stream Lifecycle (DLM) retention (`data_retention: "365d"`) on `metrics-chargeback_serverless.billing-*` and `metrics-chargeback_serverless.usage-*`, paired with transform `retention_policy` (`time.field: "@timestamp"`, `max_age: 365d`) across all time-series `serverless_*_lookup` destination indices (`serverless_chargeback_conf_lookup` retains active configuration without expiration).
 
 ## Before you begin
 
 Prepare the following in your Elastic Cloud account before configuring the integration:
 
-1. **FinOps hub project (`Elasticsearch` or `Observability Complete` on Elastic Cloud Serverless)**: Install this integration on an **Elasticsearch** Serverless project or an **Observability Complete** Serverless project (`conditions.kibana.version: "^9.6.0"` targets the evergreen Elastic Cloud Serverless stack). **Observability Logs Essentials** projects exclude `metrics` data streams (`is not allowed due to data stream type exclusions`) and cannot host the FinOps hub, though the hub monitors and attributes costs for all **Observability Logs Essentials**, **Observability Complete**, **Elasticsearch**, and **Security** projects in your organization.
-2. **Customer-managed Fleet Elastic Agent (`v9.2.0` or later)**: Custom CEL inputs do not run on Elastic Cloud Agentless collectors (`deployment_modes.agentless.enabled: false`). Enroll a single customer-managed Fleet **Elastic Agent (`v9.2+`)** on a VM or container into your Serverless FinOps hub's Fleet Server; agents earlier than `9.2.0` are rejected at policy render time (`unsupported_agent_version`).
+1. **FinOps hub project (`Elasticsearch` or `Observability Complete` on Elastic Cloud Serverless)**: Install this integration on an **Elasticsearch** Serverless project or an **Observability Complete** Serverless project (`conditions.kibana.version: "^9.7.0"` targets the evergreen Elastic Cloud Serverless stack). **Observability Logs Essentials** projects exclude `metrics` data streams (`is not allowed due to data stream type exclusions`) and cannot host the FinOps hub, though the hub monitors and attributes costs for all **Observability Logs Essentials**, **Observability Complete**, **Elasticsearch**, and **Security** projects in your organization.
+2. **Collector deployment mode (Agentless default or Fleet-managed Elastic Agent `v9.2.0+`)**:
+   - **Agentless (default, beta)**: No Elastic Agent host is required; Elastic Cloud runs the CEL billing and usage collectors automatically. Agent-host-only settings (`proxy_url`, `ssl`, `enable_request_tracer`) are hidden in Agentless mode. Agentless execution uses Elastic Managed integration infrastructure: this functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+   - **Fleet-managed Elastic Agent (`v9.2.0` or later)**: Use this mode if you require a private HTTP proxy, custom CA certificates, or local request tracing. Enroll a single customer-managed Fleet **Elastic Agent (`v9.2+`)** on a VM or container into your Serverless FinOps hub's Fleet Server; agents earlier than `9.2.0` are rejected at policy render time (`unsupported_agent_version`).
 3. **Elastic Cloud Organization ID**: Locate your numeric organization ID in the [Elastic Cloud Console](https://cloud.elastic.co) URL or under **Organization → Settings**.
 4. **Elastic Cloud API key and project harvesting credentials**: Open the [Elastic Cloud Console API keys page](https://cloud.elastic.co/deployment-features/keys) (**Organization → API keys**), click **Create API key**, and configure:
    - **Organization role**: Select **`Billing Admin`** so the Elastic Cloud Billing API returns complete organization billing history, including deleted Serverless projects.
    - **Project telemetry harvesting (choose least-privilege scoped keys or unified Cloud resource access)**:
-     - **Least-privilege scoped Elasticsearch API keys (recommended for strict data-plane isolation)**: Supply read-only Elasticsearch API keys in **Hub Project Elasticsearch API Key** (`hub_es_api_key`) and **Remote Project Elasticsearch API Keys** (`project_api_keys` in `<project_id>:<encoded_api_key>` format) scoped to cluster privileges `monitor` (`_ml/trained_models/_stats`) and `monitor_inference` (`_inference`), and index privileges `monitor` and `view_index_metadata` across `*` and `.ds-*` (including hidden backing indices for `_cat/indices`), plus `read` on `synthetics-*`.
+     - **Least-privilege scoped Elasticsearch API keys (recommended for strict data-plane isolation)**: Supply read-only Elasticsearch API keys in **Hub Project Elasticsearch API Key** (`hub_es_api_key`, optionally scoped with `<project_id>:<encoded_api_key>`) and **Remote Project Elasticsearch API Keys** (`project_api_keys` in `<project_id>:<encoded_api_key>` format) scoped to cluster privileges `monitor` (`_ml/trained_models/_stats`) and `monitor_inference` (`_inference`), and index privileges `monitor` and `view_index_metadata` across `*` and `.ds-*` (including hidden backing indices for `_cat/indices`), plus `read` on `synthetics-*`.
      - **Unified Cloud API key**: Toggle **Enable access to Cloud resources** **ON**, select **All projects** (or selected projects), and configure access in the per-project-type **Roles / API Access** dropdowns for **`Elasticsearch`**, **`Observability`**, and **`Security`** (`Viewer` / `Analyst` where supported, or `Admin` if required by your organization's Cloud RBAC) to harvest all projects with a single key.
 
 ## Configure the integration
@@ -34,14 +42,31 @@ Configure your Organization ID, unified Elastic Cloud API key, lookbehind window
 | --- | --- | --- |
 | **Organization ID** | No | Numeric Elastic Cloud organization ID |
 | **Elastic Cloud API Key** | Yes | Unified Elastic Cloud API key with Organization role **`Billing Admin`** and **Cloud resource access** across `Elasticsearch`, `Observability`, and `Security` project types |
-| **Hub Project Elasticsearch API Key** | Yes | Optional advanced Elasticsearch API key (`hub_es_api_key`) for harvesting local `_cat/indices` metrics on the FinOps hub project |
+| **Hub Project Elasticsearch API Key** | Yes | Optional advanced Elasticsearch API key (`hub_es_api_key`, optionally scoped as `<project_id>:<encoded_api_key>`) for harvesting local `_cat/indices` metrics on the FinOps hub project |
 | **Remote Project Elasticsearch API Keys** | Yes | Optional advanced comma-separated least-privileged Elasticsearch API keys (`project_api_keys`) for remote projects in `<project_id>:<encoded_api_key>` format |
 | **Billing Lookbehind Days** | No | Historical UTC days of billing data to backfill from the Elastic Cloud Billing API on initial installation (default `60`, up to `365`). Live project usage (`_cat/indices`, `_ml/trained_models/_stats`, `synthetics-*`) is collected from installation forward; any script-based historical usage backfill projects current snapshots onto past days as an estimate |
 | **Currency Unit** | No | Three-letter currency code (for example, `USD`, `EUR`, or `GBP`) |
 | **Currency Symbol** | No | Currency symbol displayed in KPI panels (for example, `$`, `€`, or `£`) |
 | **Chargeable Unit Rate** | No | Conversion multiplier from chargeable units (ECU) to your configured currency |
+| **Sync Fleet Rate Settings to Configuration Lookup** | No | Continuously sync Fleet currency unit, symbol, and ECU rate settings into `serverless_chargeback_conf_lookup` (default `true`). Disable to preserve manual updates via `POST serverless_chargeback_conf_lookup/_update/config` |
+| **Configuration Owner ID (Multi-Policy)** | No | Optional identifier designating the single policy authorized to update `serverless_chargeback_conf_lookup` when multiple policies target the same hub |
+| **Configuration Effective Start Date (Optional)** | No | Optional UTC day-boundary start date (`YYYY-MM-DD` or `YYYY-MM-DDT00:00:00Z`) when preserving earlier rate periods in `serverless_chargeback_conf_lookup` |
+| **Collect ESS Credit Commitment Data** | No | Pull organization prepaid credit commitment line items into `metrics-chargeback_serverless.billing-*` to populate `serverless_billing_credits_lookup` (default `false`) |
 
-The integration provisions seven continuous transforms on your FinOps hub project (`serverless_billing_cost_lookup`, `serverless_billing_realized_pool_lookup`, `serverless_project_status_lookup`, `serverless_project_contribution_lookup`, `serverless_datastream_contribution_lookup`, `serverless_ai_model_contribution_lookup`, and `serverless_synthetics_monitor_contribution_lookup`). All seven destination indices configure `index.mode: lookup` so dashboard panels and alerting rules can query and join project status, realized SKU pools, and project usage totals with ES|QL `LOOKUP JOIN`.
+The integration provisions ten continuous transforms on your FinOps hub project: nine lookup transforms (`serverless_billing_cost_lookup`, `serverless_billing_credits_lookup`, `serverless_chargeback_conf_lookup`, `serverless_billing_realized_pool_lookup`, `serverless_project_status_lookup`, `serverless_project_contribution_lookup`, `serverless_datastream_contribution_lookup`, `serverless_ai_model_contribution_lookup`, and `serverless_synthetics_monitor_contribution_lookup`) plus a stage-1 credit staging transform (`serverless_billing_credits_lines`) that deduplicates keyed commitment lines without a per-bucket cap and sums unkeyed legacy credit polls before stage-2 contract aggregation in `serverless_billing_credits_lookup`. All destination indices configure `index.mode: lookup` so dashboard panels and alerting rules can query and join configuration, project status, realized SKU pools, and project usage totals with ES|QL `LOOKUP JOIN`. All ten transforms assign sequential `_meta.order` values (`0`–`9`) so Fleet installs and starts stage-1 transforms before stage-2 chained transforms (`billing_credits` reading `serverless_billing_credits_lines-1`, `realized_pool` reading `serverless_billing_cost_lookup-2`, and `proj_contrib` reading `serverless_datastream_contribution_lookup-2`). Upgrading from `0.1.0` to `0.2.0` provisions `-2` destination indices for the seven existing transforms (`serverless_billing_cost_lookup-2`, `serverless_billing_realized_pool_lookup-2`, `serverless_project_status_lookup-2`, `serverless_datastream_contribution_lookup-2`, `serverless_project_contribution_lookup-2`, `serverless_ai_model_contribution_lookup-2`, and `serverless_synthetics_monitor_contribution_lookup-2`) alongside the three `-1` indices (`serverless_chargeback_conf_lookup-1`, `serverless_billing_credits_lines-1`, and `serverless_billing_credits_lookup-1`) with updated `dynamic: false` mappings, moves the stable `serverless_*_lookup` aliases automatically via `move_on_creation: true`, and migrates both `0.1.0` billing and usage cursors (`cursor_version: 2`) to re-collect `0.2.0` metadata fields (`doc_type`, `billing_unit`, `ess.billing.*`, `optimized_for`, `total_duration_ms`). All seven `-2` transforms also read their retired `serverless_*_lookup-1*` indices on Checkpoint 1 (`cb_sync_ts = 1262304000000L`) as a lowest-precedence carryover source, so destination creation and `-1` -> `-2` alias vacation proceed immediately even when raw streams have aged out or are disabled, while raw billing and usage streams always take precedence wherever retained.
+
+### Dual data input and opt-in compatibility aliases
+
+During migrations from legacy `ess_billing` or `monitoring-indices*` pipelines, `chargeback_serverless` reads both native and legacy streams simultaneously and prefers native `chargeback_serverless.*` data per `(day, project_id)` bucket to avoid double-counting:
+
+- **`serverless_billing_cost_lookup`**: Reads `metrics-chargeback_serverless.billing-*` and `metrics-ess_billing.billing-*` (excluding `-metrics-ess_billing.billing-chargeback`, `-serverless_*_lookup*`, and `-serverless_billing_credits_lines*`), and populates `ess.billing.*` compatibility fields.
+- **`serverless_billing_credits_lookup`**: Stage-2 contract aggregation reading `serverless_billing_credits_lines-1` (which itself consumes `metrics-chargeback_serverless.billing-*` `credit_line_item` documents and legacy `metrics-ess_billing.credits-*`, excluding `-metrics-ess_billing.credits-chargeback*`).
+- **`serverless_datastream_contribution_lookup`**: Reads `metrics-chargeback_serverless.usage-*` and `monitoring-indices*` (excluding `-monitoring-indices-chargeback*`, `-serverless_*_lookup*`, and `-serverless_billing_credits_lines*`).
+- **`serverless_project_contribution_lookup`**: Aggregates daily project totals directly from `serverless_datastream_contribution_lookup-2` so project denominators always equal the sum of selected data stream numerators, including when native and legacy streams overlap within the same project.
+
+To power stock ESS Billing dashboards from Chargeback Serverless without running `ess_billing` in parallel, add opt-in read aliases pointing `metrics-ess_billing.billing-chargeback` to the concrete `serverless_billing_cost_lookup-2` index and `metrics-ess_billing.credits-chargeback` to `serverless_billing_credits_lookup-1` (if you attached any custom alias to `serverless_*_lookup-1` in `0.1.0`, move it to `*-2` after upgrading to `0.2.0`).
+
+After upgrading from `0.1.0`, the seven retired `serverless_*_lookup-1` indices stay in place as carry-over sources. Uninstalling the integration removes the current destination indices but not these retired ones, so delete them manually if you uninstall.
 
 ## Dashboards
 
@@ -121,22 +146,42 @@ The `metrics-chargeback_serverless.billing` data stream collects daily closed-da
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| allocation_driver | Workload allocation driver (indexing, query, storage, none). | keyword |
+| allocation_driver | Workload allocation driver (indexing, query, storage, ai, synthetics, none). | keyword |
+| billing_kind | Raw billing line item resource kind from Elastic Cloud Billing API. | keyword |
+| billing_type | Raw billing line item type from Elastic Cloud Billing API. | keyword |
+| billing_unit | Unit of the resource being billed from Elastic Cloud Billing API. | keyword |
+| cloud.account.id | Elastic Cloud organization account ID. | keyword |
+| cloud.region | Cloud region where the Serverless project is deployed. | keyword |
 | composite_key | Date and project ID composite key (YYYY-MM-DD_project_id). | keyword |
 | conf_chargeable_unit_rate | Configured currency conversion multiplier. | double |
 | conf_chargeable_unit_rate_unit | Configured currency unit label (for example USD, EUR, ZAR). | keyword |
 | conf_currency_symbol | Configured currency display symbol (for example $, €, R, £). | keyword |
+| conf_effective_from | Optional UTC day-boundary effective start date for configuration rate periods. | keyword |
+| conf_owner_id | Optional multi-policy configuration owner identifier. | keyword |
+| conf_policy_id | Stable cursor-scoped policy identifier emitted on configuration, credit commitment, and billing snapshots to isolate multi-policy agents. | keyword |
+| conf_sync_enabled | Whether Fleet configuration sync is enabled on the emitting policy. | boolean |
 | cost_category | High-level cost category (data_tier, platform, transfer, snapshot, support, other). | keyword |
 | cost_type | Specific cost component (ingest-vcu, search-vcu, retained, ml-vcu, inference, and others). | keyword |
+| credit_line_id | Identifier for an Elastic Cloud credit commitment line item. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| doc_type | Event type (billing_line_item, config_snapshot, credit_line_item). | keyword |
+| ess.billing.active | Whether a credit commitment line item is currently active. | boolean |
+| ess.billing.ecu_balance | Remaining ECU balance on a credit commitment. | double |
+| ess.billing.ecu_quantity | Total contracted ECU quantity on a credit commitment. | double |
+| ess.billing.end | End timestamp of a credit commitment contract window. | date |
+| ess.billing.kind | Resource kind for ESS Billing compatibility (elasticsearch, observability, security, vectordb, search). | keyword |
+| ess.billing.organization_id | Elastic Cloud organization ID on credit commitment events. | keyword |
+| ess.billing.start | Start timestamp of a credit commitment contract window. | date |
+| ess.billing.type | Billing line item or credit commitment type (for example capacity, data_out, data_in, ingest, storage, support, usage). | keyword |
+| ess.billing.unit | Unit of the resource being billed (for example, hour, GB) for ESS Billing compatibility. | keyword |
 | event.ingested | Ingest pipeline execution timestamp. | date |
 | input.type | Type of Filebeat input. | keyword |
 | is_allocatable | True if charge is allocatable to project data streams. | boolean |
 | project_id | Serverless project identifier. | keyword |
 | project_name | Serverless project name. | keyword |
-| project_type | Serverless project type (elasticsearch, observability, security). | keyword |
+| project_type | Serverless project type (elasticsearch, observability, security, vectordb, search). | keyword |
 | quantity_value | Raw billing quantity. | double |
 | sku | Elastic Cloud billing SKU. | keyword |
 | total_chargeable_units | Dual-written copy of total_ecu for ES&#124;QL compatibility. | double |
@@ -153,7 +198,7 @@ The `metrics-chargeback_serverless.usage` data stream collects daily Serverless 
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | ai_model_count | Total number of trained AI/ML models discovered in the project. | long |
-| api_key_type | API key credential type used for project harvesting (hub_key, remote_key, missing_key, cloud_billing_only). | keyword |
+| api_key_type | API key credential type used for project harvesting (hub_key, remote_key, cloud_key, missing_key, transient_error, cloud_billing_only). | keyword |
 | average_duration_ms | Average synthetic check duration in milliseconds. | double |
 | average_inference_time_ms | Average latency per inference in milliseconds. | double |
 | backing_index | Raw backing index or source identifier before data stream normalization. | keyword |
@@ -162,6 +207,7 @@ The `metrics-chargeback_serverless.usage` data stream collects daily Serverless 
 | conf_chargeable_unit_rate | Configured currency conversion multiplier. | double |
 | conf_chargeable_unit_rate_unit | Configured currency unit label. | keyword |
 | conf_currency_symbol | Configured currency display symbol. | keyword |
+| conf_policy_id | Stable policy identifier from agent metadata to isolate multi-policy usage events. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -174,13 +220,13 @@ The `metrics-chargeback_serverless.usage` data stream collects daily Serverless 
 | down_count | Number of failed down synthetic checks. | long |
 | ds_dataset | Data stream dataset name (for example http, icmp, tcp, dns, browser). | keyword |
 | ds_namespace | Data stream namespace suffix. | keyword |
-| ds_type | Data stream type prefix (logs, metrics, traces, synthetics, other). | keyword |
+| ds_type | Data stream type prefix (logs, metrics, traces, synthetics, profiling, index, system, other). | keyword |
 | es_url | Elasticsearch data plane endpoint URL. | keyword |
 | event.ingested | Ingest pipeline execution timestamp. | date |
 | index_count | Total number of indices discovered in the project. | long |
 | inference_count | Number of inferences performed. | long |
 | input.type | Type of Filebeat input. | keyword |
-| last_status | Project harvest health status (ok, empty_or_unauthorized, inactive). | keyword |
+| last_status | Project harvest health status (ok, empty_or_unauthorized, transient_error, inactive). | keyword |
 | locations_count | Number of distinct observer locations executing the monitor. | long |
 | model_id | Trained ML model identifier. | keyword |
 | monitor_id | Synthetics monitor identifier. | keyword |
@@ -190,10 +236,11 @@ The `metrics-chargeback_serverless.usage` data stream collects daily Serverless 
 | optimized_for | Serverless optimization profile (general_purpose, vector, and others). | keyword |
 | project_id | Serverless project identifier. | keyword |
 | project_name | Serverless project name. | keyword |
-| project_type | Serverless project type (elasticsearch, observability, security). | keyword |
+| project_type | Serverless project type (elasticsearch, observability, security, vectordb, search). | keyword |
 | synthetics_monitor_count | Total number of Synthetics monitors discovered or attributed in the project. | long |
-| synthetics_status | Synthetics telemetry harvest status (ok, billing_derived, unauthorized, inactive). | keyword |
-| task_type | Inference task type (ingest_inference, query_inference). | keyword |
+| synthetics_status | Synthetics telemetry harvest status (ok, billing_derived, unauthorized, transient_error, inactive). | keyword |
+| task_type | Inference task type (ingest_inference, query_inference, inference, billing_derived). | keyword |
+| total_duration_ms | Daily cumulative synthetic check duration in milliseconds. | double |
 | total_inference_time_ms | Total compute time spent on inferences in milliseconds. | long |
 | up_count | Number of successful up synthetic checks. | long |
 | updated_at | Last successful harvest timestamp. | date |
@@ -201,12 +248,13 @@ The `metrics-chargeback_serverless.usage` data stream collects daily Serverless 
 
 ## Alerting rule templates
 
-Create alerting rules from the 4 packaged ES|QL rule templates directly from **Management → Integrations → Installed integrations → Chargeback Serverless → Assets → Alerting rule templates** (or under **Stack Management → Rules → Create rule → Classic** tab). Customize thresholds and entity filters directly on **line 2** of each rule template's ES|QL query (`EVAL threshold_spend = <value>`):
+Create alerting rules from the 5 packaged rule templates directly from **Management → Integrations → Installed integrations → Chargeback Serverless → Assets → Alerting rule templates** (or under **Stack Management → Rules → Create rule → Classic** tab). Customize thresholds and entity filters directly on **line 2** of each FinOps ES|QL rule template (`EVAL threshold_spend = <value>`):
 
 - **`[Chargeback Serverless] Rolling 30-day total spend budget exceeded`**: Alerts when rolling 30-day spend reaches at least `threshold_pct` (default `80.0%`) of `threshold_budget` (default `25000.0`) or when `alert_on_projected` (`true`) with at least 3 billed days detects that `projected_30d_spend` (`ROUND(daily_avg_spend * 30.0, 2)`) exceeds `threshold_budget`.
 - **`[Chargeback Serverless] Project daily spend threshold exceeded`**: Alerts when any project matching `filter_project` (and optional `filter_driver` in `indexing`, `search`, `storage`, `ai`, or `synthetics`) has daily spend strictly greater than `threshold_spend` (default `200.0`), outputting a full driver spend breakdown.
 - **`[Chargeback Serverless] Project daily spend spike vs. 7-day baseline`**: Alerts when a project's daily spend is at least `min_daily_spend` (default `25.0`) and increases by more than `threshold_pct_increase` (default `50.0%`) over its trailing 7-day baseline average.
-- **`[Chargeback Serverless] Data trust & project harvest health issue`**: Alerts when organization billing data is missing or stale (`missing_or_stale_billing_data`), any discovered active project has failed, unauthorized, or stale (`> 26` hours) usage harvesting (`stale_or_unauthorized_harvest`), a billed project is missing a human-readable name (`missing_project_name`), or unallocated spend exceeds both `threshold_unallocated_spend` (default `100.0`) and `threshold_unallocated_pct` (default `25.0%` of organization spend, `high_unallocated_spend`).
+- **`[Chargeback Serverless] Data trust & project harvest health issue`**: Alerts when organization billing data is missing or stale (`missing_or_stale_billing_data`), any discovered active project has failed, unauthorized, or stale (`> 36` hours) usage harvesting (`stale_or_unauthorized_harvest`), a billed project is missing a human-readable name (`missing_project_name`), or unallocated spend exceeds both `threshold_unallocated_spend` (default `100.0`) and `threshold_unallocated_pct` (default `25.0%` of organization spend, `high_unallocated_spend`).
+- **`[Chargeback Serverless] Transform health & lookup freshness`**: Checks hourly via an ES|QL query on `event.ingested` whether any required core lookup index (`serverless_billing_cost_lookup`, `serverless_billing_realized_pool_lookup`, `serverless_project_contribution_lookup`, `serverless_datastream_contribution_lookup`) is missing (0 documents) or stale (`> 36` hours), and whether any optional workload or credits lookup (`serverless_project_status_lookup`, `serverless_ai_model_contribution_lookup`, `serverless_synthetics_monitor_contribution_lookup`, `serverless_billing_credits_lookup`) is missing or stale (`> 36` hours) relative to active or unprocessed matching source events (`serverless_chargeback_conf_lookup` is a non-expiring configuration singleton), grouping ongoing alert state stably by `idx_group`.
 
 ## Supported project types
 
@@ -216,17 +264,18 @@ Create alerting rules from the 4 packaged ES|QL rule templates directly from **M
 | **Elasticsearch Vector Database (`optimized_for: vector`)** | Indexing time and ingest bytes (`ingest-vcu`) | Search query time (`search-vcu`) | Primary dataset size (`retained`) |
 | **Observability** | Ingest bytes and indexing time (`ingest`) | — | Primary dataset size (`retained`) |
 | **Security** | Ingest bytes and indexing time (`ingest`) | — | Primary dataset size (`retained`) |
+| **Search** | Indexing time and ingest bytes (`ingest-vcu`) | Search query time (`search-vcu`) | Primary dataset size (`retained`) |
 
 ## Performance and scaling
 
-- **Single customer-managed Elastic Agent policy (`v9.2+`)**: Attach the Chargeback Serverless integration to a dedicated Fleet policy with a single enrolled customer-managed Elastic Agent (`v9.2.0` or later) connected to your Elastic Cloud Serverless FinOps hub. Enrolling multiple agents in the same policy causes duplicate organization-wide collection runs.
+- **Agentless (default) or single customer-managed Elastic Agent policy (`v9.2+`)**: In Agentless mode, Elastic Cloud manages collector execution automatically. When using a customer-managed Fleet Elastic Agent (`v9.2.0` or later), attach the Chargeback Serverless integration to a dedicated Fleet policy with a single enrolled agent to avoid duplicate organization-wide collection runs.
 - **Daily UTC cursor gating and bounded lookbehind**: Both the `billing` and `usage` Common Expression Language (CEL) streams poll on a 1-hour check interval and use persisted cursor state so each completed UTC day is collected once after `02:00 UTC`. On initial installation, `billing` backfills up to `lookbehind` days (default `60`, maximum `365`) in 1-day windows and replays a bounded 7-day trailing window once per day to capture delayed invoice adjustments.
 
 ## Troubleshooting
 
 - **`Installation package: chargeback_serverless is not allowed due to data stream type exclusions`**: This error occurs when installing the integration on an **Observability Logs Essentials** Serverless project, which restricts `metrics` data streams in Kibana Fleet. Install the Chargeback Serverless FinOps hub on an **Elasticsearch** Serverless project or an **Observability Complete** Serverless project instead; the hub will still discover and attribute costs for all Logs Essentials and Security projects in your organization.
 - **Projects report `empty_or_unauthorized` or `missing_key` on the Configuration dashboard**: Verify that your Elastic Cloud API key has **Enable access to Cloud resources** toggled **ON** across **`Elasticsearch`**, **`Observability`**, and **`Security`** project types, or provide a least-privilege project API key in `project_api_keys` (`<project_id>:<encoded_api_key>`) with `monitor` and `view_index_metadata` privileges on `*` and `.ds-*`.
-- **Transforms or `LOOKUP JOIN` queries report an index mode error**: Confirm that all seven `serverless_*_lookup` destination indices are created with `"index.mode": "lookup"` and that all `chargeback_serverless-*` transforms are in the `started` state under **Stack Management → Transforms**.
+- **Transforms or `LOOKUP JOIN` queries report an index mode error**: Confirm that all nine `serverless_*_lookup` destination indices are created with `"index.mode": "lookup"` and that all `logs-chargeback_serverless.*-*` transforms are in the `started` state under **Stack Management → Transforms**.
 
 ## Reference
 

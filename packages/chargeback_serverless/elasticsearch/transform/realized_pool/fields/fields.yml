@@ -7,6 +7,12 @@
 - name: project_id
   type: keyword
   description: Serverless project identifier.
+- name: project_name
+  type: keyword
+  description: Serverless project name.
+- name: project_type
+  type: keyword
+  description: Serverless project type (elasticsearch, observability, security, vectordb, search).
 - name: indexing_ecu
   type: double
   description: Daily allocatable indexing ECU pool for the project.
@@ -36,13 +42,16 @@
   description: Realized allocatable chargeable units for the project per day.
 - name: total_chargeable_units
   type: double
-  description: Total daily allocatable + AI chargeable units for the project.
+  description: Total daily allocatable (data tier), AI, and Synthetics chargeable units for the project.
 - name: total_ecu
   type: double
   description: Dual-written copy of total_chargeable_units for ES&#124;QL compatibility.
 - name: all_sku_ecu
   type: double
   description: Total daily billed ECU across all SKUs (allocatable and unallocatable) for the project.
+- name: has_native_billing
+  type: boolean
+  description: True when the realised pool bucket includes native Chargeback Serverless billing telemetry with project tag discovery.
 - name: event.ingested
   type: date
   description: Timestamp when this lookup document was written to Elasticsearch.
@@ -51,7 +60,7 @@
   description: Configured currency conversion rate per ECU.
 - name: conf_chargeable_unit_rate_unit
   type: keyword
-  description: Configured currency unit code (e.g., USD, EUR, ZAR).
+  description: Configured currency unit code (for example, USD, EUR, ZAR).
 - name: conf_currency_symbol
   type: keyword
-  description: Configured currency symbol (e.g., $, €, R).
+  description: Configured currency symbol (for example, $, €, R).

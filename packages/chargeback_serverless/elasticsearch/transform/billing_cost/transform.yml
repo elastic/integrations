@@ -1,53 +1,887 @@
-description: Aggregates daily total chargeable units (ECU) per Serverless project and SKU into a single daily figure.
+description: Aggregates daily total chargeable units (ECU) per Serverless project and SKU across native Chargeback Serverless and legacy ESS Billing sources without double-counting.
 source:
   index:
-    - metrics-chargeback_serverless.billing-*
+  - metrics-chargeback_serverless.billing-*
+  - metrics-ess_billing.billing-*
+  - serverless_billing_cost_lookup-1*
+  - -metrics-ess_billing.billing-chargeback*
+  - -serverless_billing_cost_lookup-2*
+  - -serverless_billing_realized_pool_lookup*
+  - -serverless_project_status_lookup*
+  - -serverless_datastream_contribution_lookup*
+  - -serverless_project_contribution_lookup*
+  - -serverless_ai_model_contribution_lookup*
+  - -serverless_synthetics_monitor_contribution_lookup*
+  - -serverless_chargeback_conf_lookup*
+  - -serverless_billing_credits*
+  query:
+    bool:
+      should:
+      - bool:
+          filter:
+          - term:
+              _index: serverless_billing_cost_lookup-1
+          - exists:
+              field: sku
+      - bool:
+          filter:
+          - term:
+              cb_is_serverless: true
+          should:
+          - exists:
+              field: sku
+          - exists:
+              field: ess.billing.sku
+          minimum_should_match: 1
+          must_not:
+          - terms:
+              doc_type:
+              - config_snapshot
+              - credit_line_item
+      minimum_should_match: 1
+  runtime_mappings:
+    cb_is_serverless:
+      type: boolean
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { emit(true); return; }
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
+                && doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing') {
+              emit(true);
+              return;
+            }
+            if (params._source?.data_stream?.dataset != null
+                && params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing') {
+              emit(true);
+              return;
+            }
+          } catch (Exception e) {}
+          String depType = '';
+          for (String f : ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                depType = doc[f].value.toString().trim().toLowerCase(Locale.ROOT);
+                if (depType != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (depType == '' && params._source?.ess?.billing?.deployment_type != null) {
+            depType = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
+          }
+          if (depType == 'deployment' || depType == 'onprem' || depType == 'ece' || depType == 'eck') {
+            emit(false);
+            return;
+          }
+          String skuStr = '';
+          for (String sf : ['sku', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
+            try {
+              if (doc.containsKey(sf) && !doc[sf].empty) {
+                skuStr = doc[sf].value.toString().trim().toLowerCase(Locale.ROOT);
+                if (skuStr != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (skuStr == '' && params._source?.ess?.billing?.sku != null) {
+            skuStr = params._source.ess.billing.sku.toString().trim().toLowerCase(Locale.ROOT);
+          }
+          if (skuStr == 'onprem_node') {
+            emit(false);
+            return;
+          }
+          if (!skuStr.contains('serverless') && (
+              skuStr.contains('cloud-enterprise') || skuStr.contains('cloud-platinum')
+              || skuStr.contains('cloud-standard') || skuStr.contains('cloud-gold')
+              || skuStr.contains('.es.data') || skuStr.contains('.es.ml')
+              || skuStr.contains('.es.master') || skuStr.contains('.es.coordinating')
+              || skuStr.contains('.kibana.') || skuStr.contains('.apm.')
+              || skuStr.contains('.enterprise_search.') || skuStr.contains('.enterprisesearch.')
+              || skuStr.contains('.integrations_server.') || skuStr.contains('.integrationsserver.'))) {
+            emit(false);
+            return;
+          }
+          if (depType == 'elasticsearch' || depType == 'observability' || depType == 'security'
+              || depType == 'vectordb' || depType == 'serverless' || depType == 'oblt'
+              || depType == 'sec' || depType == 'search' || depType == 'es'
+              || depType == 'vector' || depType == 'enterprise_search' || depType.contains('serverless')) {
+            emit(true);
+            return;
+          }
+          if (skuStr.contains('serverless') || skuStr.contains('-vcu') || skuStr.contains('.vcu') || skuStr.contains('.ecu')
+              || skuStr.contains('retained') || skuStr.contains('synthetic')
+              || skuStr.contains('agent-builder') || skuStr.contains('inference')
+              || skuStr.contains('llm') || skuStr.contains('workflow')
+              || skuStr.contains('cross-project') || skuStr.contains('cps') || skuStr.contains('.eis')
+              || skuStr.startsWith('observability.') || skuStr.contains('.observability.')
+              || skuStr.startsWith('oblt.') || skuStr.contains('.oblt.')
+              || skuStr.startsWith('security.') || skuStr.contains('.security.')
+              || skuStr.startsWith('sec.') || skuStr.contains('.sec.')
+              || skuStr.startsWith('vectordb.') || skuStr.contains('.vectordb.')
+              || skuStr.startsWith('search.') || skuStr.startsWith('serverless.search.')
+              || skuStr.startsWith('elasticsearch.') || skuStr.contains('.elasticsearch.') || skuStr.startsWith('es.')) {
+            emit(true);
+            return;
+          }
+          emit(false);
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
+                  return;
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_project_id:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['project_id', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.project_id != null && params._source.project_id.toString().trim() != '') {
+              emit(params._source.project_id.toString().trim());
+              return;
+            }
+            if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
+              emit(params._source.ess.billing.deployment_id.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+          String pt = '';
+          for (String ptf : ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
+            try {
+              if (doc.containsKey(ptf) && !doc[ptf].empty && doc[ptf].value.toString().trim() != '') {
+                pt = doc[ptf].value.toString().trim().toLowerCase(Locale.ROOT);
+                break;
+              }
+            } catch (Exception e) {}
+          }
+          if (pt == '') {
+            if (params._source?.project_type != null && params._source.project_type.toString().trim() != '') {
+              pt = params._source.project_type.toString().trim().toLowerCase(Locale.ROOT);
+            } else if (params._source?.ess?.billing?.deployment_type != null && params._source.ess.billing.deployment_type.toString().trim() != '') {
+              pt = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
+            }
+          }
+          if (pt == 'oblt') { pt = 'observability'; }
+          else if (pt == 'sec') { pt = 'security'; }
+          else if (pt == 'vector') { pt = 'vectordb'; }
+          else if (pt == 'es') { pt = 'elasticsearch'; }
+          else if (pt == 'enterprise_search') { pt = 'search'; }
+          if (pt == '' || pt == 'serverless') {
+            String skuFb = '';
+            for (String sf : ['sku', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
+              try {
+                if (doc.containsKey(sf) && !doc[sf].empty && doc[sf].value.toString().trim() != '') {
+                  skuFb = doc[sf].value.toString().trim().toLowerCase(Locale.ROOT);
+                  break;
+                }
+              } catch (Exception e) {}
+            }
+            if (skuFb == '') {
+              if (params._source?.sku != null) { skuFb = params._source.sku.toString().trim().toLowerCase(Locale.ROOT); }
+              else if (params._source?.ess?.billing?.sku != null) { skuFb = params._source.ess.billing.sku.toString().trim().toLowerCase(Locale.ROOT); }
+            }
+            if (skuFb.startsWith('observability.') || skuFb.startsWith('oblt.') || skuFb.startsWith('serverless.observability.') || skuFb.startsWith('serverless.oblt.') || skuFb.contains('.observability.') || skuFb.contains('.oblt.') || skuFb.contains('synthetic')) { pt = 'observability'; }
+            else if (skuFb.startsWith('security.') || skuFb.startsWith('sec.') || skuFb.startsWith('serverless.security.') || skuFb.startsWith('serverless.sec.') || skuFb.contains('.security.') || skuFb.contains('.sec.')) { pt = 'security'; }
+            else if (skuFb.startsWith('vectordb.') || skuFb.startsWith('serverless.vectordb.') || skuFb.contains('.vectordb.')) { pt = 'vectordb'; }
+            else if (skuFb.startsWith('search.') || skuFb.startsWith('serverless.search.')) { pt = 'search'; }
+            else if (skuFb.startsWith('elasticsearch.') || skuFb.startsWith('es.') || skuFb.startsWith('serverless.elasticsearch.') || skuFb.startsWith('serverless.es.') || skuFb.contains('.elasticsearch.')) { pt = 'elasticsearch'; }
+            else { pt = 'serverless'; }
+          }
+          emit('unassociated_' + pt);
+    cb_project_name:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.project_name != null && params._source.project_name.toString().trim() != '') {
+              emit(params._source.project_name.toString().trim());
+              return;
+            }
+            if (params._source?.ess?.billing?.deployment_name != null && params._source.ess.billing.deployment_name.toString().trim() != '') {
+              emit(params._source.ess.billing.deployment_name.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+    cb_project_type:
+      type: keyword
+      script:
+        source: |
+          String pt = '';
+          for (String f : ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim().toLowerCase(Locale.ROOT);
+                if (v != '') { pt = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (pt == '') {
+            try {
+              if (params._source?.project_type != null && params._source.project_type.toString().trim() != '') {
+                pt = params._source.project_type.toString().trim().toLowerCase(Locale.ROOT);
+              } else if (params._source?.ess?.billing?.deployment_type != null && params._source.ess.billing.deployment_type.toString().trim() != '') {
+                pt = params._source.ess.billing.deployment_type.toString().trim().toLowerCase(Locale.ROOT);
+              }
+            } catch (Exception e) {}
+          }
+          if (pt != '') {
+            if (pt == 'oblt') { pt = 'observability'; }
+            else if (pt == 'sec') { pt = 'security'; }
+            else if (pt == 'vector') { pt = 'vectordb'; }
+            else if (pt == 'es') { pt = 'elasticsearch'; }
+            else if (pt == 'enterprise_search') { pt = 'search'; }
+            emit(pt);
+          }
+    cb_sku:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['sku', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.sku != null && params._source.sku.toString().trim() != '') {
+              emit(params._source.sku.toString().trim());
+              return;
+            }
+            if (params._source?.ess?.billing?.sku != null && params._source.ess.billing.sku.toString().trim() != '') {
+              emit(params._source.ess.billing.sku.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+    cb_total_ecu:
+      type: double
+      script:
+        source: |
+          for (String f : ['total_ecu', 'ess.billing.total_ecu']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                emit(((Number)doc[f].value).doubleValue());
+                return;
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.total_ecu instanceof Number) {
+              emit(((Number)params._source.total_ecu).doubleValue());
+              return;
+            }
+            if (params._source?.ess?.billing?.total_ecu instanceof Number) {
+              emit(((Number)params._source.ess.billing.total_ecu).doubleValue());
+              return;
+            }
+          } catch (Exception e) {}
+          emit(0.0);
+    cb_quantity_value:
+      type: double
+      script:
+        source: |
+          for (String f : ['quantity_value', 'ess.billing.quantity.value']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                emit(((Number)doc[f].value).doubleValue());
+                return;
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.quantity_value instanceof Number) {
+              emit(((Number)params._source.quantity_value).doubleValue());
+              return;
+            }
+            if (params._source?.ess?.billing?.quantity?.value instanceof Number) {
+              emit(((Number)params._source.ess.billing.quantity.value).doubleValue());
+              return;
+            }
+          } catch (Exception e) {}
+          emit(0.0);
+    cb_sync_ms:
+      type: long
+      script:
+        source: |
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
+                  }
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          emit(syncMs);
+    cb_nat_rec:
+      type: keyword
+      script:
+        source: |
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return '';
+          }
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
+              }
+            }
+            return dflt;
+          }
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return 0L;
+          }
+          if (readStr(doc, null, ['_index'], []) == 'serverless_billing_cost_lookup-1') { return; }
+          if (readStr(doc, params._source, ['data_stream.dataset'], [['data_stream', 'dataset']]) != 'chargeback_serverless.billing') { return; }
+          long syncMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          String pName = readStr(doc, params._source, ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword'], [['project_name'], ['ess', 'billing', 'deployment_name']]);
+          String pType = readStr(doc, params._source, ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword'], [['project_type'], ['ess', 'billing', 'deployment_type']]).toLowerCase(Locale.ROOT);
+          if (pType == 'oblt') { pType = 'observability'; }
+          else if (pType == 'sec') { pType = 'security'; }
+          else if (pType == 'vector') { pType = 'vectordb'; }
+          else if (pType == 'es') { pType = 'elasticsearch'; }
+          else if (pType == 'enterprise_search') { pType = 'search'; }
+          double ecu = readDbl(doc, params._source, ['total_ecu', 'ess.billing.total_ecu'], [['total_ecu'], ['ess', 'billing', 'total_ecu']], 0.0);
+          double qty = readDbl(doc, params._source, ['quantity_value', 'ess.billing.quantity.value'], [['quantity_value'], ['ess', 'billing', 'quantity', 'value']], 0.0);
+          String orgId = readStr(doc, params._source, ['ess.billing.organization_id'], [['ess', 'billing', 'organization_id'], ['organization_id']]);
+          String cRegion = readStr(doc, params._source, ['cloud.region'], [['cloud', 'region']]);
+          String bType = readStr(doc, params._source, ['billing_type', 'ess.billing.type'], [['billing_type'], ['ess', 'billing', 'type']]);
+          String bKind = readStr(doc, params._source, ['billing_kind', 'ess.billing.kind'], [['billing_kind'], ['ess', 'billing', 'kind']]);
+          String bUnit = readStr(doc, params._source, ['billing_unit', 'ess.billing.unit'], [['billing_unit'], ['ess', 'billing', 'unit']]);
+          double cRate = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol'], [['conf_currency_symbol']]);
+          String sep = Character.toString((char)31);
+          emit(
+            Long.toString(syncMs) + sep + Double.toString(ecu) + sep + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep + pType.replace(sep, '') + sep + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep + bType.replace(sep, '') + sep + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep + Double.toString(cRate) + sep + cUnit.replace(sep, '') + sep
+            + cSym.replace(sep, '')
+          );
+    cb_leg_interval_key:
+      type: keyword
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_billing_cost_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.billing';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.billing';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          String orgId = '';
+          try {
+            if (doc.containsKey('ess.billing.organization_id') && !doc['ess.billing.organization_id'].empty) {
+              orgId = doc['ess.billing.organization_id'].value.toString();
+            } else if (params._source?.ess?.billing?.organization_id != null) {
+              orgId = params._source.ess.billing.organization_id.toString();
+            } else if (params._source?.organization_id != null) {
+              orgId = params._source.organization_id.toString();
+            }
+          } catch (Exception e) {}
+          String depId = '';
+          for (String f : ['project_id', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { depId = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (depId == '') {
+            try {
+              if (params._source?.project_id != null && params._source.project_id.toString().trim() != '') {
+                depId = params._source.project_id.toString().trim();
+              } else if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
+                depId = params._source.ess.billing.deployment_id.toString().trim();
+              }
+            } catch (Exception e) {}
+          }
+          String skuVal = '';
+          for (String f : ['sku', 'ess.billing.sku', 'ess.billing.sku.keyword']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { skuVal = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (skuVal == '') {
+            try {
+              if (params._source?.sku != null) { skuVal = params._source.sku.toString().trim(); }
+              else if (params._source?.ess?.billing?.sku != null) { skuVal = params._source.ess.billing.sku.toString().trim(); }
+            } catch (Exception e) {}
+          }
+          String fromKey = '';
+          try {
+            if (doc.containsKey('ess.billing.from') && !doc['ess.billing.from'].empty) {
+              fromKey = Long.toString(doc['ess.billing.from'].value.toInstant().toEpochMilli());
+            } else if (params._source?.ess?.billing?.from != null) {
+              String fs = params._source.ess.billing.from.toString().trim();
+              try { fromKey = Long.toString(ZonedDateTime.parse(fs).toInstant().toEpochMilli()); }
+              catch (Exception pe) { fromKey = fs; }
+            } else if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+              fromKey = 'ts:' + Long.toString(doc['@timestamp'].value.toInstant().toEpochMilli());
+            }
+          } catch (Exception e) {}
+          String toKey = '';
+          try {
+            if (doc.containsKey('ess.billing.to') && !doc['ess.billing.to'].empty) {
+              toKey = Long.toString(doc['ess.billing.to'].value.toInstant().toEpochMilli());
+            } else if (params._source?.ess?.billing?.to != null) {
+              String tsStr = params._source.ess.billing.to.toString().trim();
+              try { toKey = Long.toString(ZonedDateTime.parse(tsStr).toInstant().toEpochMilli()); }
+              catch (Exception pe) { toKey = tsStr; }
+            }
+          } catch (Exception e) {}
+          String bType = '';
+          try {
+            if (doc.containsKey('billing_type') && !doc['billing_type'].empty) { bType = doc['billing_type'].value.toString(); }
+            else if (params._source?.billing_type != null) { bType = params._source.billing_type.toString(); }
+            else if (doc.containsKey('ess.billing.type') && !doc['ess.billing.type'].empty) { bType = doc['ess.billing.type'].value.toString(); }
+            else if (params._source?.ess?.billing?.type != null) { bType = params._source.ess.billing.type.toString(); }
+          } catch (Exception e) {}
+          String bKind = '';
+          try {
+            if (doc.containsKey('billing_kind') && !doc['billing_kind'].empty) { bKind = doc['billing_kind'].value.toString(); }
+            else if (params._source?.billing_kind != null) { bKind = params._source.billing_kind.toString(); }
+            else if (doc.containsKey('ess.billing.kind') && !doc['ess.billing.kind'].empty) { bKind = doc['ess.billing.kind'].value.toString(); }
+            else if (params._source?.ess?.billing?.kind != null) { bKind = params._source.ess.billing.kind.toString(); }
+          } catch (Exception e) {}
+          String sep = Character.toString((char)31);
+          emit(
+            orgId.replace(sep, '') + sep
+            + depId.replace(sep, '') + sep
+            + fromKey.replace(sep, '') + sep
+            + toKey.replace(sep, '') + sep
+            + skuVal.replace(sep, '') + sep
+            + bType.replace(sep, '') + sep
+            + bKind.replace(sep, '')
+          );
+    cb_leg_rec:
+      type: keyword
+      script:
+        source: |
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return '';
+          }
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
+              }
+            }
+            return dflt;
+          }
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return 0L;
+          }
+          if (readStr(doc, null, ['_index'], []) == 'serverless_billing_cost_lookup-1') { return; }
+          if (readStr(doc, params._source, ['data_stream.dataset'], [['data_stream', 'dataset']]) == 'chargeback_serverless.billing') { return; }
+          long syncMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          String pName = readStr(doc, params._source, ['project_name', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword'], [['project_name'], ['ess', 'billing', 'deployment_name']]);
+          String pType = readStr(doc, params._source, ['project_type', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword'], [['project_type'], ['ess', 'billing', 'deployment_type']]).toLowerCase(Locale.ROOT);
+          if (pType == 'oblt') { pType = 'observability'; }
+          else if (pType == 'sec') { pType = 'security'; }
+          else if (pType == 'vector') { pType = 'vectordb'; }
+          else if (pType == 'es') { pType = 'elasticsearch'; }
+          else if (pType == 'enterprise_search') { pType = 'search'; }
+          double ecu = readDbl(doc, params._source, ['total_ecu', 'ess.billing.total_ecu'], [['total_ecu'], ['ess', 'billing', 'total_ecu']], 0.0);
+          double qty = readDbl(doc, params._source, ['quantity_value', 'ess.billing.quantity.value'], [['quantity_value'], ['ess', 'billing', 'quantity', 'value']], 0.0);
+          String orgId = readStr(doc, params._source, ['ess.billing.organization_id'], [['ess', 'billing', 'organization_id'], ['organization_id']]);
+          String cRegion = readStr(doc, params._source, ['cloud.region'], [['cloud', 'region']]);
+          String bType = readStr(doc, params._source, ['billing_type', 'ess.billing.type'], [['billing_type'], ['ess', 'billing', 'type']]);
+          String bKind = readStr(doc, params._source, ['billing_kind', 'ess.billing.kind'], [['billing_kind'], ['ess', 'billing', 'kind']]);
+          String bUnit = readStr(doc, params._source, ['billing_unit', 'ess.billing.unit'], [['billing_unit'], ['ess', 'billing', 'unit']]);
+          double cRate = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol'], [['conf_currency_symbol']]);
+          String sep = Character.toString((char)31);
+          emit(
+            Long.toString(syncMs) + sep + Double.toString(ecu) + sep + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep + pType.replace(sep, '') + sep + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep + bType.replace(sep, '') + sep + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep + Double.toString(cRate) + sep + cUnit.replace(sep, '') + sep
+            + cSym.replace(sep, '')
+          );
+    cb_v1_rec:
+      type: keyword
+      script:
+        source: |
+          String readStr(def doc, def src, List docFields, List srcPaths) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  String v = doc[f].value.toString().trim();
+                  if (v != '') { return v; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur != null) {
+                    String v = cur.toString().trim();
+                    if (v != '') { return v; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return '';
+          }
+          double readDbl(def doc, def src, List docFields, List srcPaths, double dflt) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  return ((Number)doc[f].value).doubleValue();
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (List path : srcPaths) {
+                try {
+                  def cur = src;
+                  for (String seg : path) {
+                    cur = (cur instanceof Map) ? ((Map)cur).get(seg) : null;
+                    if (cur == null) { break; }
+                  }
+                  if (cur instanceof Number) { return ((Number)cur).doubleValue(); }
+                } catch (Exception e) {}
+              }
+            }
+            return dflt;
+          }
+          long readTs(def doc, def src, List docFields) {
+            for (String f : docFields) {
+              try {
+                if (doc.containsKey(f) && !doc[f].empty) {
+                  long ts = doc[f].value.toInstant().toEpochMilli();
+                  if (ts > 0L) { return ts; }
+                }
+              } catch (Exception e) {}
+            }
+            if (src != null) {
+              for (String f : docFields) {
+                try {
+                  def raw = src.get(f);
+                  if (raw == null && f.contains('.')) {
+                    int dot = f.indexOf('.');
+                    def sub = src.get(f.substring(0, dot));
+                    if (sub instanceof Map) { raw = ((Map)sub).get(f.substring(dot + 1)); }
+                  }
+                  if (raw instanceof Number) {
+                    long ts = ((Number)raw).longValue();
+                    if (ts > 0L) { return ts; }
+                  } else if (raw != null && raw.toString().trim() != '') {
+                    long ts = ZonedDateTime.parse(raw.toString().trim()).toInstant().toEpochMilli();
+                    if (ts > 0L) { return ts; }
+                  }
+                } catch (Exception e) {}
+              }
+            }
+            return 0L;
+          }
+          if (readStr(doc, null, ['_index'], []) != 'serverless_billing_cost_lookup-1') { return; }
+          long syncMs = readTs(doc, params._source, ['event.ingested', 'event.created', '@timestamp']);
+          double ecu = readDbl(doc, params._source, ['total_ecu', 'total_chargeable_units', 'ess.billing.total_ecu'], [['total_ecu'], ['total_chargeable_units'], ['ess', 'billing', 'total_ecu']], 0.0);
+          double qty = readDbl(doc, params._source, ['quantity_value', 'ess.billing.quantity.value'], [['quantity_value'], ['ess', 'billing', 'quantity', 'value']], 0.0);
+          String pName = readStr(doc, params._source, ['project_name', 'project_name.keyword', 'ess.billing.deployment_name', 'ess.billing.deployment_name.keyword'], [['project_name'], ['ess', 'billing', 'deployment_name']]);
+          String pType = readStr(doc, params._source, ['project_type', 'project_type.keyword', 'ess.billing.deployment_type', 'ess.billing.deployment_type.keyword'], [['project_type'], ['ess', 'billing', 'deployment_type']]);
+          String orgId = readStr(doc, params._source, ['ess.billing.organization_id', 'cloud.account.id'], [['ess', 'billing', 'organization_id'], ['cloud', 'account', 'id']]);
+          String cRegion = readStr(doc, params._source, ['cloud.region'], [['cloud', 'region']]);
+          String bType = readStr(doc, params._source, ['billing_type', 'ess.billing.type'], [['billing_type'], ['ess', 'billing', 'type']]);
+          String bKind = readStr(doc, params._source, ['billing_kind', 'ess.billing.kind'], [['billing_kind'], ['ess', 'billing', 'kind']]);
+          String bUnit = readStr(doc, params._source, ['billing_unit', 'ess.billing.unit'], [['billing_unit'], ['ess', 'billing', 'unit']]);
+          double cRate = readDbl(doc, params._source, ['conf_chargeable_unit_rate'], [['conf_chargeable_unit_rate']], -1.0);
+          String cUnit = readStr(doc, params._source, ['conf_chargeable_unit_rate_unit'], [['conf_chargeable_unit_rate_unit']]);
+          String cSym = readStr(doc, params._source, ['conf_currency_symbol'], [['conf_currency_symbol']]);
+          String sep = Character.toString((char)31);
+          emit(
+            Long.toString(syncMs) + sep + Double.toString(ecu) + sep + Double.toString(qty) + sep
+            + pName.replace(sep, '') + sep + pType.replace(sep, '') + sep + orgId.replace(sep, '') + sep
+            + cRegion.replace(sep, '') + sep + bType.replace(sep, '') + sep + bKind.replace(sep, '') + sep
+            + bUnit.replace(sep, '') + sep + Double.toString(cRate) + sep + cUnit.replace(sep, '') + sep
+            + cSym.replace(sep, '')
+          );
 dest:
-  index: serverless_billing_cost_lookup-1
+  index: serverless_billing_cost_lookup-2
   aliases:
-    - alias: serverless_billing_cost_lookup
-      move_on_creation: true
-  pipeline: 'metrics-chargeback_serverless.billing-{{ ingestPipelineName "lookup_billing" }}'
+  - alias: serverless_billing_cost_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_billing" }}
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
-        field: project_id
+        field: cb_project_id
     sku:
       terms:
-        field: sku
+        field: cb_sku
   aggregations:
-    # Daily (project_id, sku) components and project metadata are pre-summed into a single
-    # snapshot during CEL collection; top_metrics selects the newest snapshot on replay.
-    latest_snapshot:
-      top_metrics:
-        metrics:
-          - field: project_name
-          - field: project_type
-          - field: total_ecu
-          - field: quantity_value
-          - field: conf_chargeable_unit_rate
-          - field: conf_chargeable_unit_rate_unit
-          - field: conf_currency_symbol
-        sort:
-          event.ingested: desc
+    nat_snapshots:
+      terms:
+        field: cb_nat_rec
+        size: 20
+        order:
+          ing_ms: desc
+      aggs:
+        ing_ms:
+          max:
+            field: cb_sync_ms
+    leg_intervals:
+      terms:
+        field: cb_leg_interval_key
+        size: 200
+      aggs:
+        snaps:
+          terms:
+            field: cb_leg_rec
+            size: 5
+            order:
+              ing_ms: desc
+          aggs:
+            ing_ms:
+              max:
+                field: cb_sync_ms
+    v1_carryover:
+      terms:
+        field: cb_v1_rec
+        size: 5
+        order:
+          ing_ms: desc
+      aggs:
+        ing_ms:
+          max:
+            field: cb_sync_ms
 settings:
   deduce_mappings: false
   unattended: true
+  max_page_search_size: 100
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0
+  order: 3

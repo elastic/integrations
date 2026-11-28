@@ -1,64 +1,884 @@
-description: Aggregates daily indexing time, query time, and dataset storage size per Serverless project and data stream into a single daily figure.
+description: Aggregates daily indexing time, query time, and dataset storage size per Serverless project and data stream across native Chargeback Serverless and legacy monitoring-indices sources without double-counting.
 source:
   index:
-    - metrics-chargeback_serverless.usage-*
+  - metrics-chargeback_serverless.usage-*
+  - monitoring-indices*
+  - serverless_datastream_contribution_lookup-1*
+  - -monitoring-indices-chargeback*
+  - -serverless_datastream_contribution_lookup-2*
+  - -serverless_billing_cost_lookup*
+  - -serverless_billing_realized_pool_lookup*
+  - -serverless_project_status_lookup*
+  - -serverless_project_contribution_lookup*
+  - -serverless_ai_model_contribution_lookup*
+  - -serverless_synthetics_monitor_contribution_lookup*
+  - -serverless_chargeback_conf_lookup*
+  - -serverless_billing_credits*
   query:
-    term:
-      doc_type: "datastream"
+    bool:
+      minimum_should_match: 1
+      should:
+      - bool:
+          filter:
+          - term:
+              _index: serverless_datastream_contribution_lookup-1
+          must_not:
+          - wildcard:
+              datastream: '*chargeback_serverless.*'
+          - wildcard:
+              datastream: '*chargeback.*'
+          - wildcard:
+              datastream: 'serverless_*_lookup*'
+          - wildcard:
+              datastream: 'serverless_billing_credits_lines*'
+          - wildcard:
+              datastream: 'chargeback_lookup.*'
+          - wildcard:
+              datastream: 'monitoring-indices*'
+      - bool:
+          must_not:
+          - term:
+              _index: serverless_datastream_contribution_lookup-1
+          - terms:
+              doc_type:
+              - config_snapshot
+              - ai_model
+              - project_status
+              - synthetics_monitor
+          - term:
+              cb_excluded_index: true
+  runtime_mappings:
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') {
+            emit(1262304000000L);
+            return;
+          }
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            for (String k : ['ingested', 'created']) {
+              def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+              if (rawVal == null && params._source != null) {
+                rawVal = params._source.get('event.' + k);
+              }
+              if (rawVal != null) {
+                if (rawVal instanceof Number) {
+                  emit(((Number)rawVal).longValue());
+                  return;
+                }
+                String s = rawVal.toString().trim();
+                if (s != '') {
+                  try {
+                    emit(ZonedDateTime.parse(s).toInstant().toEpochMilli());
+                    return;
+                  } catch (Exception e) {}
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_project_id:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['project_id', 'cloud.project.id', 'cloud.project.id.keyword', 'ess.billing.deployment_id', 'ess.billing.deployment_id.keyword', 'elasticsearch.cluster.name.keyword', 'elasticsearch.cluster.name']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString().trim();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          try {
+            if (params._source?.project_id != null && params._source.project_id.toString().trim() != '') {
+              emit(params._source.project_id.toString().trim());
+              return;
+            }
+            if (params._source?.cloud?.project?.id != null && params._source.cloud.project.id.toString().trim() != '') {
+              emit(params._source.cloud.project.id.toString().trim());
+              return;
+            }
+            if (params._source?.ess?.billing?.deployment_id != null && params._source.ess.billing.deployment_id.toString().trim() != '') {
+              emit(params._source.ess.billing.deployment_id.toString().trim());
+              return;
+            }
+            if (params._source?.elasticsearch?.cluster?.name != null && params._source.elasticsearch.cluster.name.toString().trim() != '') {
+              emit(params._source.elasticsearch.cluster.name.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+    cb_datastream:
+      type: keyword
+      script:
+        source: |
+          try {
+            if (doc.containsKey('datastream') && !doc['datastream'].empty) {
+              String v = doc['datastream'].value.toString().trim();
+              if (v != '') { emit(v); return; }
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source?.datastream != null && params._source.datastream.toString().trim() != '') {
+              emit(params._source.datastream.toString().trim());
+              return;
+            }
+          } catch (Exception e) {}
+          String name = '';
+          for (String f : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                name = doc[f].value.toString().trim();
+                if (name != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (name == '' && params._source?.elasticsearch?.index?.name != null) {
+            name = params._source.elasticsearch.index.name.toString().trim();
+          }
+          if (name != '') {
+            String stripped = name;
+            for (int i = 0; i < 4; i++) {
+              String prev = stripped;
+              if (stripped.startsWith('partial-')) { stripped = stripped.substring(8); }
+              if (stripped.startsWith('restored-')) { stripped = stripped.substring(9); }
+              def dsm = /^downsample-[^-]+-(.*)$/.matcher(stripped);
+              if (dsm.matches()) { stripped = dsm.group(1); }
+              def sm = /^shrink-.{4}-(.*)$/.matcher(stripped);
+              if (sm.matches()) { stripped = sm.group(1); }
+              if (stripped.equals(prev)) { break; }
+            }
+            if (stripped.startsWith('.ds-')) {
+              def dm = /^\.ds-([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d{6,})?$/.matcher(stripped);
+              if (dm.matches() && !dm.group(1).startsWith('.')) {
+                emit(dm.group(1));
+                return;
+              }
+            } else {
+              def rm = /^([^:\s]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?(?:-\d{6,})?|-\d{6,})$/.matcher(stripped);
+              if (rm.matches() && !rm.group(1).startsWith('.')) {
+                emit(rm.group(1));
+                return;
+              }
+            }
+            emit((name.startsWith('.') || stripped.startsWith('.')) ? 'system' : stripped);
+            return;
+          }
+          for (String f : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String ds = doc[f].value.toString().trim();
+                if (ds != '' && ds != 'unknown') { emit(ds); return; }
+              }
+            } catch (Exception e) {}
+          }
+          emit('unknown');
+    cb_excluded_index:
+      type: boolean
+      script:
+        source: |
+          String normIdx(String raw) {
+            String s = raw != null ? raw.trim() : '';
+            for (int i = 0; i < 6; i++) {
+              String prev = s;
+              if (s.startsWith('partial-')) { s = s.substring(8); }
+              else if (s.startsWith('restored-')) { s = s.substring(9); }
+              else {
+                def sm = /^(?:shrink-.{4}|downsample-[^-]+)-(.*)$/.matcher(s);
+                if (sm.matches()) { s = sm.group(1); }
+              }
+              if (s.equals(prev)) { break; }
+            }
+            if (s.startsWith('.ds-')) { s = s.substring(4); }
+            return s;
+          }
+          boolean isExcluded(String raw) {
+            String s = normIdx(raw);
+            if (s == '') { return false; }
+            return s.startsWith('metrics-chargeback_serverless.')
+              || s.startsWith('logs-chargeback_serverless.')
+              || s.startsWith('metrics-chargeback.')
+              || s.startsWith('logs-chargeback.')
+              || (s.startsWith('serverless_') && (s.endsWith('_lookup') || s.contains('_lookup-')))
+              || s.startsWith('serverless_billing_credits_lines')
+              || s.startsWith('chargeback_lookup.')
+              || s.startsWith('monitoring-indices')
+              || s.startsWith('ilm-history');
+          }
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') {
+            String v = '';
+            if (doc.containsKey('datastream') && !doc['datastream'].empty) { v = doc['datastream'].value.toString().trim(); }
+            else if (params._source?.datastream != null) { v = params._source.datastream.toString().trim(); }
+            emit(isExcluded(v));
+            return;
+          }
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty
+                && doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage') {
+              for (String f : ['datastream.keyword', 'datastream', 'backing_index.keyword', 'backing_index']) {
+                if (doc.containsKey(f) && !doc[f].empty && isExcluded(doc[f].value.toString())) {
+                  emit(true);
+                  return;
+                }
+              }
+              for (String sf : ['datastream', 'backing_index']) {
+                if (params._source != null && params._source.get(sf) != null && isExcluded(params._source.get(sf).toString())) {
+                  emit(true);
+                  return;
+                }
+              }
+              emit(false);
+              return;
+            }
+          } catch (Exception e) {}
+          String name = '';
+          for (String f : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                name = doc[f].value.toString().trim();
+                if (name != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (name == '' && params._source?.elasticsearch?.index?.name != null) {
+            name = params._source.elasticsearch.index.name.toString().trim();
+          }
+          if (name != '') {
+            String norm = normIdx(name);
+            if (norm.startsWith('.') || isExcluded(name)) {
+              emit(true);
+              return;
+            }
+          }
+          emit(false);
+    cb_sync_ms:
+      type: long
+      script:
+        source: |
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
+                  }
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          emit(syncMs);
+    cb_is_native_usage:
+      type: boolean
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          emit(isNat);
+    cb_nat_idx_time:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long v = 0L;
+          try {
+            if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
+              v = ((Number)doc['datastream_sum_indexing_time'].value).longValue();
+            } else if (params._source?.datastream_sum_indexing_time instanceof Number) {
+              v = ((Number)params._source.datastream_sum_indexing_time).longValue();
+            }
+          } catch (Exception e) {}
+          emit(v);
+    cb_nat_qry_time:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long v = 0L;
+          try {
+            if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
+              v = ((Number)doc['datastream_sum_query_time'].value).longValue();
+            } else if (params._source?.datastream_sum_query_time instanceof Number) {
+              v = ((Number)params._source.datastream_sum_query_time).longValue();
+            }
+          } catch (Exception e) {}
+          emit(v);
+    cb_nat_sto_size:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long v = 0L;
+          try {
+            if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
+              v = ((Number)doc['datastream_sum_data_set_store_size'].value).longValue();
+            } else if (params._source?.datastream_sum_data_set_store_size instanceof Number) {
+              v = ((Number)params._source.datastream_sum_data_set_store_size).longValue();
+            }
+          } catch (Exception e) {}
+          emit(v);
+    cb_nat_meta_rec:
+      type: keyword
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (!isNat) { return; }
+          long syncMs = 0L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncMs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncMs = doc['event.created'].value.toInstant().toEpochMilli();
+            } else {
+              for (String k : ['ingested', 'created']) {
+                def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get(k) : null;
+                if (rawVal == null && params._source != null) { rawVal = params._source.get('event.' + k); }
+                if (rawVal != null) {
+                  if (rawVal instanceof Number) { syncMs = ((Number)rawVal).longValue(); break; }
+                  String s = rawVal.toString().trim();
+                  if (s != '') {
+                    try { syncMs = ZonedDateTime.parse(s).toInstant().toEpochMilli(); break; } catch (Exception e) {}
+                  }
+                }
+              }
+            }
+          } catch (Exception e) {}
+          if (syncMs == 0L) {
+            try {
+              if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+                syncMs = doc['@timestamp'].value.toInstant().toEpochMilli();
+              } else if (params._source?.get('@timestamp') != null) {
+                syncMs = ZonedDateTime.parse(params._source.get('@timestamp').toString().trim()).toInstant().toEpochMilli();
+              }
+            } catch (Exception e) {}
+          }
+          Map m = [:];
+          for (String mf : ['project_name', 'project_type', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+            try {
+              if (doc.containsKey(mf) && !doc[mf].empty) {
+                m[mf] = doc[mf].value.toString();
+              } else if (params._source != null && params._source.get(mf) != null) {
+                m[mf] = params._source.get(mf).toString();
+              }
+            } catch (Exception e) {}
+          }
+          double cRate = -1.0;
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+            }
+          } catch (Exception e) {}
+          String sep = Character.toString((char)31);
+          String pName = m.containsKey('project_name') ? m.get('project_name').toString().replace(sep, '') : '';
+          String pType = m.containsKey('project_type') ? m.get('project_type').toString().replace(sep, '') : '';
+          String dsType = m.containsKey('ds_type') ? m.get('ds_type').toString().replace(sep, '') : '';
+          String dsDataset = m.containsKey('ds_dataset') ? m.get('ds_dataset').toString().replace(sep, '') : '';
+          String dsNamespace = m.containsKey('ds_namespace') ? m.get('ds_namespace').toString().replace(sep, '') : '';
+          String cUnit = m.containsKey('conf_chargeable_unit_rate_unit') ? m.get('conf_chargeable_unit_rate_unit').toString().replace(sep, '') : '';
+          String cSym = m.containsKey('conf_currency_symbol') ? m.get('conf_currency_symbol').toString().replace(sep, '') : '';
+          emit(
+            Long.toString(syncMs) + sep + pName + sep + pType + sep
+            + dsType + sep + dsDataset + sep + dsNamespace + sep
+            + Double.toString(cRate) + sep + cUnit + sep + cSym
+          );
+    cb_leg_index_name:
+      type: keyword
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          String idxName = '_default_';
+          for (String nf : ['elasticsearch.index.name.keyword', 'elasticsearch.index.name']) {
+            try {
+              if (doc.containsKey(nf) && !doc[nf].empty) {
+                idxName = doc[nf].value.toString();
+                if (idxName != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if ((idxName == '' || idxName == '_default_') && params._source?.elasticsearch?.index?.name != null) {
+            idxName = params._source.elasticsearch.index.name.toString();
+          }
+          emit(idxName == '' ? '_default_' : idxName);
+    cb_leg_slot:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          long slot = 0L;
+          try {
+            if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+              slot = doc['@timestamp'].value.toInstant().toEpochMilli() / 600000L;
+            }
+          } catch (Exception e) {}
+          emit(slot);
+    cb_leg_idx_delta:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].value).longValue();
+              emit(v < 0L ? 0L : v);
+            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis_delta).longValue();
+              emit(v < 0L ? 0L : v);
+            }
+          } catch (Exception e) {}
+    cb_leg_idx_cum:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis_delta') && !doc['elasticsearch.index.total.indexing.index_time_in_millis_delta'].empty) { return; }
+            if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis_delta instanceof Number) { return; }
+            if (doc.containsKey('elasticsearch.index.total.indexing.index_time_in_millis') && !doc['elasticsearch.index.total.indexing.index_time_in_millis'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.indexing.index_time_in_millis'].value).longValue();
+              if (v >= 0L) { emit(v); }
+            } else if (params._source?.elasticsearch?.index?.total?.indexing?.index_time_in_millis instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.indexing.index_time_in_millis).longValue();
+              if (v >= 0L) { emit(v); }
+            }
+          } catch (Exception e) {}
+    cb_leg_qry_delta:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis_delta'].value).longValue();
+              emit(v < 0L ? 0L : v);
+            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis_delta).longValue();
+              emit(v < 0L ? 0L : v);
+            }
+          } catch (Exception e) {}
+    cb_leg_qry_cum:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          try {
+            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis_delta') && !doc['elasticsearch.index.total.search.query_time_in_millis_delta'].empty) { return; }
+            if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis_delta instanceof Number) { return; }
+            if (doc.containsKey('elasticsearch.index.total.search.query_time_in_millis') && !doc['elasticsearch.index.total.search.query_time_in_millis'].empty) {
+              long v = ((Number)doc['elasticsearch.index.total.search.query_time_in_millis'].value).longValue();
+              if (v >= 0L) { emit(v); }
+            } else if (params._source?.elasticsearch?.index?.total?.search?.query_time_in_millis instanceof Number) {
+              long v = ((Number)params._source.elasticsearch.index.total.search.query_time_in_millis).longValue();
+              if (v >= 0L) { emit(v); }
+            }
+          } catch (Exception e) {}
+    cb_leg_sto_bytes:
+      type: long
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') { return; }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          if (isNat) { return; }
+          long stoB = 0L;
+          try {
+            if (doc.containsKey('elasticsearch.index.primaries.store.total_data_set_size_in_bytes') && !doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].empty) {
+              stoB = ((Number)doc['elasticsearch.index.primaries.store.total_data_set_size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.primaries?.store?.total_data_set_size_in_bytes instanceof Number) {
+              stoB = ((Number)params._source.elasticsearch.index.primaries.store.total_data_set_size_in_bytes).longValue();
+            } else if (doc.containsKey('elasticsearch.index.total.store.size_in_bytes') && !doc['elasticsearch.index.total.store.size_in_bytes'].empty) {
+              stoB = ((Number)doc['elasticsearch.index.total.store.size_in_bytes'].value).longValue();
+            } else if (params._source?.elasticsearch?.index?.total?.store?.size_in_bytes instanceof Number) {
+              stoB = ((Number)params._source.elasticsearch.index.total.store.size_in_bytes).longValue();
+            }
+          } catch (Exception e) {}
+          emit(stoB < 0L ? 0L : stoB);
+    cb_source_tier:
+      type: keyword
+      script:
+        source: |
+          if (doc.containsKey('_index') && !doc['_index'].empty && doc['_index'].value.toString() == 'serverless_datastream_contribution_lookup-1') {
+            emit('v1');
+            return;
+          }
+          boolean isNat = false;
+          try {
+            if (doc.containsKey('data_stream.dataset') && !doc['data_stream.dataset'].empty) {
+              isNat = doc['data_stream.dataset'].value.toString() == 'chargeback_serverless.usage';
+            } else if (params._source?.data_stream?.dataset != null) {
+              isNat = params._source.data_stream.dataset.toString() == 'chargeback_serverless.usage';
+            }
+          } catch (Exception e) {}
+          emit(isNat ? 'nat' : 'leg');
+    cb_v1_ds_idx:
+      type: long
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_indexing_time') && !doc['datastream_sum_indexing_time'].empty) {
+              emit(((Number)doc['datastream_sum_indexing_time'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_indexing_time') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_indexing_time')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_ds_qry:
+      type: long
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_query_time') && !doc['datastream_sum_query_time'].empty) {
+              emit(((Number)doc['datastream_sum_query_time'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_query_time') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_query_time')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_ds_sto:
+      type: long
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') { return; }
+          try {
+            if (doc.containsKey('datastream_sum_data_set_store_size') && !doc['datastream_sum_data_set_store_size'].empty) {
+              emit(((Number)doc['datastream_sum_data_set_store_size'].value).longValue());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (params._source != null && params._source.get('datastream_sum_data_set_store_size') instanceof Number) {
+              emit(((Number)params._source.get('datastream_sum_data_set_store_size')).longValue());
+            }
+          } catch (Exception e) {}
+    cb_v1_ds_meta_rec:
+      type: keyword
+      script:
+        source: |
+          if (!doc.containsKey('_index') || doc['_index'].empty || doc['_index'].value.toString() != 'serverless_datastream_contribution_lookup-1') {
+            return;
+          }
+          long syncMs = 0L;
+          for (String tf : ['event.ingested', 'event.created', '@timestamp']) {
+            try {
+              if (doc.containsKey(tf) && !doc[tf].empty) {
+                syncMs = doc[tf].value.toInstant().toEpochMilli();
+                if (syncMs > 0L) { break; }
+              }
+            } catch (Exception e) {}
+          }
+          Map m = [:];
+          for (String mf : ['project_name', 'project_type', 'ds_type', 'ds_dataset', 'ds_namespace', 'conf_chargeable_unit_rate_unit', 'conf_currency_symbol']) {
+            try {
+              if (doc.containsKey(mf) && !doc[mf].empty) {
+                m[mf] = doc[mf].value.toString();
+              } else if (params._source != null && params._source.get(mf) != null) {
+                m[mf] = params._source.get(mf).toString();
+              }
+            } catch (Exception e) {}
+          }
+          double cRate = -1.0;
+          try {
+            if (doc.containsKey('conf_chargeable_unit_rate') && !doc['conf_chargeable_unit_rate'].empty) {
+              cRate = ((Number)doc['conf_chargeable_unit_rate'].value).doubleValue();
+            } else if (params._source?.conf_chargeable_unit_rate instanceof Number) {
+              cRate = ((Number)params._source.conf_chargeable_unit_rate).doubleValue();
+            }
+          } catch (Exception e) {}
+          String sep = Character.toString((char)31);
+          String pName = m.containsKey('project_name') ? m.get('project_name').toString().replace(sep, '') : '';
+          String pType = m.containsKey('project_type') ? m.get('project_type').toString().replace(sep, '') : '';
+          String dsType = m.containsKey('ds_type') ? m.get('ds_type').toString().replace(sep, '') : '';
+          String dsDataset = m.containsKey('ds_dataset') ? m.get('ds_dataset').toString().replace(sep, '') : '';
+          String dsNamespace = m.containsKey('ds_namespace') ? m.get('ds_namespace').toString().replace(sep, '') : '';
+          String cUnit = m.containsKey('conf_chargeable_unit_rate_unit') ? m.get('conf_chargeable_unit_rate_unit').toString().replace(sep, '') : '';
+          String cSym = m.containsKey('conf_currency_symbol') ? m.get('conf_currency_symbol').toString().replace(sep, '') : '';
+          emit(
+            Long.toString(syncMs) + sep + pName + sep + pType + sep
+            + dsType + sep + dsDataset + sep + dsNamespace + sep
+            + Double.toString(cRate) + sep + cUnit + sep + cSym
+          );
 dest:
-  index: serverless_datastream_contribution_lookup-1
+  index: serverless_datastream_contribution_lookup-2
   aliases:
-    - alias: serverless_datastream_contribution_lookup
-      move_on_creation: true
-  pipeline: 'metrics-chargeback_serverless.usage-{{ ingestPipelineName "lookup_usage" }}'
+  - alias: serverless_datastream_contribution_lookup
+    move_on_creation: true
+  pipeline: logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_usage" }}
 frequency: 5m
 sync:
   time:
-    field: event.ingested
+    field: cb_sync_ts
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: '@timestamp'
     max_age: 365d
 pivot:
   group_by:
-    "@timestamp":
+    '@timestamp':
       date_histogram:
-        field: "@timestamp"
+        field: '@timestamp'
         calendar_interval: 1d
     project_id:
       terms:
-        field: project_id
+        field: cb_project_id
     datastream:
       terms:
-        field: datastream
+        field: cb_datastream
   aggregations:
-    datastream_sum_indexing_time:
-      max:
-        field: datastream_sum_indexing_time
-    datastream_sum_query_time:
-      max:
-        field: datastream_sum_query_time
-    datastream_sum_data_set_store_size:
-      max:
-        field: datastream_sum_data_set_store_size
-    latest_currency:
-      top_metrics:
-        metrics:
-          - field: project_name
-          - field: project_type
-          - field: ds_type
-          - field: ds_dataset
-          - field: ds_namespace
-          - field: conf_chargeable_unit_rate
-          - field: conf_chargeable_unit_rate_unit
-          - field: conf_currency_symbol
-        sort:
-          event.ingested: desc
+    rollup:
+      filter:
+        match_all: {}
+      aggs:
+        nat:
+          filter:
+            term:
+              cb_source_tier: nat
+          aggs:
+            cnt:
+              value_count:
+                field: cb_sync_ms
+            idx:
+              max:
+                field: cb_nat_idx_time
+            qry:
+              max:
+                field: cb_nat_qry_time
+            sto:
+              max:
+                field: cb_nat_sto_size
+            meta:
+              terms:
+                field: cb_nat_meta_rec
+                size: 5
+                order:
+                  sync_ms: desc
+              aggs:
+                sync_ms:
+                  max:
+                    field: cb_sync_ms
+        leg:
+          filter:
+            term:
+              cb_source_tier: leg
+          aggs:
+            all_slots:
+              cardinality:
+                field: cb_leg_slot
+                precision_threshold: 1000
+            by_idx:
+              terms:
+                field: cb_leg_index_name
+                size: 500
+              aggs:
+                idx_d:
+                  sum:
+                    field: cb_leg_idx_delta
+                idx_d_cnt:
+                  value_count:
+                    field: cb_leg_idx_delta
+                idx_min:
+                  min:
+                    field: cb_leg_idx_cum
+                idx_max:
+                  max:
+                    field: cb_leg_idx_cum
+                qry_d:
+                  sum:
+                    field: cb_leg_qry_delta
+                qry_d_cnt:
+                  value_count:
+                    field: cb_leg_qry_delta
+                qry_min:
+                  min:
+                    field: cb_leg_qry_cum
+                qry_max:
+                  max:
+                    field: cb_leg_qry_cum
+                sto_avg:
+                  avg:
+                    field: cb_leg_sto_bytes
+                slots:
+                  cardinality:
+                    field: cb_leg_slot
+                    precision_threshold: 1000
+            cnt:
+              value_count:
+                field: cb_sync_ms
+        v1:
+          filter:
+            term:
+              cb_source_tier: v1
+          aggs:
+            cnt:
+              value_count:
+                field: cb_sync_ms
+            idx:
+              max:
+                field: cb_v1_ds_idx
+            qry:
+              max:
+                field: cb_v1_ds_qry
+            sto:
+              max:
+                field: cb_v1_ds_sto
+            meta:
+              terms:
+                field: cb_v1_ds_meta_rec
+                size: 5
+                order:
+                  sync_ms: desc
+              aggs:
+                sync_ms:
+                  max:
+                    field: cb_sync_ms
 settings:
   deduce_mappings: false
   unattended: true
+  max_page_search_size: 100
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.2.0
+  order: 4

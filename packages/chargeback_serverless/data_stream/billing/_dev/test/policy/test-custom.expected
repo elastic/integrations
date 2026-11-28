@@ -12,596 +12,989 @@ inputs:
           interval: 30m
           processors:
             - drop_event.when.equals.fake: true
+            - copy_fields:
+                fail_on_error: false
+                fields:
+                    - from: '@metadata.input_id'
+                      to: conf_policy_id
+                ignore_missing: true
+                when:
+                    and:
+                        - or:
+                            - equals:
+                                doc_type: config_snapshot
+                            - equals:
+                                doc_type: credit_line_item
+                            - equals:
+                                doc_type: billing_line_item
+                        - not:
+                            has_fields:
+                                - conf_policy_id
           program: |-
             state.with(
-              (state.?unsupported_agent_version.orValue("") != "") ?
-                {
-                  "events": {
-                    "error": {
-                      "code": "unsupported_agent_version",
-                      "id": "agent_version_guard",
-                      "message": "Unsupported Elastic Agent version " + string(state.unsupported_agent_version) + ": chargeback_serverless requires a Fleet-managed Elastic Agent >= 9.2.0",
-                    },
-                  },
-                  "cursor": state.?cursor.orValue({}),
-                  "want_more": false,
-                }
-              :
-              state.?want_more.orValue(false).as(is_continuation,
-                max(
-                  state.?cursor.initial_from.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
-                    now - duration(string(min(max(int(state.lookbehind), 0), 365) * 24) + "h")
-                  ).format(
-                    time_layout.DateOnly
-                  ).parse_time(time_layout.DateOnly),
-                  timestamp("2023-01-01T00:00:00Z")
-                ).as(initial_from,
-                  max(
-                    state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
-                      initial_from
-                    ).format(
-                      time_layout.DateOnly
-                    ).parse_time(time_layout.DateOnly),
-                    timestamp("2023-01-01T00:00:00Z")
-                  ).as(high_water,
-                    (now - duration("2h")).format(
-                      time_layout.DateOnly
-                    ).parse_time(time_layout.DateOnly).as(latest_ready_to,
-                      latest_ready_to.format(time_layout.RFC3339).as(latest_ready_to_str,
-                        max(
-                          initial_from,
-                          latest_ready_to - duration("168h")
-                        ).as(replay_start,
-                          replay_start.format(time_layout.RFC3339).as(replay_start_str,
-                            state.?cursor.replay_completed_to.orValue("").as(replay_completed_to,
-                              state.?cursor.replay_target_to.orValue("").as(replay_target_to,
-                                state.?cursor.recent_day_keys.orValue([]).filter(pk,
-                                  has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
-                                ).as(pruned_recent_keys,
-                                  ((is_continuation && state.?next_from.orValue("") != "") ?
-                                    max(
-                                      timestamp(state.next_from).format(
-                                        time_layout.DateOnly
-                                      ).parse_time(time_layout.DateOnly),
-                                      timestamp("2023-01-01T00:00:00Z")
-                                    )
-                                  :
-                                    ((high_water < latest_ready_to) ?
-                                      high_water
-                                    :
-                                      ((replay_target_to == latest_ready_to_str && replay_completed_to != latest_ready_to_str && state.?cursor.next_from.orValue("") != "") ?
-                                        max(
-                                          timestamp(state.cursor.next_from).format(
-                                            time_layout.DateOnly
-                                          ).parse_time(time_layout.DateOnly),
-                                          replay_start
-                                        )
-                                      :
-                                        replay_start
-                                      )
-                                    )
-                                  ).as(from,
-                                    {
-                                      "from": from,
-                                      "to": from + duration("24h"),
-                                    }
-                                  ).as(req,
-                                    pruned_recent_keys.filter(pk, string(pk.day) == req.from.format(time_layout.RFC3339)).as(prev_day_keys,
-                                      ((!is_continuation && high_water >= latest_ready_to && replay_completed_to == latest_ready_to_str) || (req.to + duration("2h") > now)) ?
-                                        {
-                                          "events": state.?cursor.last_to.hasValue() ? [] : [ { "fake": true } ],
-                                          "cursor": {
-                                            "initial_from": initial_from.format(time_layout.RFC3339),
-                                            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
-                                            "replay_target_to": latest_ready_to_str,
-                                            "replay_completed_to": replay_completed_to,
-                                            "next_from": state.?cursor.next_from.orValue(req.from.format(time_layout.RFC3339)),
-                                            "recent_day_keys": pruned_recent_keys,
-                                            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
-                                            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
-                                          },
-                                          "next_from": req.from.format(time_layout.RFC3339),
-                                          "want_more": false,
-                                        }
-                                      :
-                      get_request(
-                        state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances?" + {
-                          "from": [req.from.format(time_layout.RFC3339)],
-                          "to": [req.to.format(time_layout.RFC3339)],
-                          "include_names": ["true"],
-                        }.format_query()
-                      ).with(
-                        { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                      ).do_request().as(resp, (resp.StatusCode == 200) ?
-                        bytes(resp.Body).decode_json().as(body,
-                          get_request(
-                            state.billing_api_base + "/api/v2/billing/organizations/" + state.organization_id + "/costs/items?" + {
-                              "from": [req.from.format(time_layout.RFC3339)],
-                              "to": [req.to.format(time_layout.RFC3339)],
-                            }.format_query()
-                          ).with(
-                            { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                          ).do_request().as(items_resp, (items_resp.StatusCode == 200) ?
-                            bytes(items_resp.Body).decode_json().as(items_body,
-                            ((is_continuation && has(state.cached_projects) && state.cached_projects != null) ?
-                              {
-                                "projects": state.cached_projects,
-                                "cache_ok": true,
-                                "err_code": "",
-                                "err_msg": "",
-                              }
-                            :
-                              get_request(
-                                state.cloud_api_base + "/api/v1/serverless/projects/elasticsearch"
-                              ).with(
-                                { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                              ).do_request().as(es_resp,
-                                ((es_resp.StatusCode == 200 && size(es_resp.Body) > 0) ? bytes(es_resp.Body).decode_json() : { "items": [] }).as(es_body,
-                                  get_request(
-                                    state.cloud_api_base + "/api/v1/serverless/projects/observability"
-                                  ).with(
-                                    { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                                  ).do_request().as(obs_resp,
-                                    ((obs_resp.StatusCode == 200 && size(obs_resp.Body) > 0) ? bytes(obs_resp.Body).decode_json() : { "items": [] }).as(obs_body,
-                                      get_request(
-                                        state.cloud_api_base + "/api/v1/serverless/projects/security"
-                                      ).with(
-                                        { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                                      ).do_request().as(sec_resp,
-                                        ((sec_resp.StatusCode == 200 && size(sec_resp.Body) > 0) ? bytes(sec_resp.Body).decode_json() : { "items": [] }).as(sec_body,
-                                          get_request(
-                                            state.cloud_api_base + "/api/v1/serverless/projects/vectordb"
-                                          ).with(
-                                            { "Header": { "Authorization": ["ApiKey " + state.api_key] } }
-                                          ).do_request().as(vdb_resp,
-                                            ((vdb_resp.StatusCode == 200 && size(vdb_resp.Body) > 0) ? bytes(vdb_resp.Body).decode_json() : { "items": [] }).as(vdb_body,
-                                              {
-                                                "projects": (
-                                                  (has(es_body.items) && es_body.items != null ? es_body.items.map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : []) +
-                                                  (has(obs_body.items) && obs_body.items != null ? obs_body.items.map(p, dyn(p.with({ "project_type": "observability" }))) : []) +
-                                                  (has(sec_body.items) && sec_body.items != null ? sec_body.items.map(p, dyn(p.with({ "project_type": "security" }))) : []) +
-                                                  (has(vdb_body.items) && vdb_body.items != null ? vdb_body.items.map(p, dyn(p.with({ "project_type": "vectordb" }))) : [])
-                                                ),
-                                                "cache_ok": (es_resp.StatusCode == 200 || es_resp.StatusCode == 204) && (obs_resp.StatusCode == 200 || obs_resp.StatusCode == 204) && (sec_resp.StatusCode == 200 || sec_resp.StatusCode == 204) && (vdb_resp.StatusCode == 200 || vdb_resp.StatusCode == 204 || vdb_resp.StatusCode == 404),
-                                                "err_code": string(
-                                                  (es_resp.StatusCode != 200 && es_resp.StatusCode != 204) ? es_resp.StatusCode :
-                                                  ((obs_resp.StatusCode != 200 && obs_resp.StatusCode != 204) ? obs_resp.StatusCode :
-                                                    ((sec_resp.StatusCode != 200 && sec_resp.StatusCode != 204) ? sec_resp.StatusCode : vdb_resp.StatusCode)
-                                                  )
-                                                ),
-                                                "err_msg": "Required Serverless project discovery request failed (elasticsearch=" + string(es_resp.StatusCode) + ", observability=" + string(obs_resp.StatusCode) + ", security=" + string(sec_resp.StatusCode) + ", vectordb=" + string(vdb_resp.StatusCode) + "); preserving billing day for retry",
-                                              }
-                                            )
-                                          )
-                                        )
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            ).as(discovery,
-                              !discovery.cache_ok ?
-                                {
-                                  "events": {
-                                    "error": {
-                                      "code": discovery.err_code,
-                                      "id": "project_discovery_failed",
-                                      "message": discovery.err_msg,
-                                    },
-                                  },
-                                  "cursor": {
-                                    "initial_from": initial_from.format(time_layout.RFC3339),
-                                    "last_to": max(high_water, req.from).format(time_layout.RFC3339),
-                                    "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
-                                    "replay_completed_to": replay_completed_to,
-                                    "next_from": req.from.format(time_layout.RFC3339),
-                                    "recent_day_keys": pruned_recent_keys,
-                                    "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
-                                    "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
-                                  },
-                                  "next_from": req.from.format(time_layout.RFC3339),
-                                  "cached_projects": null,
-                                  "want_more": false,
-                                }
-                              :
-                              discovery.projects.as(projects,
-                                        ((has(body.instances) && body.instances != null) ?
-                                          body.instances.filter(instance,
-                                            size(projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id)) > 0 ||
-                                            ((!has(instance.type) || instance.type == null || string(instance.type).to_lower() != "deployment") &&
-                                            has(instance.product_line_items) && instance.product_line_items != null &&
-                                            !instance.product_line_items.exists(li,
-                                              has(li.sku) && li.sku != null && !string(li.sku).to_lower().contains("serverless") && (
-                                                li.sku.contains("cloud-enterprise") || li.sku.contains("cloud-platinum") || li.sku.contains("cloud-standard") || li.sku.contains("cloud-gold") ||
-                                                li.sku.contains(".es.data") || li.sku.contains(".es.ml") || li.sku.contains(".es.master") || li.sku.contains(".es.coordinating") ||
-                                                li.sku.contains(".kibana.") || li.sku.contains(".apm.") || li.sku.contains(".enterprise_search.") || li.sku.contains(".integrations_server.")
-                                              )
-                                            ) &&
-                                            (
-                                              (has(instance.type) && instance.type != null && string(instance.type).to_lower().as(it,
-                                                it == "serverless" || it.contains("serverless") ||
-                                                it == "observability" || it == "oblt" || it.contains("observability") || it.contains("oblt") ||
-                                                it == "security" || it == "sec" || it.contains("security") ||
-                                                it == "elasticsearch" || it == "es" || it.contains("elasticsearch") ||
-                                                it == "vectordb" || it == "vector" || it.contains("vectordb") || it.contains("vector") ||
-                                                it == "search" || it == "enterprise_search" || it.contains("search")
-                                              ) && size(instance.product_line_items.filter(li, has(li.sku) && li.sku != null && string(li.sku) != "")) > 0) ||
-                                              size(instance.product_line_items.filter(li,
-                                                has(li.sku) && li.sku != null && (
-                                                  li.sku.contains("-vcu") || li.sku.contains(".ecu") || li.sku.contains(".observability.") || li.sku.contains(".security.") || li.sku.contains(".vectordb.") ||
-                                                  li.sku.startsWith("serverless.vectordb.") || li.sku.startsWith("vectordb.") ||
-                                                  li.sku.startsWith("serverless.search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
-                                                  li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
-                                                  li.sku.contains(".retained") || li.sku == "global.inference-chat-input" || li.sku.contains("inference") ||
-                                                  li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")
-                                                )
-                                              )) > 0
-                                            ))
-                                          )
-                                        : []).as(sls_instances,
-                                          sls_instances.map(instance,
-                                            projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id).as(matched_projs,
-                                              ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : (
-                                                ((has(instance.type) && instance.type != null) ? string(instance.type).to_lower() : "").as(raw_inst_type,
-                                                  (raw_inst_type == "observability" || raw_inst_type == "oblt" || raw_inst_type.contains("observability") || raw_inst_type.contains("oblt")) ? "observability" : (
-                                                    (raw_inst_type == "security" || raw_inst_type == "sec" || raw_inst_type.contains("security")) ? "security" : (
-                                                      (raw_inst_type == "vectordb" || raw_inst_type == "vector" || raw_inst_type.contains("vectordb") || raw_inst_type.contains("vector")) ? "vectordb" : (
-                                                        (raw_inst_type == "elasticsearch" || raw_inst_type == "es" || raw_inst_type.contains("elasticsearch")) ? "elasticsearch" : (
-                                                          (raw_inst_type == "search" || raw_inst_type == "enterprise_search" || raw_inst_type.contains("search")) ? "search" : (
-                                                            (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains(".observability.") || s.contains("synthetic")))) ? "observability" : (
-                                                              (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.") || s.contains(".security.")))) ? "security" : (
-                                                                (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("vectordb.") || s.startsWith("serverless.vectordb.") || s.contains(".vectordb.")))) ? "vectordb" : (
-                                                                  (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.") || s.contains(".elasticsearch.")))) ? "elasticsearch" : (
-                                                                    (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("search.") || s.startsWith("serverless.search.")))) ? "search" : "elasticsearch"
-                                                                  )
-                                                                )
-                                                              )
-                                                            )
-                                                          )
-                                                        )
-                                                      )
-                                                    )
-                                                  )
-                                                )
-                                              )).as(resolved_type,
-                                                ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : ("unassociated_" + resolved_type)).as(inst_id,
-                                                  ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != inst_id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : ((has(instance.id) && instance.id != null && string(instance.id) != "") ? inst_id : ("Unassociated (" + resolved_type + ")")))).as(resolved_name,
-                                                    (has(instance.product_line_items) && instance.product_line_items != null) ?
-                                                      instance.product_line_items.filter(line_item,
-                                                        has(line_item.sku) && line_item.sku != null && string(line_item.sku) != "" && (
-                                                          size(matched_projs) > 0 ||
-                                                          (has(instance.id) && instance.id != null && string(instance.id) != "" && (!has(instance.type) || instance.type == null || string(instance.type).to_lower() != "deployment")) ||
-                                                          (has(instance.type) && instance.type != null && string(instance.type).to_lower().as(it,
-                                                            it == "serverless" || it.contains("serverless") ||
-                                                            it == "observability" || it == "oblt" || it.contains("observability") || it.contains("oblt") ||
-                                                            it == "security" || it == "sec" || it.contains("security") ||
-                                                            it == "elasticsearch" || it == "es" || it.contains("elasticsearch") ||
-                                                            it == "vectordb" || it == "vector" || it.contains("vectordb") || it.contains("vector") ||
-                                                            it == "search" || it == "enterprise_search" || it.contains("search")
-                                                          )) ||
-                                                          line_item.sku.contains("-vcu") || line_item.sku.contains(".ecu") || line_item.sku.contains(".observability.") || line_item.sku.contains(".security.") || line_item.sku.contains(".vectordb.") ||
-                                                          line_item.sku.startsWith("serverless.vectordb.") || line_item.sku.startsWith("vectordb.") ||
-                                                          line_item.sku.startsWith("serverless.search.") || line_item.sku.startsWith("serverless.") || line_item.sku.startsWith("observability.") ||
-                                                          line_item.sku.startsWith("security.") || line_item.sku.startsWith("search.") || line_item.sku.contains("synthetic") ||
-                                                          line_item.sku.contains(".retained") || line_item.sku == "global.inference-chat-input" || line_item.sku.contains("inference") ||
-                                                          line_item.sku.contains("agent-builder") || line_item.sku.contains(".eis") || line_item.sku.contains("workflow") || line_item.sku.contains("cross-project")
-                                                        )
-                                                      ).as(sls_line_items,
-                                                        size(sls_line_items) > 0 ?
-                                                          sls_line_items.map(line_item,
-                                                            {
-                                                              "period_start": req.from.format(time_layout.RFC3339),
-                                                              "project_id": inst_id,
-                                                              "project_name": resolved_name,
-                                                              "project_type": resolved_type,
-                                                              "sku": line_item.sku,
-                                                              "total_ecu": double(line_item.total_ecu),
-                                                              "quantity_value": (has(line_item.quantity) && line_item.quantity != null && has(line_item.quantity.value) && line_item.quantity.value != null) ? double(line_item.quantity.value) : 0.0,
-                                                              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                              "conf_currency_symbol": state.conf_currency_symbol,
-                                                            }
-                                                          )
-                                                        :
-                                                          [
-                                                            {
-                                                              "period_start": req.from.format(time_layout.RFC3339),
-                                                              "project_id": inst_id,
-                                                              "project_name": resolved_name,
-                                                              "project_type": resolved_type,
-                                                              "sku": "none",
-                                                              "total_ecu": 0.0,
-                                                              "quantity_value": 0.0,
-                                                              "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                              "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                              "conf_currency_symbol": state.conf_currency_symbol,
-                                                            }
-                                                          ]
-                                                      )
-                                                    :
-                                                      [
-                                                        {
-                                                          "period_start": req.from.format(time_layout.RFC3339),
-                                                          "project_id": inst_id,
-                                                          "project_name": resolved_name,
-                                                          "project_type": resolved_type,
-                                                          "sku": "none",
-                                                          "total_ecu": 0.0,
-                                                          "quantity_value": 0.0,
-                                                          "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                          "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                          "conf_currency_symbol": state.conf_currency_symbol,
-                                                        }
-                                                      ]
-                                                  )
-                                                )
-                                              )
-                                            )
-                                          ).flatten().as(instance_evts,
-                                            (
-                                              instance_evts +
-                                              ((has(items_body.products) && items_body.products != null) ?
-                                                items_body.products.filter(prod,
-                                                  !has(prod.type) || prod.type == null || string(prod.type).to_lower() != "deployment"
-                                                ).map(prod,
-                                                  ((has(prod.type) && prod.type != null) ? string(prod.type).to_lower() : "").as(raw_prod_type,
-                                                    ((raw_prod_type == "observability" || raw_prod_type == "oblt" || raw_prod_type.contains("observability") || raw_prod_type.contains("oblt")) ? "observability" : ((raw_prod_type == "security" || raw_prod_type == "sec" || raw_prod_type.contains("security")) ? "security" : ((raw_prod_type == "vectordb" || raw_prod_type == "vector" || raw_prod_type.contains("vectordb") || raw_prod_type.contains("vector")) ? "vectordb" : ((raw_prod_type == "elasticsearch" || raw_prod_type == "es" || raw_prod_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_prod_type == "search" || raw_prod_type == "enterprise_search" || raw_prod_type.contains("search")) ? "search" : ""))))).as(prod_type,
-                                                      (prod_type != "" || raw_prod_type == "serverless" || raw_prod_type.contains("serverless")).as(is_sls_prod,
-                                                        (has(prod.product_line_items) && prod.product_line_items != null) ?
-                                                          prod.product_line_items.filter(li,
-                                                            has(li.sku) && li.sku != null && string(li.sku) != "" &&
-                                                            !(!string(li.sku).to_lower().contains("serverless") && (
-                                                              li.sku.contains("cloud-enterprise") || li.sku.contains("cloud-platinum") || li.sku.contains("cloud-standard") || li.sku.contains("cloud-gold") ||
-                                                              li.sku.contains(".es.data") || li.sku.contains(".es.ml") || li.sku.contains(".es.master") || li.sku.contains(".es.coordinating") ||
-                                                              li.sku.contains(".kibana.") || li.sku.contains(".apm.") || li.sku.contains(".enterprise_search.") || li.sku.contains(".integrations_server.")
-                                                            )) && (
-                                                              is_sls_prod ||
-                                                              li.sku.contains("-vcu") || li.sku.contains(".ecu") || li.sku.contains(".observability.") || li.sku.contains(".security.") || li.sku.contains(".vectordb.") ||
-                                                              li.sku.startsWith("serverless.vectordb.") || li.sku.startsWith("vectordb.") ||
-                                                              li.sku.startsWith("serverless.search.") || li.sku.startsWith("serverless.") || li.sku.startsWith("observability.") ||
-                                                              li.sku.startsWith("security.") || li.sku.startsWith("search.") || li.sku.contains("synthetic") ||
-                                                              li.sku.contains(".retained") || li.sku == "global.inference-chat-input" || li.sku.contains("inference") ||
-                                                              li.sku.contains("agent-builder") || li.sku.contains(".eis") || li.sku.contains("workflow") || li.sku.contains("cross-project")
-                                                            )
-                                                          ).map(li,
-                                                            string(li.sku).to_lower().as(ls,
-                                                              ((prod_type != "") ? prod_type : ((ls.startsWith("observability.") || ls.startsWith("oblt.") || ls.startsWith("serverless.observability.") || ls.startsWith("serverless.oblt.") || ls.contains(".observability.") || ls.contains("synthetic")) ? "observability" : ((ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("serverless.security.") || ls.startsWith("serverless.sec.") || ls.contains(".security.")) ? "security" : ((ls.startsWith("vectordb.") || ls.startsWith("serverless.vectordb.") || ls.contains(".vectordb.")) ? "vectordb" : ((ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.startsWith("serverless.elasticsearch.") || ls.startsWith("serverless.es.") || ls.contains(".elasticsearch.")) ? "elasticsearch" : ((ls.startsWith("search.") || ls.startsWith("serverless.search.")) ? "search" : "elasticsearch")))))).as(eff_prod_type,
-                                                                {
-                                                                  "sku": string(li.sku),
-                                                                  "prod_type": prod_type,
-                                                                  "eff_prod_type": eff_prod_type,
-                                                                  "item_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
-                                                                  "item_qty": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
-                                                                }
-                                                              )
-                                                            )
-                                                          )
-                                                        : []
-                                                      )
-                                                    )
-                                                  )
-                                                ).flatten().as(raw_item_entries,
-                                                  zip(
-                                                    raw_item_entries.map(ie, ie.eff_prod_type + "\n" + ie.sku),
-                                                    raw_item_entries
-                                                  ).keys().map(ik,
-                                                    raw_item_entries.filter(ie, (ie.eff_prod_type + "\n" + ie.sku) == ik).as(igrp,
-                                                      igrp[0].eff_prod_type.as(eff_prod_type,
-                                                        igrp[0].sku.as(isku,
-                                                          (igrp.exists(ie, ie.prod_type == "") ? instance_evts.filter(e, e.sku == isku) : instance_evts.filter(e, e.sku == isku && e.project_type == eff_prod_type)).as(matched_evts,
-                                                            matched_evts.map(e, e.total_ecu).as(matched_ecus,
-                                                              (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
-                                                                matched_evts.map(e, e.quantity_value).as(matched_qtys,
-                                                                  (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
-                                                                    igrp.map(ie, ie.item_ecu).sum().as(item_ecu,
-                                                                      igrp.map(ie, ie.item_qty).sum().as(item_qty,
-                                                                        (item_ecu - day_sku_ecu).as(diff_ecu,
-                                                                          (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
-                                                                            (diff_ecu > 0.0001 || diff_qty > 0.0 || (req.from < high_water && size(prev_day_keys) == 0)) ?
-                                                                              [
-                                                                                {
-                                                                                  "period_start": req.from.format(time_layout.RFC3339),
-                                                                                  "project_id": "deleted_or_unassociated_" + eff_prod_type,
-                                                                                  "project_name": "Deleted / Unassociated (" + eff_prod_type + ")",
-                                                                                  "project_type": eff_prod_type,
-                                                                                  "sku": isku,
-                                                                                  "total_ecu": max(0.0, diff_ecu),
-                                                                                  "quantity_value": diff_qty,
-                                                                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                                                  "conf_currency_symbol": state.conf_currency_symbol,
-                                                                                }
-                                                                              ]
-                                                                            : []
-                                                                          )
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                  )
-                                                                )
-                                                              )
-                                                            )
-                                                          )
-                                                        )
-                                                      )
-                                                    )
-                                                  ).flatten()
-                                                )
-                                              : []) +
-                                              projects.filter(p,
-                                                size(sls_instances.filter(inst, has(inst.id) && inst.id == p.id)) == 0
-                                              ).map(p,
-                                                {
-                                                  "period_start": req.from.format(time_layout.RFC3339),
-                                                  "project_id": p.id,
-                                                  "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
-                                                  "project_type": (has(p.project_type) && p.project_type != null && p.project_type != "") ? p.project_type : "elasticsearch",
-                                                  "sku": "none",
-                                                  "total_ecu": 0.0,
-                                                  "quantity_value": 0.0,
-                                                  "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                  "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                  "conf_currency_symbol": state.conf_currency_symbol,
-                                                }
-                                              )
-                                            ).as(raw_evts,
-                                              zip(
-                                                raw_evts.map(d, string(d.project_id) + "\n" + string(d.sku)),
-                                                raw_evts
-                                              ).keys().map(k,
-                                                raw_evts.filter(x, (string(x.project_id) + "\n" + string(x.sku)) == k).as(grp,
-                                                  grp.filter(x, x.project_name != x.project_id).as(named_grp,
-                                                    (size(named_grp) > 0 ? named_grp[0] : grp[0]).with({
-                                                      "total_ecu": grp.map(x, x.total_ecu).sum(),
-                                                      "quantity_value": grp.map(x, x.quantity_value).sum(),
-                                                    })
-                                                  )
-                                                )
-                                              ).as(curr_evts,
-                                                (
-                                                  size(sls_instances) == 0 &&
-                                                  size(projects) > 0 &&
-                                                  req.to >= (latest_ready_to - duration("24h")) &&
-                                                  curr_evts.exists(e,
-                                                    string(e.project_id).startsWith("deleted_or_unassociated_") &&
-                                                    (e.total_ecu > 0.0001 || e.quantity_value > 0.0) &&
-                                                    string(e.sku).to_lower().as(s,
-                                                      s.contains("-vcu") || s.contains(".vcu") || s.contains("ml.ecu") || s.contains("ml_ecu") ||
-                                                      s.contains(".retained") || s.contains("synthetic") || s.contains("inference") ||
-                                                      s.contains(".eis") || s.contains("llm") || s.contains("agent-builder")
-                                                    )
-                                                  ) &&
-                                                  (state.?cursor.empty_inst_day.orValue("") == req.from.format(time_layout.RFC3339) ? int(state.?cursor.empty_inst_retries.orValue(0)) : 0) < 2
-                                                ) ?
-                                                  {
-                                                    "events": {
-                                                      "error": {
-                                                        "code": "instances_lagging_items",
-                                                        "id": "instances_lagging_items",
-                                                        "message": "Billing /costs/instances returned 0 Serverless project instances while /costs/items reported allocatable workload spend for " + req.from.format(time_layout.DateOnly) + "; holding cursor for retry",
-                                                      },
-                                                    },
-                                                    "cursor": {
-                                                      "initial_from": initial_from.format(time_layout.RFC3339),
-                                                      "last_to": max(high_water, req.from).format(time_layout.RFC3339),
-                                                      "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
-                                                      "replay_completed_to": replay_completed_to,
-                                                      "next_from": req.from.format(time_layout.RFC3339),
-                                                      "recent_day_keys": pruned_recent_keys,
-                                                      "empty_inst_day": req.from.format(time_layout.RFC3339),
-                                                      "empty_inst_retries": (state.?cursor.empty_inst_day.orValue("") == req.from.format(time_layout.RFC3339) ? int(state.?cursor.empty_inst_retries.orValue(0)) : 0) + 1,
-                                                    },
-                                                    "next_from": req.from.format(time_layout.RFC3339),
-                                                    "cached_projects": discovery.cache_ok ? projects : null,
-                                                    "want_more": false,
-                                                  }
-                                                :
-                                                (
-                                                  curr_evts +
-                                                  prev_day_keys.filter(pk,
-                                                    !curr_evts.exists(e, string(e.project_id) == string(pk.project_id) && string(e.sku) == string(pk.sku))
-                                                  ).map(pk,
-                                                    {
-                                                      "period_start": req.from.format(time_layout.RFC3339),
-                                                      "project_id": string(pk.project_id),
-                                                      "project_name": string(pk.project_name),
-                                                      "project_type": string(pk.project_type),
-                                                      "sku": string(pk.sku),
-                                                      "total_ecu": 0.0,
-                                                      "quantity_value": 0.0,
-                                                      "conf_chargeable_unit_rate": double(state.conf_unit_rate),
-                                                      "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
-                                                      "conf_currency_symbol": state.conf_currency_symbol,
-                                                    }
-                                                  )
-                                                ).as(evts,
-                                                  (
-                                                    pruned_recent_keys.filter(pk, string(pk.day) != req.from.format(time_layout.RFC3339)) +
-                                                    ((req.from >= replay_start) ?
-                                                      curr_evts.filter(e, e.total_ecu > 0.0 || e.quantity_value > 0.0).map(e,
-                                                        {
-                                                          "day": req.from.format(time_layout.RFC3339),
-                                                          "project_id": string(e.project_id),
-                                                          "project_name": string(e.project_name),
-                                                          "project_type": string(e.project_type),
-                                                          "sku": string(e.sku),
-                                                        }
-                                                      )
-                                                    : [])
-                                                  ).as(updated_recent_keys,
-                                                    {
-                                                      "events": size(evts) > 0 ? evts : [ { "fake": true } ],
-                                                      "cursor": {
-                                                        "initial_from": initial_from.format(time_layout.RFC3339),
-                                                        "last_to": max(high_water, req.to).format(time_layout.RFC3339),
-                                                        "replay_target_to": (high_water >= latest_ready_to || req.to + duration("26h") > now) ? latest_ready_to_str : replay_target_to,
-                                                        "replay_completed_to": (high_water >= latest_ready_to && req.to + duration("26h") > now) ? latest_ready_to_str : replay_completed_to,
-                                                        "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
-                                                        "recent_day_keys": updated_recent_keys,
-                                                        "empty_inst_day": "",
-                                                        "empty_inst_retries": 0,
-                                                      },
-                                                      "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
-                                                      "cached_projects": discovery.cache_ok ? projects : null,
-                                                      "want_more": req.to + duration("26h") <= now,
-                                                    }
-                                                  )
-                                                )
-                                              )
-                                            )
-                                          )
-                                        )
-                                      )
-                                    )
-                                  )
-                                :
-                                  {
-                                    "events": { "error": { "code": string(items_resp.StatusCode), "id": string(items_resp.Status), "message": "GET " + items_resp.Request.URL + ": " + ( (size(items_resp.Body) != 0) ? string(items_resp.Body) : string(items_resp.Status) + " (" + string(items_resp.StatusCode) + ")" ) } },
-                                    "cursor": {
-                                      "initial_from": initial_from.format(time_layout.RFC3339),
-                                      "last_to": max(high_water, req.from).format(time_layout.RFC3339),
-                                      "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
-                                      "replay_completed_to": replay_completed_to,
-                                      "next_from": req.from.format(time_layout.RFC3339),
-                                      "recent_day_keys": pruned_recent_keys,
-                                      "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
-                                      "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
-                                    },
-                                    "next_from": req.from.format(time_layout.RFC3339),
-                                    "want_more": false,
-                                  }
-                                )
-                              )
-                            :
-                              {
-                                "events": { "error": { "code": string(resp.StatusCode), "id": string(resp.Status), "message": "GET " + resp.Request.URL + ": " + ( (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")" ) } },
-                                "cursor": {
-                                  "initial_from": initial_from.format(time_layout.RFC3339),
-                                  "last_to": max(high_water, req.from).format(time_layout.RFC3339),
-                                  "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
-                                  "replay_completed_to": replay_completed_to,
-                                  "next_from": req.from.format(time_layout.RFC3339),
-                                  "recent_day_keys": pruned_recent_keys,
-                                  "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
-                                  "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
-                                },
-                                "next_from": req.from.format(time_layout.RFC3339),
-                                "want_more": false,
-                              }
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            ))))))
+            (state.?unsupported_agent_version.orValue("") != "") ?
+            {
+            "events": [dyn({
+            "error": {
+            "code": "unsupported_agent_version",
+            "id": "agent_version_guard",
+            "message": "Unsupported Elastic Agent version " + string(state.unsupported_agent_version) + ": chargeback_serverless requires a Fleet-managed Elastic Agent >= 9.2.0",
+            },
+            })],
+            "cursor": state.?cursor.orValue({}),
+            "want_more": false,
+            }
+            :
+            state.api_key.trim_space().as(clean_api_key,
+            state.organization_id.trim_space().as(clean_org_id,
+            (state.cloud_api_base.trim_space().endsWith("/") ? state.cloud_api_base.trim_space().substring(0, size(state.cloud_api_base.trim_space()) - 1) : state.cloud_api_base.trim_space()).as(clean_cloud_base,
+            (state.billing_api_base.trim_space().endsWith("/") ? state.billing_api_base.trim_space().substring(0, size(state.billing_api_base.trim_space()) - 1) : state.billing_api_base.trim_space()).as(clean_billing_base,
+            state.?want_more.orValue(false).as(is_continuation,
+            now.format(time_layout.DateOnly).as(today_utc,
+            state.config_owner_id.trim_space().as(clean_owner_id,
+            state.conf_unit_rate.trim_space().as(clean_rate,
+            clean_rate.matches("^[0-9]+(\\.[0-9]+)?$").as(rate_valid,
+            state.conf_effective_from.trim_space().as(clean_eff_from,
+            (clean_eff_from == "" ? true : (
+            !clean_eff_from.matches("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T00:00:00(\\.[0]+)?(Z|[+-]00:00))?$") ? false : (
+            int(clean_eff_from.substring(0, 4)).as(eff_y,
+            int(clean_eff_from.substring(5, 7)).as(eff_m,
+            int(clean_eff_from.substring(8, 10)).as(eff_d,
+            ((eff_y % 4 == 0 && eff_y % 100 != 0) || (eff_y % 400 == 0)).as(eff_leap,
+            ((eff_m == 4 || eff_m == 6 || eff_m == 9 || eff_m == 11) ? 30 : ((eff_m == 2) ? (eff_leap ? 29 : 28) : 31)).as(eff_max_d,
+            eff_y >= 1970 && eff_d <= eff_max_d && (
+            timestamp(clean_eff_from.substring(0, 10) + "T00:00:00Z") < timestamp("2046-12-31T23:59:59.999Z")
+            )
+            )))))
+            )
+            )).as(eff_valid,
+            ((clean_eff_from == "" || !eff_valid) ? "" : (clean_eff_from.substring(0, 10) + "T00:00:00Z")).as(norm_eff_from,
+            (!state.sync_fleet_config ? ("disabled|" + clean_owner_id) : (
+            (rate_valid && eff_valid) ? (clean_owner_id + "|" + clean_rate + "|" + state.conf_currency_unit + "|" + state.conf_currency_symbol + "|" + norm_eff_from + "|" + today_utc) : state.?cursor.conf_sig.orValue("")
+            )).as(conf_sig,
+            ((state.sync_fleet_config && !rate_valid) ?
+            [dyn({
+            "error": {
+            "code": "invalid_config",
+            "id": "unit_rate",
+            "message": "Invalid unit_rate '" + state.conf_unit_rate + "': expected non-negative decimal using '.' (for example 1.0)",
+            },
+            })]
+            : ((state.sync_fleet_config && !eff_valid) ?
+            [dyn({
+            "error": {
+            "code": "invalid_config",
+            "id": "config_effective_from",
+            "message": "Invalid config_effective_from '" + state.conf_effective_from + "': expected empty string or UTC day-boundary date/timestamp between 1970-01-01 and 2046-12-31 (for example 2026-01-01 or 2026-01-01T00:00:00Z)",
+            },
+            })]
+            : ((state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+            [dyn({
+            "doc_type": "config_snapshot",
+            "conf_sync_enabled": true,
+            "conf_owner_id": clean_owner_id,
+            "conf_chargeable_unit_rate": double(clean_rate),
+            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+            "conf_currency_symbol": state.conf_currency_symbol,
+            "conf_effective_from": norm_eff_from,
+            })]
+            : ((!state.sync_fleet_config && state.?cursor.conf_sig.orValue("") != conf_sig) ?
+            [dyn({
+            "doc_type": "config_snapshot",
+            "conf_sync_enabled": false,
+            "conf_owner_id": clean_owner_id,
+            })]
+            : [])))).as(conf_evts,
+            (clean_org_id == "" || clean_api_key == "" || clean_api_key.startsWith("$co.elastic.secret")) ?
+            {
+            "events": size(conf_evts) > 0 ? conf_evts : [dyn({ "fake": true })],
+            "cursor": state.?cursor.orValue({}).with({ "conf_sig": conf_sig }),
+            "want_more": false,
+            }
+            :
+            state.?cursor.last_credit_day.orValue("").as(prev_credit_day,
+            ((state.collect_ess_credits && !is_continuation && prev_credit_day != today_utc) ?
+            (clean_billing_base + "/api/v1/billing/organization/" + clean_org_id + "/line_items").as(cred_url,
+            try(
+            get_request(cred_url).with({ "Header": { "Authorization": ["ApiKey " + clean_api_key] } }).do_request(),
+            "req_err"
+            ).as(cred_resp,
+            has(cred_resp.req_err) ?
+            {
+            "evts": [dyn({
+            "error": {
+            "code": "transport_error",
+            "id": "credit_line_items",
+            "message": "GET " + cred_url + ": " + string(cred_resp.req_err),
+            },
+            })],
+            "credit_day": prev_credit_day,
+            }
+            : (cred_resp.StatusCode == 200) ?
+            try(bytes(cred_resp.Body).decode_json(), "json_err").as(cred_items,
+            (type(cred_items) == map && has(cred_items.json_err)) ?
+            {
+            "evts": [dyn({
+            "error": {
+            "code": "decode_error",
+            "id": "credit_line_items",
+            "message": "GET " + cred_url + ": " + string(cred_items.json_err),
+            },
+            })],
+            "credit_day": prev_credit_day,
+            }
+            : (cred_items != null && type(cred_items) != list) ?
+            {
+            "evts": [dyn({
+            "error": {
+            "code": "decode_error",
+            "id": "credit_line_items",
+            "message": "GET " + cred_url + ": unexpected non-array JSON response",
+            },
+            })],
+            "credit_day": prev_credit_day,
+            }
+            :
+            now.format("2006-01-02T15:04:05.000Z").as(cred_obs_ts,
+            (type(cred_items) == list ? cred_items : []).as(cred_list,
+            size(cred_list).as(cred_len,
+            [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63].as(d64,
+            {
+            "evts": d64.filter(b2, b2 * 4096 < cred_len).map(b2,
+            d64.filter(b1, b2 * 4096 + b1 * 64 < cred_len).map(b1,
+            d64.filter(b0, b2 * 4096 + b1 * 64 + b0 < cred_len).map(b0,
+            (b2 * 4096 + b1 * 64 + b0).as(cred_idx,
+            cred_list[cred_idx].as(item,
+            dyn({
+            "_credit_poll_ts": cred_obs_ts,
+            "credit_line_id": (has(item.id) && item.id != null && string(item.id) != "") ? string(item.id) : ("idx:" + string(cred_idx)),
+            "doc_type": "credit_line_item",
+            "ess": {
+            "billing": {
+            "organization_id": clean_org_id,
+            "start": (has(item.start) && item.start != null && string(item.start) != "") ? dyn(item.start) : dyn(null),
+            "end": (has(item.end) && item.end != null && string(item.end) != "") ? dyn(item.end) : dyn(null),
+            "ecu_quantity": (has(item.ecu_quantity) && item.ecu_quantity != null) ? double(item.ecu_quantity) : 0.0,
+            "ecu_balance": (has(item.ecu_balance) && item.ecu_balance != null) ? double(item.ecu_balance) : 0.0,
+            "active": (has(item.active) && item.active != null) ? bool(item.active) : false,
+            "type": (has(item.type) && item.type != null && string(item.type) != "") ? dyn(string(item.type)) : dyn(null),
+            },
+            },
+            })
+            )
+            )
+            )
+            ).flatten()
+            ).flatten(),
+            "credit_day": today_utc,
+            }
+            )
+            )
+            )
+            )
+            )
+            :
+            {
+            "evts": [dyn({
+            "error": {
+            "code": string(cred_resp.StatusCode),
+            "id": string(cred_resp.Status),
+            "message": "GET " + cred_resp.Request.URL + ": " + ((size(cred_resp.Body) != 0) ? string(cred_resp.Body) : string(cred_resp.Status)),
+            },
+            })],
+            "credit_day": prev_credit_day,
+            }
+            )
+            )
+            : { "evts": [], "credit_day": prev_credit_day }).as(cred_res,
+            (conf_evts + cred_res.evts).as(meta_evts,
+            max(
+            (now - duration(string(min(max(int(state.lookbehind), 0), 365) * 24) + "h")).format(
+            time_layout.DateOnly
+            ).parse_time(time_layout.DateOnly),
+            timestamp("2023-01-01T00:00:00Z")
+            ).as(lookbehind_from,
+            max(
+            state.?cursor.initial_from.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
+            lookbehind_from
+            ).format(
+            time_layout.DateOnly
+            ).parse_time(time_layout.DateOnly),
+            timestamp("2023-01-01T00:00:00Z")
+            ).as(saved_initial_from,
+            (!is_continuation && state.?cursor.last_to.hasValue() && !state.?cursor.backfill_complete.hasValue()).as(is_v1_cursor,
+            (is_v1_cursor ? min(saved_initial_from, lookbehind_from) : saved_initial_from).as(initial_from,
+            (is_v1_cursor ? max(initial_from, (now - duration("8760h")).format(time_layout.DateOnly).parse_time(time_layout.DateOnly)) : max(
+            state.?cursor.last_to.optMap(ts, (type(ts) == string) ? timestamp(ts) : ts).orValue(
+            initial_from
+            ).format(
+            time_layout.DateOnly
+            ).parse_time(time_layout.DateOnly),
+            timestamp("2023-01-01T00:00:00Z")
+            )).as(high_water,
+            (now - duration("2h")).format(
+            time_layout.DateOnly
+            ).parse_time(time_layout.DateOnly).as(latest_ready_to,
+            latest_ready_to.format(time_layout.RFC3339).as(latest_ready_to_str,
+            max(
+            initial_from,
+            latest_ready_to - duration("168h")
+            ).as(replay_start,
+            replay_start.format(time_layout.RFC3339).as(replay_start_str,
+            (is_v1_cursor ? "" : state.?cursor.replay_completed_to.orValue("")).as(replay_completed_to,
+            (is_v1_cursor ? "" : state.?cursor.replay_target_to.orValue("")).as(replay_target_to,
+            state.?cursor.backfill_complete.orValue(false).as(was_backfill_complete,
+            state.?cursor.recent_day_keys.orValue([]).filter(pk,
+            has(pk.day) && pk.day != null && string(pk.day) >= replay_start_str
+            ).as(pruned_recent_keys,
+            ((is_continuation && state.?next_from.orValue("") != "") ?
+            max(
+            timestamp(state.next_from).format(
+            time_layout.DateOnly
+            ).parse_time(time_layout.DateOnly),
+            timestamp("2023-01-01T00:00:00Z")
+            )
+            :
+            ((high_water < latest_ready_to) ?
+            high_water
+            :
+            ((replay_target_to == latest_ready_to_str && replay_completed_to != latest_ready_to_str && state.?cursor.next_from.orValue("") != "") ?
+            max(
+            timestamp(state.cursor.next_from).format(
+            time_layout.DateOnly
+            ).parse_time(time_layout.DateOnly),
+            replay_start
+            )
+            :
+            replay_start
+            )
+            )
+            ).as(from,
+            {
+            "from": from,
+            "to": from + duration("24h"),
+            }
+            ).as(req,
+            pruned_recent_keys.filter(pk, string(pk.day) == req.from.format(time_layout.RFC3339)).as(prev_day_keys,
+            ((!is_continuation && high_water >= latest_ready_to && replay_completed_to == latest_ready_to_str) || (req.to + duration("2h") > now)) ?
+            {
+            "events": size(meta_evts) > 0 ? meta_evts : (state.?cursor.last_to.hasValue() ? [] : [ dyn({ "fake": true }) ]),
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": latest_ready_to_str,
+            "replay_completed_to": replay_completed_to,
+            "next_from": state.?cursor.next_from.orValue(req.from.format(time_layout.RFC3339)),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "want_more": false,
+            }
+            :
+            try(
+            get_request(
+            clean_billing_base + "/api/v2/billing/organizations/" + clean_org_id + "/costs/instances?" + {
+            "from": [req.from.format(time_layout.RFC3339)],
+            "to": [req.to.format(time_layout.RFC3339)],
+            "include_names": ["true"],
+            }.format_query()
+            ).with(
+            { "Header": { "Authorization": ["ApiKey " + clean_api_key] } }
+            ).do_request(),
+            "req_err"
+            ).as(resp, (!has(resp.req_err) && resp.StatusCode == 200) ?
+            try(bytes(resp.Body).decode_json(), "json_err").as(raw_body,
+            (type(raw_body) != map || has(raw_body.json_err)) ?
+            {
+            "events": meta_evts + [dyn({ "error": { "code": "decode_error", "id": "costs_instances", "message": "GET " + resp.Request.URL + ": " + ((type(raw_body) == map && has(raw_body.json_err)) ? string(raw_body.json_err) : ("expected JSON object, got " + (raw_body == null ? "null" : (type(raw_body) == list ? "array" : (type(raw_body) == map ? "object" : "scalar"))))) } })],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": replay_completed_to,
+            "next_from": req.from.format(time_layout.RFC3339),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "want_more": false,
+            }
+            :
+            raw_body.as(body,
+            try(
+            get_request(
+            clean_billing_base + "/api/v2/billing/organizations/" + clean_org_id + "/costs/items?" + {
+            "from": [req.from.format(time_layout.RFC3339)],
+            "to": [req.to.format(time_layout.RFC3339)],
+            }.format_query()
+            ).with(
+            { "Header": { "Authorization": ["ApiKey " + clean_api_key] } }
+            ).do_request(),
+            "req_err"
+            ).as(items_resp, (!has(items_resp.req_err) && (items_resp.StatusCode == 200 || items_resp.StatusCode == 204 || (items_resp.StatusCode == 404 && (!has(body.instances) || body.instances == null || size(body.instances) == 0)))) ?
+            (items_resp.StatusCode == 200 ? try(bytes(items_resp.Body).decode_json(), "json_err") : dyn({ "products": [] })).as(raw_items_body,
+            (type(raw_items_body) != map || has(raw_items_body.json_err)) ?
+            {
+            "events": meta_evts + [dyn({ "error": { "code": "decode_error", "id": "costs_items", "message": "GET " + items_resp.Request.URL + ": " + ((type(raw_items_body) == map && has(raw_items_body.json_err)) ? string(raw_items_body.json_err) : ("expected JSON object, got " + (raw_items_body == null ? "null" : (type(raw_items_body) == list ? "array" : (type(raw_items_body) == map ? "object" : "scalar"))))) } })],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": replay_completed_to,
+            "next_from": req.from.format(time_layout.RFC3339),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "want_more": false,
+            }
+            :
+            raw_items_body.as(items_body,
+            ((is_continuation && has(state.cached_projects) && state.cached_projects != null) ?
+            {
+            "more_pages": false,
+            "projects": state.cached_projects,
+            "cache_ok": true,
+            "err_code": "",
+            "err_msg": "",
+            }
+            :
+            string(state.?cursor.disc_es_next.orValue("START")).as(es_next,
+            string(state.?cursor.disc_obs_next.orValue("START")).as(obs_next,
+            string(state.?cursor.disc_sec_next.orValue("START")).as(sec_next,
+            string(state.?cursor.disc_vdb_next.orValue("START")).as(vdb_next,
+            state.?cursor.disc_sls.orValue([]).as(acc_sls,
+            string(state.?cursor.disc_err_code.orValue("")).as(prev_err_code,
+            string(state.?cursor.disc_err_msg.orValue("")).as(prev_err_msg,
+            ((es_next != "") ?
+            (clean_cloud_base + "/api/v1/serverless/projects/elasticsearch?" + (es_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [es_next] }).format_query()).as(u,
+            try(get_request(u).with({ "Header": { "Authorization": ["ApiKey " + clean_api_key] } }).do_request(), "req_err").as(r,
+            has(r.req_err) ? { "ok": false, "code": "transport_error", "msg": "transport_error", "items": [], "next": "" }
+            : (r.StatusCode == 200) ?
+            (size(r.Body) > 0 ? try(bytes(r.Body).decode_json(), "json_err") : { "items": [] }).as(raw,
+            (type(raw) == map && !has(raw.json_err)) ?
+            {
+            "ok": true, "code": "", "msg": "",
+            "items": (has(raw.items) && raw.items != null) ? raw.items.filter(p, has(p.id) && p.id != null && string(p.id) != "" && (!has(p.organization_id) || p.organization_id == null || string(p.organization_id) == "" || string(p.organization_id) == clean_org_id)).map(p, dyn(p.with({ "project_type": "elasticsearch" }))) : [],
+            "next": (has(raw.next_page) && raw.next_page != null && string(raw.next_page) != "") ? string(raw.next_page) : "",
+            }
+            : { "ok": false, "code": "decode_error", "msg": "decode_error", "items": [], "next": "" }
+            )
+            : (r.StatusCode == 204 || r.StatusCode == 404) ? { "ok": true, "code": "", "msg": "", "items": [], "next": "" }
+            : { "ok": false, "code": string(r.StatusCode), "msg": string(r.StatusCode), "items": [], "next": "" }
+            )
+            )
+            : { "ok": true, "code": "", "msg": "", "items": [], "next": "" }).as(es_page,
+            ((obs_next != "") ?
+            (clean_cloud_base + "/api/v1/serverless/projects/observability?" + (obs_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [obs_next] }).format_query()).as(u,
+            try(get_request(u).with({ "Header": { "Authorization": ["ApiKey " + clean_api_key] } }).do_request(), "req_err").as(r,
+            has(r.req_err) ? { "ok": false, "code": "transport_error", "msg": "transport_error", "items": [], "next": "" }
+            : (r.StatusCode == 200) ?
+            (size(r.Body) > 0 ? try(bytes(r.Body).decode_json(), "json_err") : { "items": [] }).as(raw,
+            (type(raw) == map && !has(raw.json_err)) ?
+            {
+            "ok": true, "code": "", "msg": "",
+            "items": (has(raw.items) && raw.items != null) ? raw.items.filter(p, has(p.id) && p.id != null && string(p.id) != "" && (!has(p.organization_id) || p.organization_id == null || string(p.organization_id) == "" || string(p.organization_id) == clean_org_id)).map(p, dyn(p.with({ "project_type": "observability" }))) : [],
+            "next": (has(raw.next_page) && raw.next_page != null && string(raw.next_page) != "") ? string(raw.next_page) : "",
+            }
+            : { "ok": false, "code": "decode_error", "msg": "decode_error", "items": [], "next": "" }
+            )
+            : (r.StatusCode == 204 || r.StatusCode == 404) ? { "ok": true, "code": "", "msg": "", "items": [], "next": "" }
+            : { "ok": false, "code": string(r.StatusCode), "msg": string(r.StatusCode), "items": [], "next": "" }
+            )
+            )
+            : { "ok": true, "code": "", "msg": "", "items": [], "next": "" }).as(obs_page,
+            ((sec_next != "") ?
+            (clean_cloud_base + "/api/v1/serverless/projects/security?" + (sec_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [sec_next] }).format_query()).as(u,
+            try(get_request(u).with({ "Header": { "Authorization": ["ApiKey " + clean_api_key] } }).do_request(), "req_err").as(r,
+            has(r.req_err) ? { "ok": false, "code": "transport_error", "msg": "transport_error", "items": [], "next": "" }
+            : (r.StatusCode == 200) ?
+            (size(r.Body) > 0 ? try(bytes(r.Body).decode_json(), "json_err") : { "items": [] }).as(raw,
+            (type(raw) == map && !has(raw.json_err)) ?
+            {
+            "ok": true, "code": "", "msg": "",
+            "items": (has(raw.items) && raw.items != null) ? raw.items.filter(p, has(p.id) && p.id != null && string(p.id) != "" && (!has(p.organization_id) || p.organization_id == null || string(p.organization_id) == "" || string(p.organization_id) == clean_org_id)).map(p, dyn(p.with({ "project_type": "security" }))) : [],
+            "next": (has(raw.next_page) && raw.next_page != null && string(raw.next_page) != "") ? string(raw.next_page) : "",
+            }
+            : { "ok": false, "code": "decode_error", "msg": "decode_error", "items": [], "next": "" }
+            )
+            : (r.StatusCode == 204 || r.StatusCode == 404) ? { "ok": true, "code": "", "msg": "", "items": [], "next": "" }
+            : { "ok": false, "code": string(r.StatusCode), "msg": string(r.StatusCode), "items": [], "next": "" }
+            )
+            )
+            : { "ok": true, "code": "", "msg": "", "items": [], "next": "" }).as(sec_page,
+            ((vdb_next != "") ?
+            (clean_cloud_base + "/api/v1/serverless/projects/vectordb?" + (vdb_next == "START" ? { "size": ["100"] } : { "size": ["100"], "next_page": [vdb_next] }).format_query()).as(u,
+            try(get_request(u).with({ "Header": { "Authorization": ["ApiKey " + clean_api_key] } }).do_request(), "req_err").as(r,
+            has(r.req_err) ? { "ok": false, "code": "transport_error", "msg": "transport_error", "items": [], "next": "" }
+            : (r.StatusCode == 200) ?
+            (size(r.Body) > 0 ? try(bytes(r.Body).decode_json(), "json_err") : { "items": [] }).as(raw,
+            (type(raw) == map && !has(raw.json_err)) ?
+            {
+            "ok": true, "code": "", "msg": "",
+            "items": (has(raw.items) && raw.items != null) ? raw.items.filter(p, has(p.id) && p.id != null && string(p.id) != "" && (!has(p.organization_id) || p.organization_id == null || string(p.organization_id) == "" || string(p.organization_id) == clean_org_id)).map(p, dyn(p.with({ "project_type": "vectordb" }))) : [],
+            "next": (has(raw.next_page) && raw.next_page != null && string(raw.next_page) != "") ? string(raw.next_page) : "",
+            }
+            : { "ok": false, "code": "decode_error", "msg": "decode_error", "items": [], "next": "" }
+            )
+            : (r.StatusCode == 204 || r.StatusCode == 404) ? { "ok": true, "code": "", "msg": "", "items": [], "next": "" }
+            : { "ok": false, "code": string(r.StatusCode), "msg": string(r.StatusCode), "items": [], "next": "" }
+            )
+            )
+            : { "ok": true, "code": "", "msg": "", "items": [], "next": "" }).as(vdb_page,
+            (prev_err_code != "" ? prev_err_code : (!es_page.ok ? es_page.code : (!obs_page.ok ? obs_page.code : (!sec_page.ok ? sec_page.code : (!vdb_page.ok ? vdb_page.code : ""))))).as(cur_err_code,
+            (prev_err_msg != "" ? prev_err_msg : (cur_err_code != "" ? ("Required Serverless project discovery request failed (elasticsearch=" + (es_page.ok ? "ok" : es_page.msg) + ", observability=" + (obs_page.ok ? "ok" : obs_page.msg) + ", security=" + (sec_page.ok ? "ok" : sec_page.msg) + ", vectordb=" + (vdb_page.ok ? "ok" : vdb_page.msg) + "); preserving billing day for retry") : "")).as(cur_err_msg,
+            (es_page.next != "" || obs_page.next != "" || sec_page.next != "" || vdb_page.next != "").as(has_more_disc,
+            {
+            "more_pages": has_more_disc,
+            "projects": acc_sls + es_page.items + obs_page.items + sec_page.items + vdb_page.items,
+            "cache_ok": (cur_err_code == ""),
+            "err_code": cur_err_code,
+            "err_msg": cur_err_msg,
+            "es_next": es_page.next,
+            "obs_next": obs_page.next,
+            "sec_next": sec_page.next,
+            "vdb_next": vdb_page.next,
+            }
+            )))
+            )))))))))))
+            ).as(discovery,
+            discovery.more_pages ?
+            {
+            "events": size(meta_evts) > 0 ? meta_evts : [dyn({ "fake": true })],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": replay_completed_to,
+            "next_from": req.from.format(time_layout.RFC3339),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            "disc_es_next": discovery.es_next,
+            "disc_obs_next": discovery.obs_next,
+            "disc_sec_next": discovery.sec_next,
+            "disc_vdb_next": discovery.vdb_next,
+            "disc_sls": discovery.projects,
+            "disc_err_code": discovery.err_code,
+            "disc_err_msg": discovery.err_msg,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "cached_projects": null,
+            "want_more": true,
+            }
+            :
+            !discovery.cache_ok ?
+            {
+            "events": meta_evts + [dyn({
+            "error": {
+            "code": discovery.err_code,
+            "id": "project_discovery_failed",
+            "message": discovery.err_msg,
+            },
+            })],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": replay_completed_to,
+            "next_from": req.from.format(time_layout.RFC3339),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "cached_projects": null,
+            "want_more": false,
+            }
+            :
+            discovery.projects.as(projects,
+            ((has(body.instances) && body.instances != null) ?
+            body.instances.filter(instance,
+            size(projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id)) > 0 ||
+            ((!has(instance.type) || instance.type == null || string(instance.type).to_lower() != "deployment") &&
+            has(instance.product_line_items) && instance.product_line_items != null &&
+            !instance.product_line_items.exists(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls,
+            !ls.contains("serverless") && (
+            ls.contains("cloud-enterprise") || ls.contains("cloud-platinum") || ls.contains("cloud-standard") || ls.contains("cloud-gold") ||
+            ls.contains(".es.data") || ls.contains(".es.ml") || ls.contains(".es.master") || ls.contains(".es.coordinating") ||
+            ls.contains(".kibana.") || ls.contains(".apm.") || ls.contains(".enterprise_search.") || ls.contains(".enterprisesearch.") || ls.contains(".integrations_server.") || ls.contains(".integrationsserver.")
+            )
+            )
+            ) &&
+            (
+            (has(instance.type) && instance.type != null && string(instance.type).to_lower().as(it,
+            it == "serverless" || it.contains("serverless") ||
+            it == "observability" || it == "oblt" || it.contains("observability") || it.contains("oblt") ||
+            it == "security" || it == "sec" || it.contains("security") ||
+            it == "elasticsearch" || it == "es" || it.contains("elasticsearch") ||
+            it == "vectordb" || it == "vector" || it.contains("vectordb") || it.contains("vector") ||
+            it == "search" || it == "enterprise_search" || it.contains("search")
+            ) && size(instance.product_line_items.filter(li, has(li.sku) && li.sku != null && string(li.sku) != "")) > 0) ||
+            size(instance.product_line_items.filter(li,
+            has(li.sku) && li.sku != null && string(li.sku).to_lower().as(ls,
+            ls.contains("-vcu") || ls.contains(".vcu") || ls.contains(".ecu") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains(".security.") || ls.contains(".sec.") || ls.contains(".vectordb.") || ls.contains(".elasticsearch.") ||
+            ls.startsWith("serverless.vectordb.") || ls.startsWith("vectordb.") ||
+            ls.startsWith("serverless.search.") || ls.startsWith("serverless.") || ls.startsWith("observability.") || ls.startsWith("oblt.") ||
+            ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("search.") || ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.contains("synthetic") ||
+            ls.contains("retained") || ls == "global.inference-chat-input" || ls.contains("inference") || ls.contains("llm") ||
+            ls.contains("agent-builder") || ls.contains(".eis") || ls.contains("workflow") || ls.contains("cross-project") || ls.contains("cps")
+            )
+            )) > 0
+            ))
+            )
+            : []).as(sls_instances,
+            sls_instances.map(instance,
+            projects.filter(p, has(instance.id) && instance.id != null && p.id == instance.id).as(matched_projs,
+            ((size(matched_projs) > 0 && has(matched_projs[0].project_type) && matched_projs[0].project_type != null && matched_projs[0].project_type != "") ? matched_projs[0].project_type : (
+            ((has(instance.type) && instance.type != null) ? string(instance.type).to_lower().trim_space() : "").as(raw_inst_type,
+            (raw_inst_type == "observability" || raw_inst_type == "oblt" || raw_inst_type.contains("observability") || raw_inst_type.contains("oblt")) ? "observability" : (
+            (raw_inst_type == "security" || raw_inst_type == "sec" || raw_inst_type.contains("security")) ? "security" : (
+            (raw_inst_type == "vectordb" || raw_inst_type == "vector" || raw_inst_type.contains("vectordb") || raw_inst_type.contains("vector")) ? "vectordb" : (
+            (raw_inst_type == "elasticsearch" || raw_inst_type == "es" || raw_inst_type.contains("elasticsearch")) ? "elasticsearch" : (
+            (raw_inst_type == "search" || raw_inst_type == "enterprise_search" || raw_inst_type.contains("search")) ? "search" : (
+            (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("observability.") || s.startsWith("oblt.") || s.startsWith("serverless.observability.") || s.startsWith("serverless.oblt.") || s.contains(".observability.") || s.contains(".oblt.") || s.contains("synthetic")))) ? "observability" : (
+            (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("security.") || s.startsWith("sec.") || s.startsWith("serverless.security.") || s.startsWith("serverless.sec.") || s.contains(".security.") || s.contains(".sec.")))) ? "security" : (
+            (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("vectordb.") || s.startsWith("serverless.vectordb.") || s.contains(".vectordb.")))) ? "vectordb" : (
+            (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("elasticsearch.") || s.startsWith("es.") || s.startsWith("serverless.elasticsearch.") || s.startsWith("serverless.es.") || s.contains(".elasticsearch.")))) ? "elasticsearch" : (
+            (has(instance.product_line_items) && instance.product_line_items != null && instance.product_line_items.exists(li, has(li.sku) && li.sku != null && string(li.sku).to_lower().as(s, s.startsWith("search.") || s.startsWith("serverless.search.")))) ? "search" : ((raw_inst_type == "" || raw_inst_type == "serverless" || !(has(instance.id) && instance.id != null && string(instance.id) != "")) ? "serverless" : "elasticsearch")
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )).as(resolved_type,
+            ((has(instance.id) && instance.id != null && string(instance.id) != "") ? string(instance.id) : ("unassociated_" + resolved_type)).as(inst_id,
+            ((size(matched_projs) > 0 && has(matched_projs[0].name) && matched_projs[0].name != null && matched_projs[0].name != "" && matched_projs[0].name != inst_id) ? matched_projs[0].name : ((has(instance.name) && instance.name != null && instance.name != "") ? instance.name : ((has(instance.id) && instance.id != null && string(instance.id) != "") ? inst_id : ("Unassociated (" + resolved_type + ")")))).as(resolved_name,
+            ((size(matched_projs) > 0 && has(matched_projs[0].region_id) && matched_projs[0].region_id != null && string(matched_projs[0].region_id) != "") ? string(matched_projs[0].region_id) : ((has(instance.region_id) && instance.region_id != null && string(instance.region_id) != "") ? string(instance.region_id) : "")).as(resolved_region,
+            (has(instance.product_line_items) && instance.product_line_items != null) ?
+            instance.product_line_items.filter(line_item,
+            has(line_item.sku) && line_item.sku != null && string(line_item.sku) != "" && (
+            size(matched_projs) > 0 ||
+            (has(instance.id) && instance.id != null && string(instance.id) != "" && (!has(instance.type) || instance.type == null || string(instance.type).to_lower() != "deployment")) ||
+            (has(instance.type) && instance.type != null && string(instance.type).to_lower().as(it,
+            it == "serverless" || it.contains("serverless") ||
+            it == "observability" || it == "oblt" || it.contains("observability") || it.contains("oblt") ||
+            it == "security" || it == "sec" || it.contains("security") ||
+            it == "elasticsearch" || it == "es" || it.contains("elasticsearch") ||
+            it == "vectordb" || it == "vector" || it.contains("vectordb") || it.contains("vector") ||
+            it == "search" || it == "enterprise_search" || it.contains("search")
+            )) ||
+            string(line_item.sku).to_lower().as(ls,
+            ls.contains("-vcu") || ls.contains(".vcu") || ls.contains(".ecu") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains(".security.") || ls.contains(".sec.") || ls.contains(".vectordb.") || ls.contains(".elasticsearch.") ||
+            ls.startsWith("serverless.vectordb.") || ls.startsWith("vectordb.") ||
+            ls.startsWith("serverless.search.") || ls.startsWith("serverless.") || ls.startsWith("observability.") || ls.startsWith("oblt.") ||
+            ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("search.") || ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.contains("synthetic") ||
+            ls.contains("retained") || ls == "global.inference-chat-input" || ls.contains("inference") || ls.contains("llm") ||
+            ls.contains("agent-builder") || ls.contains(".eis") || ls.contains("workflow") || ls.contains("cross-project") || ls.contains("cps")
+            )
+            )
+            ).map(line_item,
+            {
+            "sku": string(line_item.sku),
+            "type": (has(line_item.type) && line_item.type != null) ? string(line_item.type) : "",
+            "kind": (has(line_item.kind) && line_item.kind != null) ? string(line_item.kind) : "",
+            "unit": (has(line_item.unit) && line_item.unit != null) ? string(line_item.unit) : "",
+            "total_ecu": (has(line_item.total_ecu) && line_item.total_ecu != null) ? double(line_item.total_ecu) : 0.0,
+            "quantity_value": (has(line_item.quantity) && line_item.quantity != null && has(line_item.quantity.value) && line_item.quantity.value != null) ? double(line_item.quantity.value) : 0.0,
+            }
+            ).as(sls_line_items,
+            size(sls_line_items) > 0 ?
+            sls_line_items.map(line_item,
+            {
+            "doc_type": "billing_line_item",
+            "period_start": req.from.format(time_layout.RFC3339),
+            "project_id": inst_id,
+            "project_name": resolved_name,
+            "project_type": resolved_type,
+            "sku": line_item.sku,
+            "total_ecu": line_item.total_ecu,
+            "quantity_value": double(line_item.quantity_value),
+            "conf_chargeable_unit_rate": (rate_valid ? double(clean_rate) : 1.0),
+            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+            "conf_currency_symbol": state.conf_currency_symbol,
+            "ess": { "billing": { "organization_id": clean_org_id } },
+            }.with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {}).with(line_item.unit != "" ? { "billing_unit": line_item.unit } : {}).with(line_item.type != "" ? { "billing_type": line_item.type } : {}).with(line_item.kind != "" ? { "billing_kind": line_item.kind } : {})
+            )
+            :
+            [
+            {
+            "doc_type": "billing_line_item",
+            "period_start": req.from.format(time_layout.RFC3339),
+            "project_id": inst_id,
+            "project_name": resolved_name,
+            "project_type": resolved_type,
+            "sku": "none",
+            "total_ecu": 0.0,
+            "quantity_value": 0.0,
+            "conf_chargeable_unit_rate": (rate_valid ? double(clean_rate) : 1.0),
+            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+            "conf_currency_symbol": state.conf_currency_symbol,
+            "ess": { "billing": { "organization_id": clean_org_id } },
+            }.with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {})
+            ]
+            )
+            :
+            [
+            {
+            "doc_type": "billing_line_item",
+            "period_start": req.from.format(time_layout.RFC3339),
+            "project_id": inst_id,
+            "project_name": resolved_name,
+            "project_type": resolved_type,
+            "sku": "none",
+            "total_ecu": 0.0,
+            "quantity_value": 0.0,
+            "conf_chargeable_unit_rate": (rate_valid ? double(clean_rate) : 1.0),
+            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+            "conf_currency_symbol": state.conf_currency_symbol,
+            "ess": { "billing": { "organization_id": clean_org_id } },
+            }.with(resolved_region != "" ? { "cloud": { "region": resolved_region } } : {})
+            ]
+            )
+            )
+            )
+            )
+            )
+            ).flatten().as(instance_evts,
+            (
+            instance_evts +
+            ((has(items_body.products) && items_body.products != null) ?
+            items_body.products.filter(prod,
+            !has(prod.type) || prod.type == null || string(prod.type).to_lower() != "deployment"
+            ).map(prod,
+            ((has(prod.type) && prod.type != null) ? string(prod.type).to_lower() : "").as(raw_prod_type,
+            ((raw_prod_type == "observability" || raw_prod_type == "oblt" || raw_prod_type.contains("observability") || raw_prod_type.contains("oblt")) ? "observability" : ((raw_prod_type == "security" || raw_prod_type == "sec" || raw_prod_type.contains("security")) ? "security" : ((raw_prod_type == "vectordb" || raw_prod_type == "vector" || raw_prod_type.contains("vectordb") || raw_prod_type.contains("vector")) ? "vectordb" : ((raw_prod_type == "elasticsearch" || raw_prod_type == "es" || raw_prod_type.contains("elasticsearch")) ? "elasticsearch" : ((raw_prod_type == "search" || raw_prod_type == "enterprise_search" || raw_prod_type.contains("search")) ? "search" : ""))))).as(prod_type,
+            (prod_type != "" || raw_prod_type == "serverless" || raw_prod_type.contains("serverless")).as(is_sls_prod,
+            (has(prod.product_line_items) && prod.product_line_items != null) ?
+            prod.product_line_items.filter(li,
+            has(li.sku) && li.sku != null && string(li.sku) != "" &&
+            string(li.sku).to_lower().as(ls,
+            !(!ls.contains("serverless") && (
+            ls.contains("cloud-enterprise") || ls.contains("cloud-platinum") || ls.contains("cloud-standard") || ls.contains("cloud-gold") ||
+            ls.contains(".es.data") || ls.contains(".es.ml") || ls.contains(".es.master") || ls.contains(".es.coordinating") ||
+            ls.contains(".kibana.") || ls.contains(".apm.") || ls.contains(".enterprise_search.") || ls.contains(".enterprisesearch.") || ls.contains(".integrations_server.") || ls.contains(".integrationsserver.")
+            )) && (
+            is_sls_prod ||
+            ls.contains("-vcu") || ls.contains(".vcu") || ls.contains(".ecu") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains(".security.") || ls.contains(".sec.") || ls.contains(".vectordb.") || ls.contains(".elasticsearch.") ||
+            ls.startsWith("serverless.vectordb.") || ls.startsWith("vectordb.") ||
+            ls.startsWith("serverless.search.") || ls.startsWith("serverless.") || ls.startsWith("observability.") || ls.startsWith("oblt.") ||
+            ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("search.") || ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.contains("synthetic") ||
+            ls.contains("retained") || ls == "global.inference-chat-input" || ls.contains("inference") || ls.contains("llm") ||
+            ls.contains("agent-builder") || ls.contains(".eis") || ls.contains("workflow") || ls.contains("cross-project") || ls.contains("cps")
+            )
+            )
+            ).map(li,
+            string(li.sku).to_lower().as(ls,
+            ((prod_type != "") ? prod_type : ((ls.startsWith("observability.") || ls.startsWith("oblt.") || ls.startsWith("serverless.observability.") || ls.startsWith("serverless.oblt.") || ls.contains(".observability.") || ls.contains(".oblt.") || ls.contains("synthetic")) ? "observability" : ((ls.startsWith("security.") || ls.startsWith("sec.") || ls.startsWith("serverless.security.") || ls.startsWith("serverless.sec.") || ls.contains(".security.") || ls.contains(".sec.")) ? "security" : ((ls.startsWith("vectordb.") || ls.startsWith("serverless.vectordb.") || ls.contains(".vectordb.")) ? "vectordb" : ((ls.startsWith("elasticsearch.") || ls.startsWith("es.") || ls.startsWith("serverless.elasticsearch.") || ls.startsWith("serverless.es.") || ls.contains(".elasticsearch.")) ? "elasticsearch" : ((ls.startsWith("search.") || ls.startsWith("serverless.search.")) ? "search" : "elasticsearch")))))).as(eff_prod_type,
+            {
+            "sku": string(li.sku),
+            "type": (has(li.type) && li.type != null) ? string(li.type) : "",
+            "kind": (has(li.kind) && li.kind != null) ? string(li.kind) : "",
+            "unit": (has(li.unit) && li.unit != null) ? string(li.unit) : "",
+            "prod_type": prod_type,
+            "eff_prod_type": eff_prod_type,
+            "item_ecu": (has(li.total_ecu) && li.total_ecu != null) ? double(li.total_ecu) : 0.0,
+            "item_qty": (has(li.quantity) && li.quantity != null && has(li.quantity.value) && li.quantity.value != null) ? double(li.quantity.value) : 0.0,
+            }
+            )
+            )
+            )
+            : []
+            )
+            )
+            )
+            ).flatten().as(raw_item_entries,
+            zip(
+            raw_item_entries.map(ie, ie.eff_prod_type + "\n" + ie.sku),
+            raw_item_entries
+            ).keys().map(ik,
+            raw_item_entries.filter(ie, (ie.eff_prod_type + "\n" + ie.sku) == ik).as(igrp,
+            igrp[0].eff_prod_type.as(eff_prod_type,
+            igrp[0].sku.as(isku,
+            igrp.filter(ie, ie.unit != "").as(ugrp,
+            (size(ugrp) > 0 ? ugrp[0].unit : "").as(eff_unit,
+            igrp.filter(ie, ie.type != "").as(tgrp,
+            (size(tgrp) > 0 ? tgrp[0].type : "").as(eff_type,
+            igrp.filter(ie, ie.kind != "").as(kgrp,
+            (size(kgrp) > 0 ? kgrp[0].kind : "").as(eff_kind,
+            (igrp.exists(ie, ie.prod_type == "") ? instance_evts.filter(e, e.sku == isku) : instance_evts.filter(e, e.sku == isku && e.project_type == eff_prod_type)).as(matched_evts,
+            matched_evts.map(e, e.total_ecu).as(matched_ecus,
+            (size(matched_ecus) == 0 ? 0.0 : matched_ecus.sum()).as(day_sku_ecu,
+            matched_evts.map(e, e.quantity_value).as(matched_qtys,
+            (size(matched_qtys) == 0 ? 0.0 : matched_qtys.sum()).as(day_sku_qty,
+            igrp.map(ie, ie.item_ecu).sum().as(item_ecu,
+            igrp.map(ie, ie.item_qty).sum().as(item_qty,
+            (item_ecu - day_sku_ecu).as(diff_ecu,
+            (max(0.0, item_qty - day_sku_qty)).as(diff_qty,
+            (diff_ecu > 0.0001 || diff_ecu < -0.0001 || diff_qty > 0.0001) ?
+            [
+            {
+            "doc_type": "billing_line_item",
+            "period_start": req.from.format(time_layout.RFC3339),
+            "project_id": "deleted_or_unassociated_" + eff_prod_type,
+            "project_name": "Deleted / Unassociated (" + eff_prod_type + ")",
+            "project_type": eff_prod_type,
+            "sku": isku,
+            "total_ecu": diff_ecu,
+            "quantity_value": diff_qty,
+            "conf_chargeable_unit_rate": (rate_valid ? double(clean_rate) : 1.0),
+            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+            "conf_currency_symbol": state.conf_currency_symbol,
+            "ess": { "billing": { "organization_id": clean_org_id } },
+            }.with(eff_unit != "" ? { "billing_unit": eff_unit } : {}).with(eff_type != "" ? { "billing_type": eff_type } : {}).with(eff_kind != "" ? { "billing_kind": eff_kind } : {})
+            ]
+            : []
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            ).flatten()
+            )
+            : []) +
+            projects.filter(p,
+            size(sls_instances.filter(inst, has(inst.id) && inst.id == p.id)) == 0
+            ).map(p,
+            ((has(p.region_id) && p.region_id != null && string(p.region_id) != "") ? string(p.region_id) : "").as(p_region,
+            {
+            "doc_type": "billing_line_item",
+            "period_start": req.from.format(time_layout.RFC3339),
+            "project_id": p.id,
+            "project_name": (has(p.name) && p.name != null && p.name != "") ? p.name : p.id,
+            "project_type": (has(p.project_type) && p.project_type != null && p.project_type != "") ? p.project_type : "elasticsearch",
+            "sku": "none",
+            "total_ecu": 0.0,
+            "quantity_value": 0.0,
+            "conf_chargeable_unit_rate": (rate_valid ? double(clean_rate) : 1.0),
+            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+            "conf_currency_symbol": state.conf_currency_symbol,
+            "ess": { "billing": { "organization_id": clean_org_id } },
+            }.with(p_region != "" ? { "cloud": { "region": p_region } } : {})
+            )
+            )
+            ).as(raw_evts,
+            zip(
+            raw_evts.map(d, string(d.project_id) + "\n" + string(d.sku)),
+            raw_evts
+            ).keys().map(k,
+            raw_evts.filter(x, (string(x.project_id) + "\n" + string(x.sku)) == k).as(grp,
+            grp.filter(x, x.project_name != x.project_id).as(named_grp,
+            (size(named_grp) > 0 ? named_grp[0] : grp[0]).with({
+            "total_ecu": grp.map(x, x.total_ecu).sum(),
+            "quantity_value": grp.map(x, x.quantity_value).sum(),
+            })
+            )
+            )
+            ).as(curr_evts,
+            (
+            size(sls_instances) == 0 &&
+            size(projects) > 0 &&
+            req.to >= (latest_ready_to - duration("24h")) &&
+            curr_evts.exists(e,
+            string(e.project_id).startsWith("deleted_or_unassociated_") &&
+            (e.total_ecu > 0.0001 || e.quantity_value > 0.0001) &&
+            string(e.sku).to_lower().as(s,
+            s.contains("-vcu") || s.contains(".vcu") || s.contains("ml.ecu") || s.contains("ml_ecu") ||
+            s.contains(".retained") || s.contains("synthetic") || s.contains("inference") ||
+            s.contains(".eis") || s.contains("llm") || s.contains("agent-builder")
+            )
+            ) &&
+            (state.?cursor.empty_inst_day.orValue("") == req.from.format(time_layout.RFC3339) ? int(state.?cursor.empty_inst_retries.orValue(0)) : 0) < 2
+            ) ?
+            {
+            "events": meta_evts + [dyn({
+            "error": {
+            "code": "instances_lagging_items",
+            "id": "instances_lagging_items",
+            "message": "Billing /costs/instances returned 0 Serverless project instances while /costs/items reported allocatable workload spend for " + req.from.format(time_layout.DateOnly) + "; holding cursor for retry",
+            },
+            })],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": replay_completed_to,
+            "next_from": req.from.format(time_layout.RFC3339),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": req.from.format(time_layout.RFC3339),
+            "empty_inst_retries": (state.?cursor.empty_inst_day.orValue("") == req.from.format(time_layout.RFC3339) ? int(state.?cursor.empty_inst_retries.orValue(0)) : 0) + 1,
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "cached_projects": discovery.cache_ok ? projects : null,
+            "want_more": false,
+            }
+            :
+            (
+            curr_evts +
+            prev_day_keys.filter(pk,
+            !curr_evts.exists(e, string(e.project_id) == string(pk.project_id) && string(e.sku) == string(pk.sku))
+            ).map(pk,
+            curr_evts.filter(ce, string(ce.project_id) == string(pk.project_id)).as(curr_proj_evts,
+            projects.filter(p, has(p.id) && p.id != null && string(p.id) == string(pk.project_id)).as(pk_projs,
+            ((size(curr_proj_evts) > 0 && has(curr_proj_evts[0].project_name) && string(curr_proj_evts[0].project_name) != "") ? string(curr_proj_evts[0].project_name) : ((size(pk_projs) > 0 && has(pk_projs[0].name) && pk_projs[0].name != null && string(pk_projs[0].name) != "") ? string(pk_projs[0].name) : string(pk.project_name))).as(pk_name,
+            {
+            "doc_type": "billing_line_item",
+            "period_start": req.from.format(time_layout.RFC3339),
+            "project_id": string(pk.project_id),
+            "project_name": pk_name,
+            "project_type": string(pk.project_type),
+            "sku": string(pk.sku),
+            "total_ecu": 0.0,
+            "quantity_value": 0.0,
+            "conf_chargeable_unit_rate": (rate_valid ? double(clean_rate) : 1.0),
+            "conf_chargeable_unit_rate_unit": state.conf_currency_unit,
+            "conf_currency_symbol": state.conf_currency_symbol,
+            "ess": { "billing": { "organization_id": clean_org_id } },
+            }.with((has(pk.region) && pk.region != null && string(pk.region) != "") ? { "cloud": { "region": string(pk.region) } } : {}).with((has(pk.billing_unit) && pk.billing_unit != null && string(pk.billing_unit) != "") ? { "billing_unit": string(pk.billing_unit) } : {}).with((has(pk.billing_type) && pk.billing_type != null && string(pk.billing_type) != "") ? { "billing_type": string(pk.billing_type) } : {}).with((has(pk.billing_kind) && pk.billing_kind != null && string(pk.billing_kind) != "") ? { "billing_kind": string(pk.billing_kind) } : {})
+            ))))
+            ).as(evts,
+            (
+            pruned_recent_keys.filter(pk, string(pk.day) != req.from.format(time_layout.RFC3339)) +
+            ((req.from >= replay_start) ?
+            curr_evts.filter(e, e.total_ecu != 0.0 || e.quantity_value != 0.0).map(e,
+            {
+            "day": req.from.format(time_layout.RFC3339),
+            "project_id": string(e.project_id),
+            "project_name": string(e.project_name),
+            "project_type": string(e.project_type),
+            "sku": string(e.sku),
+            "region": (has(e.cloud) && e.cloud != null && has(e.cloud.region) && e.cloud.region != null) ? string(e.cloud.region) : "",
+            "billing_unit": (has(e.billing_unit) && e.billing_unit != null) ? string(e.billing_unit) : "",
+            "billing_type": (has(e.billing_type) && e.billing_type != null) ? string(e.billing_type) : "",
+            "billing_kind": (has(e.billing_kind) && e.billing_kind != null) ? string(e.billing_kind) : "",
+            }
+            )
+            : [])
+            ).as(updated_recent_keys,
+            {
+            "events": (size(meta_evts) + size(evts)) > 0 ? (meta_evts + evts.map(e, dyn(e))) : [ dyn({ "fake": true }) ],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.to).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to || req.to + duration("26h") > now) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": (high_water >= latest_ready_to && req.to + duration("26h") > now) ? latest_ready_to_str : replay_completed_to,
+            "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
+            "recent_day_keys": updated_recent_keys,
+            "empty_inst_day": "",
+            "empty_inst_retries": 0,
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete || req.to >= latest_ready_to || (req.to + duration("26h") > now),
+            },
+            "next_from": (req.to + duration("26h") <= now) ? req.to.format(time_layout.RFC3339) : replay_start_str,
+            "cached_projects": discovery.cache_ok ? projects : null,
+            "want_more": req.to + duration("26h") <= now,
+            }
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            :
+            {
+            "events": meta_evts + [dyn({ "error": { "code": has(items_resp.req_err) ? "transport_error" : string(items_resp.StatusCode), "id": has(items_resp.req_err) ? "transport_error" : string(items_resp.Status), "message": has(items_resp.req_err) ? ("GET /costs/items: " + string(items_resp.req_err)) : ("GET " + items_resp.Request.URL + ": " + ( (size(items_resp.Body) != 0) ? string(items_resp.Body) : string(items_resp.Status) + " (" + string(items_resp.StatusCode) + ")" )) } })],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": replay_completed_to,
+            "next_from": req.from.format(time_layout.RFC3339),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "want_more": false,
+            }
+            )
+            )
+            )
+            :
+            {
+            "events": meta_evts + [dyn({ "error": { "code": has(resp.req_err) ? "transport_error" : string(resp.StatusCode), "id": has(resp.req_err) ? "transport_error" : string(resp.Status), "message": has(resp.req_err) ? ("GET /costs/instances: " + string(resp.req_err)) : ("GET " + resp.Request.URL + ": " + ( (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")" )) } })],
+            "cursor": {
+            "initial_from": initial_from.format(time_layout.RFC3339),
+            "last_to": max(high_water, req.from).format(time_layout.RFC3339),
+            "replay_target_to": (high_water >= latest_ready_to) ? latest_ready_to_str : replay_target_to,
+            "replay_completed_to": replay_completed_to,
+            "next_from": req.from.format(time_layout.RFC3339),
+            "recent_day_keys": pruned_recent_keys,
+            "empty_inst_day": state.?cursor.empty_inst_day.orValue(""),
+            "empty_inst_retries": int(state.?cursor.empty_inst_retries.orValue(0)),
+            "conf_sig": conf_sig,
+            "last_credit_day": cred_res.credit_day,
+            "backfill_complete": was_backfill_complete,
+            },
+            "next_from": req.from.format(time_layout.RFC3339),
+            "want_more": false,
+            }
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )
+            )))))))))))))))))))))))))
+            )
+          publisher_pipeline.disable_host: true
           redact:
             fields:
                 - api_key
                 - cloud_api_key
-          resource.proxy_url: http://proxy.example.com:8080
+                - proxy_url
+          resource.proxy_url: ${SECRET_1}
           resource.ssl:
             verification_mode: full
           resource.timeout: 60s
@@ -612,11 +1005,19 @@ inputs:
             api_key: ${SECRET_0}
             billing_api_base: https://billing.example.com
             cloud_api_base: https://api.example.com
+            collect_ess_credits: false
             conf_currency_symbol: €
             conf_currency_unit: EUR
+            conf_effective_from: ""
             conf_unit_rate: "0.92"
+            config_owner_id: ""
             lookbehind: 14
             organization_id: "2222"
+            sync_fleet_config: true
+          tags:
+            - forwarded
+            - chargeback_serverless
+            - billing
       type: cel
       use_output: default
 output_permissions:
@@ -634,4 +1035,5 @@ output_permissions:
                     - auto_configure
                     - create_doc
 secret_references:
+    - {}
     - {}

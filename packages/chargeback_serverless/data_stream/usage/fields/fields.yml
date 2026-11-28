@@ -12,7 +12,7 @@
   description: Serverless project name.
 - name: project_type
   type: keyword
-  description: Serverless project type (elasticsearch, observability, security).
+  description: Serverless project type (elasticsearch, observability, security, vectordb, search).
 - name: optimized_for
   type: keyword
   description: Serverless optimization profile (general_purpose, vector, and others).
@@ -27,7 +27,7 @@
   description: Raw backing index or source identifier before data stream normalization.
 - name: ds_type
   type: keyword
-  description: Data stream type prefix (logs, metrics, traces, synthetics, other).
+  description: Data stream type prefix (logs, metrics, traces, synthetics, profiling, index, system, other).
 - name: ds_dataset
   type: keyword
   description: Data stream dataset name (for example http, icmp, tcp, dns, browser).
@@ -48,7 +48,7 @@
   description: Trained ML model identifier.
 - name: task_type
   type: keyword
-  description: Inference task type (ingest_inference, query_inference).
+  description: Inference task type (ingest_inference, query_inference, inference, billing_derived).
 - name: inference_count
   type: long
   description: Number of inferences performed.
@@ -87,13 +87,13 @@
   description: Average synthetic check duration in milliseconds.
 - name: last_status
   type: keyword
-  description: Project harvest health status (ok, empty_or_unauthorized, inactive).
+  description: Project harvest health status (ok, empty_or_unauthorized, transient_error, inactive).
 - name: api_key_type
   type: keyword
-  description: API key credential type used for project harvesting (hub_key, remote_key, missing_key, cloud_billing_only).
+  description: API key credential type used for project harvesting (hub_key, remote_key, cloud_key, missing_key, transient_error, cloud_billing_only).
 - name: synthetics_status
   type: keyword
-  description: Synthetics telemetry harvest status (ok, billing_derived, unauthorized, inactive).
+  description: Synthetics telemetry harvest status (ok, billing_derived, unauthorized, transient_error, inactive).
 - name: index_count
   type: long
   description: Total number of indices discovered in the project.
@@ -109,6 +109,9 @@
 - name: updated_at
   type: date
   description: Last successful harvest timestamp.
+- name: total_duration_ms
+  type: double
+  description: Daily cumulative synthetic check duration in milliseconds.
 - name: conf_chargeable_unit_rate
   type: double
   description: Configured currency conversion multiplier.
@@ -118,6 +121,9 @@
 - name: conf_currency_symbol
   type: keyword
   description: Configured currency display symbol.
+- name: conf_policy_id
+  type: keyword
+  description: Stable policy identifier from agent metadata to isolate multi-policy usage events.
 - name: event.ingested
   type: date
   description: Ingest pipeline execution timestamp.

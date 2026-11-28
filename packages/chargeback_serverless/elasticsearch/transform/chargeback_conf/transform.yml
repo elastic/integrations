@@ -1,0 +1,270 @@
+description: Syncs Chargeback Serverless currency rate and display settings from Fleet configuration snapshot events into serverless_chargeback_conf_lookup while preserving manual rows when Fleet sync is disabled.
+source:
+  index:
+    - metrics-chargeback_serverless.billing-*
+    - metrics-ess_billing.billing-*
+    - -metrics-ess_billing.billing-chargeback*
+    - -serverless_*_lookup*
+    - -serverless_billing_credits_lines*
+  query:
+    term:
+      doc_type: config_snapshot
+  runtime_mappings:
+    config_join_key:
+      type: keyword
+      script:
+        source: |
+          emit('chargeback_config');
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+    cb_conf_ts:
+      type: long
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          long syncTs = -1L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncTs = doc['event.created'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          if (syncTs > 0L && ts > (syncTs + 300000L)) {
+            ts = syncTs;
+          }
+          emit(ts);
+    cb_conf_emitter_rec:
+      type: keyword
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
+            ? params._source.data_stream.namespace.toString().trim()
+            : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
+          if (ns == '') { ns = 'default'; }
+
+          String explicitId = params._source.get('conf_owner_id') != null
+            ? params._source.get('conf_owner_id').toString().trim()
+            : '';
+          boolean isExplicit = explicitId != '';
+          boolean fromInputId = false;
+          String pkgPolId = '';
+          if (params._source.get('package_policy_id') != null) {
+            pkgPolId = params._source.get('package_policy_id').toString().trim();
+          } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
+            pkgPolId = params._source.input.package_policy_id.toString().trim();
+          } else if (params._source.get('input.package_policy_id') != null) {
+            pkgPolId = params._source.get('input.package_policy_id').toString().trim();
+          } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
+            pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
+          } else if (params._source.get('elastic_agent.package_policy_id') != null) {
+            pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
+          } else if (params._source.get('conf_policy_id') != null) {
+            pkgPolId = params._source.get('conf_policy_id').toString().trim();
+            fromInputId = true;
+          } else if (params._source.input instanceof Map && params._source.input.id != null) {
+            pkgPolId = params._source.input.id.toString().trim();
+            fromInputId = true;
+          } else if (params._source.get('input.id') != null) {
+            pkgPolId = params._source.get('input.id').toString().trim();
+            fromInputId = true;
+          }
+          if (pkgPolId != '') {
+            def pm = /^(?:.*-)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
+            if (pm.matches()) {
+              pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
+            } else if (fromInputId) {
+              def sm = /^cel-chargeback_serverless\.(?:billing|usage)(?:-(.+))?$/.matcher(pkgPolId);
+              if (sm.matches()) {
+                pkgPolId = sm.group(1) != null ? ('cel-chargeback_serverless-' + sm.group(1)) : '';
+              } else if (!pkgPolId.startsWith('cel-chargeback_serverless-') && pkgPolId.contains('.')) {
+                pkgPolId = '';
+              }
+            }
+          }
+          if (pkgPolId == '') { return; }
+          String polId = pkgPolId;
+          String ownerKey = isExplicit ? ('explicit:' + explicitId) : ('implicit:pol:' + polId);
+          String sep = Character.toString((char)31);
+          String emId = ('pkg:' + ns + '|' + pkgPolId).replace(sep, '');
+          emit(emId + sep + ownerKey.replace(sep, ''));
+    cb_conf_owner_key:
+      type: keyword
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          String ns = (params._source.data_stream instanceof Map && params._source.data_stream.namespace != null)
+            ? params._source.data_stream.namespace.toString().trim()
+            : (params._source.get('data_stream.namespace') != null ? params._source.get('data_stream.namespace').toString().trim() : 'default');
+          if (ns == '') { ns = 'default'; }
+
+          String explicitId = params._source.get('conf_owner_id') != null
+            ? params._source.get('conf_owner_id').toString().trim()
+            : '';
+          boolean isExplicit = explicitId != '';
+          boolean fromInputId = false;
+          String pkgPolId = '';
+          if (params._source.get('package_policy_id') != null) {
+            pkgPolId = params._source.get('package_policy_id').toString().trim();
+          } else if (params._source.input instanceof Map && params._source.input.package_policy_id != null) {
+            pkgPolId = params._source.input.package_policy_id.toString().trim();
+          } else if (params._source.get('input.package_policy_id') != null) {
+            pkgPolId = params._source.get('input.package_policy_id').toString().trim();
+          } else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.package_policy_id != null) {
+            pkgPolId = params._source.elastic_agent.package_policy_id.toString().trim();
+          } else if (params._source.get('elastic_agent.package_policy_id') != null) {
+            pkgPolId = params._source.get('elastic_agent.package_policy_id').toString().trim();
+          } else if (params._source.get('conf_policy_id') != null) {
+            pkgPolId = params._source.get('conf_policy_id').toString().trim();
+            fromInputId = true;
+          } else if (params._source.input instanceof Map && params._source.input.id != null) {
+            pkgPolId = params._source.input.id.toString().trim();
+            fromInputId = true;
+          } else if (params._source.get('input.id') != null) {
+            pkgPolId = params._source.get('input.id').toString().trim();
+            fromInputId = true;
+          }
+          if (pkgPolId != '') {
+            def pm = /^(?:.*-)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/.matcher(pkgPolId);
+            if (pm.matches()) {
+              pkgPolId = pm.group(1).toLowerCase(Locale.ROOT);
+            } else if (fromInputId) {
+              def sm = /^cel-chargeback_serverless\.(?:billing|usage)(?:-(.+))?$/.matcher(pkgPolId);
+              if (sm.matches()) {
+                pkgPolId = sm.group(1) != null ? ('cel-chargeback_serverless-' + sm.group(1)) : '';
+              } else if (!pkgPolId.startsWith('cel-chargeback_serverless-') && pkgPolId.contains('.')) {
+                pkgPolId = '';
+              }
+            }
+          }
+          String polId = pkgPolId;
+          if (polId == '') {
+            if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.policy_id != null) {
+              polId = params._source.elastic_agent.policy_id.toString().trim();
+            } else if (params._source.get('elastic_agent.policy_id') != null) {
+              polId = params._source.get('elastic_agent.policy_id').toString().trim();
+            } else if (params._source.agent instanceof Map && params._source.agent.policy instanceof Map && params._source.agent.policy.id != null) {
+              polId = params._source.agent.policy.id.toString().trim();
+            } else if (params._source.get('agent.policy.id') != null) {
+              polId = params._source.get('agent.policy.id').toString().trim();
+            } else if (params._source.component instanceof Map && params._source.component.id != null) {
+              polId = params._source.component.id.toString().trim();
+            }
+          }
+          String ownerKey = isExplicit
+            ? ('explicit:' + explicitId)
+            : (polId != '' ? ('implicit:pol:' + polId) : ('implicit:ns:' + ns));
+          emit(ownerKey.replace(Character.toString((char)31), ''));
+    cb_conf_snap_rec:
+      type: keyword
+      script:
+        source: |
+          if (params._source == null || params._source.doc_type != 'config_snapshot') { return; }
+          long ts = (doc.containsKey('@timestamp') && !doc['@timestamp'].empty)
+            ? doc['@timestamp'].value.toInstant().toEpochMilli()
+            : 0L;
+          long syncTs = -1L;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              syncTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              syncTs = doc['event.created'].value.toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+          if (syncTs > 0L && ts > (syncTs + 300000L)) {
+            ts = syncTs;
+          }
+          def rawSync = params._source.get('conf_sync_enabled');
+          boolean syncEnabled = (rawSync == null) || rawSync.toString().equalsIgnoreCase('true');
+          String sep = Character.toString((char)31);
+          String rateStr = params._source.get('conf_chargeable_unit_rate') != null ? params._source.get('conf_chargeable_unit_rate').toString().replace(sep, '') : '';
+          String unitStr = params._source.get('conf_chargeable_unit_rate_unit') != null ? params._source.get('conf_chargeable_unit_rate_unit').toString().replace(sep, '') : '';
+          String symStr = params._source.get('conf_currency_symbol') != null ? params._source.get('conf_currency_symbol').toString().replace(sep, '') : '';
+          String effFromStr = params._source.get('conf_effective_from') != null ? params._source.get('conf_effective_from').toString().replace(sep, '') : '';
+          emit(Long.toString(ts) + sep + (syncEnabled ? '1' : '0') + sep + rateStr + sep + unitStr + sep + symStr + sep + effFromStr);
+dest:
+  index: serverless_chargeback_conf_lookup-1
+  aliases:
+    - alias: serverless_chargeback_conf_lookup
+      move_on_creation: true
+  pipeline: 'logs-chargeback_serverless.lookup-{{ ingestPipelineName "lookup_conf" }}'
+frequency: 5m
+sync:
+  time:
+    field: cb_sync_ts
+    delay: 60s
+pivot:
+  group_by:
+    config_join_key:
+      terms:
+        field: config_join_key
+  aggregations:
+    snapshots:
+      filter:
+        term:
+          doc_type: config_snapshot
+      aggs:
+        doc_cnt:
+          value_count:
+            field: cb_conf_ts
+        emitters:
+          terms:
+            field: cb_conf_emitter_rec
+            size: 500
+            order:
+              max_ts: desc
+          aggs:
+            max_ts:
+              max:
+                field: cb_conf_ts
+        owners:
+          terms:
+            field: cb_conf_owner_key
+            size: 200
+            order:
+              newest_ts: desc
+          aggs:
+            newest_ts:
+              max:
+                field: cb_conf_ts
+            snaps:
+              terms:
+                field: cb_conf_snap_rec
+                size: 5
+                order:
+                  - snap_ts: desc
+                  - _key: asc
+              aggs:
+                snap_ts:
+                  max:
+                    field: cb_conf_ts
+settings:
+  deduce_mappings: false
+  unattended: true
+  max_page_search_size: 100
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.2.0
+  order: 0

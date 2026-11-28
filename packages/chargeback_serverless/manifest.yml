@@ -1,18 +1,19 @@
 format_version: 3.7.0
 name: chargeback_serverless
 title: "Chargeback Serverless"
-version: 0.1.0
+version: 0.2.0
+source:
+  license: "Elastic-2.0"
 description: "Allocate Elastic Cloud Serverless billing to projects, data streams, and AI models on a Serverless hub. Native Fleet integration: daily collection at 02:00 UTC via Elastic Agent CEL streams with Elasticsearch Transforms and lookup indices."
 type: integration
 categories:
   - cloud
-  - custom
-# conditions.kibana.version tracks the evergreen Elastic Cloud Serverless hub stack (^9.6.0 on main).
+# conditions.kibana.version tracks the evergreen Elastic Cloud Serverless hub stack (^9.7.0; 9.6.0 lacks elastic/elasticsearch#166227 and stateful hubs use chargeback).
 # Package-level conditions.agent.version is disallowed in package-spec 3.7.0+ (SVR00012);
 # customer-managed Fleet collector Elastic Agent >= 9.2.0 is enforced in cel.yml.hbs via _meta.agent.version.
 conditions:
   kibana:
-    version: "^9.6.0"
+    version: "^9.7.0"
   elastic:
     subscription: "basic"
 screenshots:
@@ -50,7 +51,12 @@ policy_templates:
       default:
         enabled: true
       agentless:
-        enabled: false
+        enabled: true
+        is_default: true
+        release: beta
+        organization: elastic
+        division: field
+        team: csg
     inputs:
       - type: cel
         title: Elastic Cloud Configuration
@@ -102,6 +108,24 @@ policy_templates:
             required: true
             show_user: true
             default: "1.0"
+          - name: sync_fleet_config
+            type: bool
+            title: Sync Fleet Rate Settings to Configuration Lookup
+            description: >-
+              Continuously sync Fleet currency rates and display settings into serverless_chargeback_conf_lookup. Turn off when preserving manual rate updates or custom multi-period rows managed directly via the serverless_chargeback_conf_lookup API.
+            multi: false
+            required: false
+            show_user: true
+            default: true
+          - name: config_owner_id
+            type: text
+            title: Configuration Owner ID (Multi-Policy)
+            description: >-
+              Optional identifier designating the single Chargeback Serverless policy authorized to write global rate settings to serverless_chargeback_conf_lookup when multiple Chargeback Serverless policies write to the same project. Leave empty in single-policy deployments.
+            multi: false
+            required: false
+            show_user: true
+            default: ""
           - name: billing_api_base
             type: text
             title: Billing API Base URL
@@ -117,13 +141,15 @@ policy_templates:
             show_user: false
             default: "https://api.elastic-cloud.com"
           - name: proxy_url
-            type: text
+            type: password
             title: Proxy URL
             description: >-
               URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Ensure your username and password are in URL encoded format.
             multi: false
             required: false
             show_user: false
+            secret: true
+            hide_in_deployment_modes: [agentless]
           - name: ssl
             type: yaml
             title: SSL Configuration
@@ -132,6 +158,7 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+            hide_in_deployment_modes: [agentless]
             default: |
               #certificate_authorities:
               #  - |
@@ -171,6 +198,7 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+            hide_in_deployment_modes: [agentless]
             default: false
 owner:
   github: elastic/customer-architects
