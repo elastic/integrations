@@ -2,18 +2,27 @@
 description: Pipeline for processing Nagios XI events
 processors:
 - set:
+    tag: set_ecs_version_2289bc08
     field: ecs.version
     value: '8.11.0'
 - rename:
+    tag: rename_message_cb0e8c66
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
+- remove:
+    tag: remove_message_81530f60
+    field: message
+    ignore_missing: true
+    if: 'ctx.event?.original != null'
 - json:
+    tag: json_event_original_8346af2c
     field: event.original
     target_field: json
     ignore_failure: true
 - fingerprint:
+    tag: fingerprint_c58cb817
     fields:
     - json.logentry_id
     - json.logentry_type
@@ -22,67 +31,79 @@ processors:
     target_field: _id
     ignore_missing: true
 - convert:
+    tag: convert_json_logentry_type_e464eb56
     field: json.logentry_type
     target_field: nagios_xi.event.logentry.type
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_json_instance_id_fdd1dd58
     field: json.instance_id
     target_field: nagios_xi.event.instance_id
     type: double
     ignore_missing: true
     ignore_failure: true
 - convert:
+    tag: convert_json_logentry_id_d0e05762
     field: json.logentry_id
     target_field: nagios_xi.event.logentry.id
     type: double
     ignore_missing: true
     ignore_failure: true
 - date:
+    tag: date_json_entry_time_f62607a1
     field: json.entry_time
     formats:
     - yyyy-MM-dd HH:mm:ss
     ignore_failure: true
 - set:
+    tag: set_json_entry_time_cb8e657c
     field: json.entry_time
     value: "{{{@timestamp}}}"
     ignore_empty_value: true
     ignore_failure: true
 - date:
+    tag: date_json_entry_time_18d7d8e5
     field: json.entry_time
     formats:
     - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
     target_field: nagios_xi.event.entry_time
     ignore_failure: true
 - rename:
+    tag: rename_json_logentry_data_a50facd0
     field: json.logentry_data
     target_field: message
     ignore_missing: true
     ignore_failure: true
 
 - set:
+    tag: set_event_dataset_2f24e848
     field: event.dataset
     value: nagios_xi.events
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_kind_8520feba
     field: event.kind
     value: event
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_module_f681f1bf
     field: event.module
     value: nagios_xi
     ignore_empty_value: true
     ignore_failure: true
 - set:
+    tag: set_event_type_16d08279
     field: event.type
     value: [info]
     ignore_empty_value: true
     ignore_failure: true
 
 - script:
+    tag: script_dbedd123
     description: Drops null/empty values recursively
     lang: painless
     source: |
@@ -101,12 +122,22 @@ processors:
         drop(ctx);
 
 - remove:
+    tag: remove_json_4b94b6bb
     field:
     - json
     ignore_missing: true
     ignore_failure: true
 
 on_failure:
-- set:
-    field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_event_kind_63dcefa0
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_dc1c6da7
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
