@@ -2,138 +2,166 @@
 description: Pipeline for processing oracle performance
 processors:
     - remove:
+        tag: remove_sql_driver_5f7667ee
         field: sql.driver
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_sql_378f4adf
         field: sql
         target_field: oracle
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_metrics_4bd996b7
         field: oracle.metrics
         target_field: oracle.performance
         ignore_missing: true
     - rename:
+        tag: rename_oracle_performance_hit_ratio_ca729e89
         field: oracle.performance.hit_ratio
         target_field: oracle.performance.cache.buffer.hit.pct
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_consistent_gets_f4b89420
         field: oracle.performance.consistent_gets
         target_field: oracle.performance.cache.get.consistent
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_db_block_gets_3fc4a1ad
         field: oracle.performance.db_block_gets
         target_field: oracle.performance.cache.get.db_blocks
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_physical_reads_7e216187
         field: oracle.performance.physical_reads
         target_field: oracle.performance.cache.physical_reads
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_name_aa719dd7
         field: oracle.performance.name
         target_field: oracle.performance.buffer_pool
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_avg_cur_5889112b
         field: oracle.performance.avg_cur
         target_field: oracle.performance.cursors.avg
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_max_cur_9283599c
         field: oracle.performance.max_cur
         target_field: oracle.performance.cursors.max
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_total_cur_4a850079
         field: oracle.performance.total_cur
         target_field: oracle.performance.cursors.total
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_cachehits_totalcursors_ratio_15eca183
         field: oracle.performance.cachehits_totalcursors_ratio
         target_field: oracle.performance.cursors.cache_hit.pct
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_current_cursors_4dfaba48
         field: oracle.performance.current_cursors
         target_field: oracle.performance.cursors.opened.current
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_total_cursors_d56e5c16
         field: oracle.performance.total_cursors
         target_field: oracle.performance.cursors.opened.total
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_real_parses_461737e3
         field: oracle.performance.real_parses
         target_field: oracle.performance.cursors.parse.real
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_parse_count_total_4d42839a
         field: oracle.performance.parse_count_total
         target_field: oracle.performance.cursors.parse.total
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_sess_cur_cache_hits_e5b2088d
         field: oracle.performance.sess_cur_cache_hits
         target_field: oracle.performance.cursors.session.cache_hits
         ignore_missing: true
         ignore_failure: true
     - rename: 
+        tag: rename_oracle_performance_active_session_count_b22648a8
         field: oracle.performance.active_session_count
         target_field: oracle.performance.session_count.active
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_inactive_morethan_onehr_b9f0f461
         field: oracle.performance.inactive_morethan_onehr
         target_field: oracle.performance.session_count.inactive_morethan_onehr
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_inactive_session_count_375e1ddd
         field: oracle.performance.inactive_session_count
         target_field: oracle.performance.session_count.inactive
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_pct_time_29bddfba
         field: oracle.performance.pct_time
         target_field: oracle.performance.wait.pct_time
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_pct_waits_b5efb0cf
         field: oracle.performance.pct_waits
         target_field: oracle.performance.wait.pct_waits
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_time_waited_secs_65c29c11
         field: oracle.performance.time_waited_secs
         target_field: oracle.performance.wait.time_waited_secs
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_total_waits_2d469554
         field: oracle.performance.total_waits
         target_field: oracle.performance.wait.total_waits
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_performance_wait_class_d441f3bd
         field: oracle.performance.wait_class
         target_field: oracle.performance.wait.wait_class
         ignore_missing: true
         ignore_failure: true
     - fingerprint:
+        tag: fingerprint_f2e680f2
         fields: ["oracle.query"]
         target_field: oracle.performance.query_id
         ignore_failure: true
         ignore_missing: true
     - remove:
+        tag: remove_oracle_query_c4b192ba
         field: oracle.query
         ignore_missing: true
         ignore_failure: true
     - foreach:
+        tag: foreach_oracle_performance_f03cc954
         field: oracle.performance
         ignore_missing: true
         processor: 
@@ -142,6 +170,7 @@ processors:
                 pattern: " "
                 replacement: "_"
     - foreach:
+        tag: foreach_oracle_performance_5ec2e719
         field: oracle.performance
         ignore_failure: true
         ignore_missing: true
@@ -152,6 +181,7 @@ processors:
                 replacement: "pct"
                 
     - foreach:
+        tag: foreach_oracle_performance_506dceb9
         field: oracle.performance
         ignore_missing: true
         ignore_failure: true
@@ -162,6 +192,7 @@ processors:
                 replacement: "pct"
     
     - foreach:
+        tag: foreach_oracle_performance_a091d94d
         field: oracle.performance
         ignore_missing: true
         ignore_failure: true
@@ -172,6 +203,15 @@ processors:
                 replacement: ""
 
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_6ed812c0
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_c2715c26
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

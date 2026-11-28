@@ -2,24 +2,29 @@
 description: Pipeline for processing Oracle system statistics metrics
 processors:
     - remove:
+        tag: remove_sql_driver_d837cfb3
         field: sql.driver
         ignore_missing: true
         ignore_failure: true
     - remove:
+        tag: remove_sql_query_716a5281
         field: sql.query
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_sql_5ccd7088
         field: sql
         target_field: oracle
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_metrics_71081f64
         field: oracle.metrics
         target_field: oracle.system_statistics
         ignore_missing: true
         ignore_failure: true
     - foreach:
+        tag: foreach_oracle_system_statistics_58350b2c
         field: oracle.system_statistics
         ignore_missing: true
         processor: 
@@ -28,6 +33,7 @@ processors:
                 pattern: " "
                 replacement: "_"
     - foreach:
+        tag: foreach_oracle_system_statistics_17fba12c
         field: oracle.system_statistics
         ignore_missing: true
         processor: 
@@ -36,6 +42,7 @@ processors:
                 pattern: "\\("
                 replacement: ""
     - foreach:
+        tag: foreach_oracle_system_statistics_4f30e57f
         field: oracle.system_statistics
         ignore_missing: true
         processor: 
@@ -44,6 +51,7 @@ processors:
                 pattern: "\\)"
                 replacement: ""
     - foreach:
+        tag: foreach_oracle_system_statistics_4c9f44dd
         field: oracle.system_statistics
         ignore_missing: true
         processor: 
@@ -52,12 +60,22 @@ processors:
                 pattern: "\\*"
                 replacement: ""
     - rename:
+        tag: rename_oracle_system_statistics_process_last_non_idle_time_39cb8a4a
         field: oracle.system_statistics.process_last_non-idle_time
         target_field: oracle.system_statistics.process_last_non_idle_time
         ignore_missing: true
         ignore_failure: true
 
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_5899ea87
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_5a24b4ac
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

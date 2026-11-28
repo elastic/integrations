@@ -2,42 +2,58 @@
 description: Pipeline for parsing Oracle Audit logs
 processors:
   - set:
+      tag: set_ecs_version_6d1ac424
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_action_4f5a0996
       field: event.action
       value: database_audit
   - set:
+      tag: set_event_kind_34e2b1bb
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_13fb0266
       field: event.category
       value: [database]
   - set:
+      tag: set_event_type_0f04c373
       field: event.type
       value: [access]
   - set:
+      tag: set_event_outcome_ed50f38f
       field: event.outcome
       value: success
   # Need to know which type of audit event it is, oracle_event_type is a temp field.
   - set:
+      tag: set_oracle_event_type_77e5f111
       field: oracle_event_type
       value: database
       if: 'ctx.message.contains("LENGTH :")'
   - set:
+      tag: set_oracle_event_type_bafadaf0
       field: oracle_event_type
       value: object
       if: 'ctx.message.contains("LENGTH:")'
   - set:
+      tag: set_event_outcome_942ce3b6
       field: event.outcome
       value: success
   - rename:
+      tag: rename_message_e2157824
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_736fa4b2
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   # First pattern for object, second for database audit events.
   - grok:
+      tag: grok_event_original_dc91780b
       field: event.original
       patterns:
         - "%{GREEDYDATA:tmp_timestamp}\\nLENGTH : '%{GREEDYDATA:LENGTH}'\\nACTION :\\[\\d+\\] (?m)%{GREEDYDATA:action}(DATABASE USER):\\S+ '%{FIELD:db_user}'\\n(?m)%{GREEDYDATA:audit}"
@@ -46,6 +62,7 @@ processors:
       pattern_definitions:
           "FIELD": "[^']+"
   - kv:
+      tag: kv_audit_63831d11
       field: audit
       field_split: "\\\n(?=[a-zA-Z])"
       value_split: ":\\S\\d+\\S(?= ')"
@@ -54,6 +71,7 @@ processors:
       prefix: oracle.database_audit.
       if: ctx.oracle_event_type == "database" && ctx?.audit != null && ctx?.audit.length() != 0
   - kv:
+      tag: kv_audit_61e4949d
       field: audit
       field_split: "\" "
       value_split: ":\\S\\d+\\S (?=\")"
@@ -61,47 +79,58 @@ processors:
       prefix: oracle.database_audit.
       if: ctx.oracle_event_type == "object" && ctx?.audit != null && ctx?.audit.length() != 0
   - grok:
+      tag: grok_log_file_path_a1e0dff9
       field: log.file.path
       patterns:
         - "%{BASE10NUM:process.pid}\\_%{BASE10NUM}\\.aud(\\.log)?$"
       if: ctx.log?.file?.path != null
   - rename:
+      tag: rename_action_1c935bef
       field: action
       target_field: oracle.database_audit.action
       ignore_missing: true
   - rename:
+      tag: rename_db_user_dbe84fae
       field: db_user
       target_field: oracle.database_audit.database_user
       ignore_missing: true
   # All field names are uppercase by default, converts them to lowercase
   - script:
+      tag: script_92a985fa
       source: "ctx.oracle.database_audit = ctx.oracle.database_audit.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().toLowerCase(), Map.Entry::getValue));"
       lang: painless
   # Replace all field names that has spaces in them with _
   - script:
+      tag: script_dde258db
       lang: painless
       source: "ctx.oracle.database_audit = ctx?.oracle?.database_audit.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace(' ', '_'), e -> e.getValue()));"
   - gsub:
+      tag: gsub_oracle_database_audit_action_98d59951
       field: "oracle.database_audit.action"
       pattern: "\\n"
       replacement: ""
   - gsub:
+      tag: gsub_oracle_database_audit_action_310bc65c
       field: "oracle.database_audit.action"
       pattern: "\\s{2,}"
       replacement: " "
   - gsub:
+      tag: gsub_oracle_database_audit_action_ef8bdb92
       field: "oracle.database_audit.action"
       pattern: "^\\'"
       replacement: ""
   - gsub:
+      tag: gsub_oracle_database_audit_action_be5587c3
       field: "oracle.database_audit.action"
       pattern: "\\'$"
       replacement: ""
   - trim:
+      tag: trim_oracle_database_audit_action_number_b4292213
       field: "oracle.database_audit.action_number"
       ignore_missing: true
   # Removes all null values from ctx.*
   - script:
+      tag: script_2dbf015e
       lang: painless
       if: ctx?.oracle?.database_audit != null
       source: |
@@ -126,89 +155,110 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_timestamp_fb6b8368
       field:
         - "@timestamp"
       ignore_missing: true
   - date:
+      tag: date_tmp_timestamp_eed48a96
       field: tmp_timestamp
       target_field: "@timestamp"
       formats:
         - EEE MMM [ d][dd] HH:mm:ss uuuu XXX
   - grok:
+      tag: grok_tmp_timestamp_b3e88dbb
       field: tmp_timestamp
       patterns:
         - "%{ISO8601_TIMEZONE:event.timezone}$"
   - set:
+      tag: set_user_roles_63949ee4
       field: user.roles
       value: ["{{{oracle.database_audit.privilege}}}"]
       ignore_empty_value: true
       ignore_failure: true
   - remove:
+      tag: remove_oracle_database_audit_privilege_97ce26c1
       field: oracle.database_audit.privilege
       ignore_missing: true
   - rename:
+      tag: rename_LENGTH_40226843
       field: LENGTH
       target_field: oracle.database_audit.length
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_client_user_5d54d57f
       field: oracle.database_audit.client_user
       target_field: client.user.name
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_userid_d6d974ed
       field: oracle.database_audit.userid
       target_field: client.user.id
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_current_user_ca225b34
       field: oracle.database_audit.current_user
       target_field: client.user.name
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_comment_text_daf95049
       field: oracle.database_audit.comment$text
       target_field: oracle.database_audit.comment_text
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_obj_creator_318c883b
       field: oracle.database_audit.obj$creator
       target_field: oracle.database_audit.obj_creator
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_obj_name_f2475a6c
       field: oracle.database_audit.obj$name
       target_field: oracle.database_audit.obj_name
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_os_userid_ad3e08db
       field: oracle.database_audit.os$userid
       target_field: oracle.database_audit.os_userid
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_ses_actions_153e14ab
       field: oracle.database_audit.ses$actions
       target_field: oracle.database_audit.ses_actions
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_ses_tid_7d1bbbae
       field: oracle.database_audit.ses$tid
       target_field: oracle.database_audit.ses_tid
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_client_address_4ce8b289
       field: oracle.database_audit.client_address
       target_field: client.address
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_userhost_a4f7a79c
       field: oracle.database_audit.userhost
       target_field: server.address
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_database_user_b927b3e9
       field: oracle.database_audit.database_user
       target_field: server.user.name
       ignore_missing: true
   - convert:
+      tag: convert_oracle_database_audit_length_3087a171
       field: oracle.database_audit.length
       type: long
       ignore_missing: true
   - grok:
+      tag: grok_client_address_947ddb1a
       field: client.address
       patterns:
         - "(?:%{IP:client.ip}|%{GREEDYDATA:client.domain})"
       ignore_failure: true
       ignore_missing: true
   - grok:
+      tag: grok_server_address_71f12af4
       field: server.address
       patterns:
         - "(?:%{IP:server.ip}|%{GREEDYDATA:server.domain})"
@@ -216,76 +266,93 @@ processors:
       ignore_missing: true
   # Renaming certain fields for better data structure
   - rename:
+      tag: rename_oracle_database_audit_sessionid_38df4512
       field: oracle.database_audit.sessionid
       target_field: oracle.database_audit.session_id
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_client_terminal_5db5c4fa
       field: oracle.database_audit.client_terminal
       target_field: oracle.database_audit.client.terminal
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_client_address_0e2069a3
       field: oracle.database_audit.client_address
       target_field: oracle.database_audit.client.address
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_database_user_c341f99e
       field: oracle.database_audit.database_user
       target_field: oracle.database_audit.database.user
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_userhost_8d8bd94c
       field: oracle.database_audit.userhost
       target_field: oracle.database_audit.database.host
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_dbid_97921e88
       field: oracle.database_audit.dbid
       target_field: oracle.database_audit.database.id
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_entry_id_f1476b4b
       field: oracle.database_audit.entry_id
       target_field: oracle.database_audit.entry.id
       ignore_missing: true
   - rename:
+      tag: rename_oracle_database_audit_entryid_8b6f61f1
       field: oracle.database_audit.entryid
       target_field: oracle.database_audit.entry.id
       ignore_missing: true
   - convert:
+      tag: convert_oracle_database_audit_entry_id_c534b944
       field: oracle.database_audit.entry.id
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_process_pid_7200517c
       field: process.pid
       type: long
       ignore_missing: true
   - append:
+      tag: append_related_user_b00c6ddf
       field: related.user
       value: "{{server.user.name}}"
       allow_duplicates: false
       if: ctx?.server?.user?.name != null
   - append:
+      tag: append_related_user_eb57dd94
       field: related.user
       value: "{{client.user.name}}"
       allow_duplicates: false
       if: ctx?.client?.user?.name != null
   - append:
+      tag: append_related_ip_3b1f4ca3
       field: related.ip
       value: "{{client.ip}}"
       allow_duplicates: false
       if: ctx?.client?.ip != null
   - append:
+      tag: append_related_ip_5381fe63
       field: related.ip
       value: "{{server.ip}}"
       allow_duplicates: false
       if: ctx?.server?.ip != null
   - append:
+      tag: append_related_hosts_b170b4db
       field: related.hosts
       value: "{{client.domain}}"
       allow_duplicates: false
       if: ctx?.client?.domain != null
   - append:
+      tag: append_related_hosts_d7584a6a
       field: related.hosts
       value: "{{server.domain}}"
       allow_duplicates: false
       if: ctx?.server?.domain != null
   - remove:
+      tag: remove_tmp_timestamp_a59d95cd
       field:
         - tmp_timestamp
         - audit
@@ -293,5 +360,14 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_89b28a58
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_72e30ac6
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

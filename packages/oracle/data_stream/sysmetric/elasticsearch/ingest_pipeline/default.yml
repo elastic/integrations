@@ -2,24 +2,29 @@
 description: Pipeline for processing oracle sysmetrics data
 processors:
     - remove:
+        tag: remove_sql_driver_658c501d
         field: sql.driver
         ignore_missing: true
         ignore_failure: true
     - remove:
+        tag: remove_sql_query_d315c8c9
         field: sql.query
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_sql_10da7dbc
         field: sql
         target_field: oracle
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_oracle_metrics_a6a42edc
         field: oracle.metrics
         target_field: "oracle.sysmetric"
         ignore_failure: true
         ignore_missing: true
     - foreach:
+        tag: foreach_oracle_sysmetric_22930ea0
         field: oracle.sysmetric
         ignore_missing: true
         processor: 
@@ -28,6 +33,7 @@ processors:
                 pattern: " "
                 replacement: "_"
     - foreach:
+        tag: foreach_oracle_sysmetric_27aec71f
         field: oracle.sysmetric
         ignore_failure: true
         ignore_missing: true
@@ -38,6 +44,7 @@ processors:
                 replacement: "pct"
                 
     - foreach:
+        tag: foreach_oracle_sysmetric_83598cdb
         field: oracle.sysmetric
         ignore_missing: true
         ignore_failure: true
@@ -48,6 +55,7 @@ processors:
                 replacement: "pct"
     
     - foreach:
+        tag: foreach_oracle_sysmetric_bc54d3ae
         field: oracle.sysmetric
         ignore_missing: true
         ignore_failure: true
@@ -57,6 +65,15 @@ processors:
                 pattern: "/"
                 replacement: ""
 on_failure:
-- set:
-    field: error.message
-    value: "{{ _ingest.on_failure_message }}"
+  - set:
+      tag: set_event_kind_6d733a64
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_c1e77ca2
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
