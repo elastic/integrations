@@ -2,24 +2,30 @@
 description: Pipeline for processing Kafka log manager metrics
 processors:
   - set:
+      tag: set_ecs_version_4124286e
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_jolokia_metrics_62f378e5
       field: jolokia.metrics
       target_field: kafka.log_manager
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_kind_f26e2765
       field: event.kind
       value: metric
   - set:
+      tag: set_event_type_3d13fdbf
       field: event.type
       value: [info]
   - set:
+      tag: set_service_type_6ccf8776
       field: service.type
       value: kafka
   # Add metric fingerprint list
   - script:
+      tag: script_028fd2f4
       lang: painless
       source: |
         def queue = new ArrayList();
@@ -49,12 +55,14 @@ processors:
         }
   
   - fingerprint:
+      tag: fingerprint_66c5ac28
       fields: [kafka_log_manager_metric_fingerprint]
       target_field: kafka.log_manager.metric_fingerprint
       ignore_failure: true
 
   # Extract log_directory from LogDirectoryOffline MBean
   - grok:
+      tag: grok_kafka_log_manager_mbean_a4ff8d58
       field: "kafka.log_manager.mbean"
       patterns:
         - 'kafka.log:type=LogManager,name=LogDirectoryOffline,logDirectory="%{DATA:directory_offline_count_log_directory}"'
@@ -62,6 +70,7 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_kafka_log_manager_directory_offline_count_log_directory_9d5c859d
       field: "kafka.log_manager.directory_offline_count.log_directory"
       copy_from: "directory_offline_count_log_directory"
       if: "ctx.directory_offline_count_log_directory != null"
@@ -69,6 +78,7 @@ processors:
 
   # Extract log_directory from uncleanable-partitions-count MBean
   - grok:
+      tag: grok_kafka_log_manager_mbean_0d7d4790
       field: "kafka.log_manager.mbean"
       patterns:
         - 'kafka.log:type=LogCleanerManager,name=uncleanable-partitions-count,logDirectory="%{DATA:uncleanable_partitions_count_log_directory}"'
@@ -76,6 +86,7 @@ processors:
       ignore_failure: true
   
   - set:
+      tag: set_kafka_log_manager_cleaner_manager_uncleanable_partitions_count_log_directory_57cf1bd1
       field: "kafka.log_manager.cleaner_manager.uncleanable_partitions_count.log_directory"
       copy_from: "uncleanable_partitions_count_log_directory"
       if: "ctx.uncleanable_partitions_count_log_directory != null"
@@ -83,6 +94,7 @@ processors:
 
   # Extract log_directory from uncleanable-bytes MBean
   - grok:
+      tag: grok_kafka_log_manager_mbean_6f5b9937
       field: "kafka.log_manager.mbean"
       patterns:
         - 'kafka.log:type=LogCleanerManager,name=uncleanable-bytes,logDirectory="%{DATA:uncleanable_bytes_log_directory}"'
@@ -90,36 +102,48 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_kafka_log_manager_cleaner_manager_uncleanable_bytes_log_directory_9e3852cd
       field: "kafka.log_manager.cleaner_manager.uncleanable_bytes.log_directory"
       copy_from: "uncleanable_bytes_log_directory"
       if: "ctx.uncleanable_bytes_log_directory != null"
 
   # Cleanup  
   - remove:
+      tag: remove_directory_offline_count_log_directory_2d756d56
       field: directory_offline_count_log_directory
       ignore_missing: true
 
   - remove:
+      tag: remove_uncleanable_partitions_count_log_directory_54dc8e60
       field: uncleanable_partitions_count_log_directory
       ignore_missing: true
 
   - remove:
+      tag: remove_uncleanable_bytes_log_directory_d125b130
       field: uncleanable_bytes_log_directory
       ignore_missing: true
 
   - remove:
+      tag: remove_kafka_log_manager_mbean_cacd9b3f
       field: kafka.log_manager.mbean
       ignore_missing: true
 
   - remove:
+     tag: remove_kafka_log_manager_metric_fingerprint_f5128789
      field: kafka_log_manager_metric_fingerprint
      ignore_missing: true
 
 
 on_failure:
   - set:
+      tag: set_event_kind_7bbd970a
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_cf1f9951
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

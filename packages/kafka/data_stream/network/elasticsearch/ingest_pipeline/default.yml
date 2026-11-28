@@ -2,6 +2,7 @@
 description: Pipeline for processing Kafka network metrics
 processors:
   - grok:
+      tag: grok_jolokia_metrics_mbean_d98c0004
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=Acceptor,name=AcceptorBlockedPercent,listener=%{WORD:listener}"
@@ -9,16 +10,19 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_acceptor_blocked_listener_a72b4123
       field: "jolokia.metrics.acceptor_blocked.listener"
       copy_from: "listener"
       if: "ctx.listener != null"
 
   - remove:
+      tag: remove_listener_8d952eda
       field: "listener"
       ignore_missing: true
 
   # Extract the networkProcessor ID from processor idle percent mbean
   - grok:
+      tag: grok_jolokia_metrics_mbean_8b37e289
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=Processor,name=IdlePercent,networkProcessor=%{WORD:network_processor}"
@@ -26,16 +30,19 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_processor_idle_percent_network_processor_93672fb9
       field: "jolokia.metrics.processor_idle_percent.network_processor"
       copy_from: "network_processor"
       if: "ctx.network_processor != null"
     
   - remove:
+      tag: remove_network_processor_af87fac7
       field: "network_processor"
       ignore_missing: true
 
   # Extract the processor ID from ResponseQueueSize mbean
   - grok:
+      tag: grok_jolokia_metrics_mbean_6545a1b4
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestChannel,name=ResponseQueueSize,processor=%{WORD:processor}"
@@ -44,16 +51,19 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_channel_response_queue_size_processor_e31321ba
       field: "jolokia.metrics.request_channel.response_queue_size.processor"
       copy_from: "processor"
       if: "ctx.processor != null"
 
   - remove:
+      tag: remove_processor_8206f176
       field: "processor"
       ignore_missing: true
       
   # Extract request_type and error_type from RequestMetrics MBeans
   - grok:
+      tag: grok_jolokia_metrics_mbean_6c85d7a2
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=ErrorsPerSec,request=%{WORD:request_type},error=%{WORD:error_type}"
@@ -61,25 +71,30 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_request_type_3a6eabd2
       field: "jolokia.metrics.request_metrics.request_type"
       copy_from: "request_type"
       if: "ctx.request_type != null"
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_error_type_02b6a45e
       field: "jolokia.metrics.request_metrics.error_type"
       copy_from: "error_type"
       if: "ctx.error_type != null"
 
   - remove:
+      tag: remove_request_type_5c23f738
       field: "request_type"
       ignore_missing: true
 
   - remove:
+      tag: remove_error_type_cff9e699
       field: "error_type"
       ignore_missing: true
 
   # Extract request_type from LocalTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_ed14b70d
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=LocalTimeMs,request=%{WORD:local_request_type}"
@@ -87,6 +102,7 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_local_time_ms_request_type_7b5ce066
       field: "jolokia.metrics.request_metrics.local_time_ms.request_type"
       copy_from: "local_request_type"
       if: "ctx.local_request_type != null"
@@ -94,14 +110,17 @@ processors:
   # This approach is taken to allow for extensibility. The 'Produce' request type is currently the only allowed value.
   # If other request types are added in the future, this can be extended to include them.
   - drop:
+      tag: drop_814b5cc0
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=LocalTimeMs') && ctx.local_request_type != null && ctx.local_request_type != 'Produce'"
 
   - remove:
+      tag: remove_local_request_type_faebd659
       field: "local_request_type"
       ignore_missing: true
 
   # Extract request_type from MessageConversionsTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_07a31a4a
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=MessageConversionsTimeMs,request=%{WORD:message_conversions_request_type}"
@@ -109,19 +128,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_message_conversions_time_ms_request_type_8c0e042e
       field: "jolokia.metrics.request_metrics.message_conversions_time_ms.request_type"
       copy_from: "message_conversions_request_type"
       if: "ctx.message_conversions_request_type != null"
 
   - drop:
+      tag: drop_85d11a0c
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=MessageConversionsTimeMs') && ctx.message_conversions_request_type != null && ctx.message_conversions_request_type != 'Produce'"
 
   - remove:
+      tag: remove_message_conversions_request_type_5142f3de
       field: "message_conversions_request_type"
       ignore_missing: true
 
   # Extract request_type from RemoteTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_7e34b0fb
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=RemoteTimeMs,request=%{WORD:remote_request_type}"
@@ -129,19 +152,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_remote_time_ms_request_type_658d220c
       field: "jolokia.metrics.request_metrics.remote_time_ms.request_type"
       copy_from: "remote_request_type"
       if: "ctx.remote_request_type != null"
 
   - drop:
+      tag: drop_85d01e76
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=RemoteTimeMs') && ctx.remote_request_type != null && ctx.remote_request_type != 'Produce'"
 
   - remove:
+      tag: remove_remote_request_type_87f81a53
       field: "remote_request_type"
       ignore_missing: true
 
   # Extract request_type from RequestBytes MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_bd951e20
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=RequestBytes,request=%{WORD:request_bytes_type}"
@@ -149,19 +176,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_request_bytes_request_type_1a6991fe
       field: "jolokia.metrics.request_metrics.request_bytes.request_type"
       copy_from: "request_bytes_type"
       if: "ctx.request_bytes_type != null"
 
   - drop:
+      tag: drop_94958972
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=RequestBytes') && ctx.request_bytes_type != null && ctx.request_bytes_type != 'Produce'"
 
   - remove:
+      tag: remove_request_bytes_type_4e3ae1b6
       field: "request_bytes_type"
       ignore_missing: true
 
   # Extract request_type from RequestQueueTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_53869498
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=RequestQueueTimeMs,request=%{WORD:request_queue_type}"
@@ -169,19 +200,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_request_queue_time_ms_request_type_09bfa372
       field: "jolokia.metrics.request_metrics.request_queue_time_ms.request_type"
       copy_from: "request_queue_type"
       if: "ctx.request_queue_type != null"
 
   - drop:
+      tag: drop_7bbfce7c
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=RequestQueueTimeMs') && ctx.request_queue_type != null && ctx.request_queue_type != 'Produce'"
 
   - remove:
+      tag: remove_request_queue_type_95125e40
       field: "request_queue_type"
       ignore_missing: true
 
   # Extract request_type from ResponseQueueTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_d7c6e7b5
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=ResponseQueueTimeMs,request=%{WORD:response_queue_type}"
@@ -189,19 +224,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_response_queue_time_ms_request_type_ab6b6cc3
       field: "jolokia.metrics.request_metrics.response_queue_time_ms.request_type"
       copy_from: "response_queue_type"
       if: "ctx.response_queue_type != null"
 
   - drop:
+      tag: drop_2a8f2298
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=ResponseQueueTimeMs') && ctx.response_queue_type != null && ctx.response_queue_type != 'Produce'"
 
   - remove:
+      tag: remove_response_queue_type_64f2c1e2
       field: "response_queue_type"
       ignore_missing: true
 
   # Extract request_type from ResponseSendTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_54354736
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=ResponseSendTimeMs,request=%{WORD:response_send_type}"
@@ -209,19 +248,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_response_send_time_ms_request_type_75c3b285
       field: "jolokia.metrics.request_metrics.response_send_time_ms.request_type"
       copy_from: "response_send_type"
       if: "ctx.response_send_type != null"
 
   - drop:
+      tag: drop_90ed4240
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=ResponseSendTimeMs') && ctx.response_send_type != null && ctx.response_send_type != 'Produce'"
 
   - remove:
+      tag: remove_response_send_type_85a5d0f2
       field: "response_send_type"
       ignore_missing: true
 
   # Extract request_type from TemporaryMemoryBytes MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_4c179176
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=TemporaryMemoryBytes,request=%{WORD:temp_memory_type}"
@@ -229,19 +272,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_temporary_memory_bytes_request_type_b6c36fab
       field: "jolokia.metrics.request_metrics.temporary_memory_bytes.request_type"
       copy_from: "temp_memory_type"
       if: "ctx.temp_memory_type != null"
 
   - drop:
+      tag: drop_0e17cc60
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=TemporaryMemoryBytes') && ctx.temp_memory_type != null && ctx.temp_memory_type != 'Produce'"
 
   - remove:
+      tag: remove_temp_memory_type_7214355d
       field: "temp_memory_type"
       ignore_missing: true
 
   # Extract request_type from ThrottleTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_1aca9147
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=ThrottleTimeMs,request=%{WORD:throttle_type}"
@@ -249,19 +296,23 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_throttle_time_ms_request_type_dd57181d
       field: "jolokia.metrics.request_metrics.throttle_time_ms.request_type"
       copy_from: "throttle_type"
       if: "ctx.throttle_type != null"
 
   - drop:
+      tag: drop_44bddb71
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=ThrottleTimeMs') && ctx.throttle_type != null && ctx.throttle_type != 'Produce'"
 
   - remove:
+      tag: remove_throttle_type_ded754f1
       field: "throttle_type"
       ignore_missing: true
 
   # Extract request_type from TotalTimeMs MBean
   - grok:
+      tag: grok_jolokia_metrics_mbean_b9b50928
       field: "jolokia.metrics.mbean"
       patterns:
         - "kafka.network:type=RequestMetrics,name=TotalTimeMs,request=%{WORD:total_time_type}"
@@ -269,38 +320,47 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_jolokia_metrics_request_metrics_total_time_ms_request_type_571d555e
       field: "jolokia.metrics.request_metrics.total_time_ms.request_type"
       copy_from: "total_time_type"
       if: "ctx.total_time_type != null"
 
   - drop:
+      tag: drop_6be1b113
       if: "ctx.jolokia?.metrics?.mbean != null && ctx.jolokia.metrics.mbean.contains('name=TotalTimeMs') && ctx.total_time_type != null && ctx.total_time_type != 'Produce'"
 
   - remove:
+      tag: remove_total_time_type_66916f47
       field: "total_time_type"
       ignore_missing: true
 
   - set:
+      tag: set_ecs_version_8f05288a
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_jolokia_metrics_ce82c16f
       field: jolokia.metrics
       target_field: kafka.network
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_kind_6542fa86
       field: event.kind
       value: metric
   - set:
+      tag: set_event_type_2fa036cf
       field: event.type
       value: [info]
   - set:
+      tag: set_service_type_0c92a914
       field: service.type
       value: kafka     
   
 
   # Add metric fingerprint list
   - script:
+      tag: script_e7b2bb78
       lang: painless
       source: |
         def queue = new ArrayList();
@@ -330,31 +390,42 @@ processors:
         }
 
   - fingerprint:
+      tag: fingerprint_2ca3c3c9
       fields: [kafka_network_metric_fingerprint]
       target_field: kafka.network.metric_fingerprint
       ignore_failure: true
 
   # Cleanup  
   - remove:
+      tag: remove_kafka_network_metric_fingerprint_d6c6ae55
       field: kafka_network_metric_fingerprint
       ignore_missing: true
 
   - remove:
+      tag: remove_kafka_network_mbean_1bd8228e
       field: kafka.network.mbean
       ignore_missing: true
 
   # Remove jolokia.metrics fields after they've been renamed
   - remove:
+      tag: remove_jolokia_metrics_153850d4
       field: jolokia.metrics
       ignore_missing: true
   - remove:
+      tag: remove_kafka_mbean_d88bc489
       field: kafka.mbean 
       ignore_missing: true
       
 on_failure:
   - set:
+      tag: set_event_kind_b8b56f60
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_27c98138
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

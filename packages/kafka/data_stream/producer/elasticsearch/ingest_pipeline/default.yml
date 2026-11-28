@@ -2,24 +2,30 @@
 description: Pipeline for processing Kafka producer metrics
 processors:
   - set:
+      tag: set_ecs_version_bc1a88bd
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_jolokia_metrics_c15f41b9
       field: jolokia.metrics
       target_field: kafka.producer
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_kind_3d1e9ca3
       field: event.kind
       value: metric
   - set:
+      tag: set_event_type_f39f8da6
       field: event.type
       value: [info]
   - set:
+      tag: set_service_type_31768708
       field: service.type
       value: kafka
       
   - grok:
+      tag: grok_kafka_producer_mbean_6357db5a
       field: "kafka.producer.mbean"
       patterns:
         - "client-id=(?<kafka_producer_client_id>[^,]+)"
@@ -27,6 +33,7 @@ processors:
       ignore_failure: true
 
   - grok:
+      tag: grok_kafka_producer_mbean_272de650
       field: "kafka.producer.mbean"
       patterns:
         - "node-id=(?<kafka_producer_node_id>[^,]+)"
@@ -34,12 +41,14 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_kafka_producer_client_id_63b28148
       field: "kafka.producer.client_id"
       copy_from: "kafka_producer_client_id"
       if: "ctx.kafka_producer_client_id != null"
       ignore_failure: true
 
   - set:
+      tag: set_kafka_producer_node_id_c61783a5
       field: "kafka.producer.node_id"
       copy_from: "kafka_producer_node_id"
       if: "ctx.kafka_producer_node_id != null"
@@ -47,6 +56,7 @@ processors:
 
   # Add metric fingerprint list
   - script:
+      tag: script_e507ce94
       lang: painless
       source: |
         def queue = new ArrayList();
@@ -76,31 +86,42 @@ processors:
         }
 
   - fingerprint:
+      tag: fingerprint_be28f3bb
       fields: [kafka_producer_metric_fingerprint]
       target_field: kafka.producer.metric_fingerprint
       ignore_failure: true
 
   # Cleanup
   - remove:
+      tag: remove_kafka_producer_node_id_6307d218
       field: kafka_producer_node_id
       ignore_missing: true
       
   - remove:
+      tag: remove_kafka_producer_client_id_e34f1b59
       field: kafka_producer_client_id
       ignore_missing: true
       
   - remove:
+      tag: remove_kafka_producer_kafka_producer_last_applied_record_timestamp_epoch_8f9972ee
       field: kafka.producer.kafka_producer.last_applied_record_timestamp_epoch
       ignore_missing: true
   
   - remove:
+      tag: remove_kafka_producer_metric_fingerprint_eda831ea
       field: kafka_producer_metric_fingerprint
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_4a9d1018
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_f1b6e675
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

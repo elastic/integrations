@@ -2,25 +2,31 @@
 description: Pipeline for processing Kafka controller metrics
 processors:
   - set:
+      tag: set_ecs_version_cc5deb01
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_jolokia_metrics_e0659c93
       field: jolokia.metrics
       target_field: kafka.controller
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_kind_da9a83b8
       field: event.kind
       value: metric
   - set:
+      tag: set_event_type_209c81c3
       field: event.type
       value: [info]
   - set:
+      tag: set_service_type_d7304127
       field: service.type
       value: kafka
 
   # Cast epoch value to long before conversion
   - script:
+      tag: script_e56be398
       if: ctx.kafka?.controller?.kafka_controller?.last_applied_record_timestamp_epoch != null
       lang: painless
       source: >
@@ -29,6 +35,7 @@ processors:
 
   # Convert epoch timestamp to ISO8601
   - date:
+      tag: date_kafka_controller_kafka_controller_last_applied_record_timestamp_epoch_bce0c9d6
       if: ctx.kafka?.controller?.kafka_controller?.last_applied_record_timestamp_epoch != null
       field: kafka.controller.kafka_controller.last_applied_record_timestamp_epoch
       target_field: kafka.controller.kafka_controller.last_applied_record_timestamp
@@ -36,6 +43,7 @@ processors:
 
   # Add metric fingerprint list
   - script:
+      tag: script_662ce997
       lang: painless
       source: |
         def queue = new ArrayList();
@@ -65,23 +73,32 @@ processors:
         }
 
   - fingerprint:
+      tag: fingerprint_556f1d8e
       fields: [kafka_controller_metric_fingerprint]
       target_field: kafka.controller.metric_fingerprint
       ignore_failure: true
 
   # Cleanup
   - remove:
+      tag: remove_kafka_controller_kafka_controller_last_applied_record_timestamp_epoch_b4121398
       field: kafka.controller.kafka_controller.last_applied_record_timestamp_epoch
       ignore_missing: true
   
   - remove:
+      tag: remove_kafka_controller_metric_fingerprint_78bcd9dd
       field: kafka_controller_metric_fingerprint
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_3519197d
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_c0081bc0
       field: error.message
       value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}} with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}} failed with message '{{{ _ingest.on_failure_message }}}'
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

@@ -2,14 +2,22 @@
 description: Pipeline for parsing Kafka log messages
 processors:
   - set:
+      tag: set_ecs_version_415a7cfa
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_f22cc506
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_8d17084f
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - grok:
+      tag: grok_event_original_d739809a
       field: event.original
       trace_match: true
       patterns:
@@ -19,6 +27,7 @@ processors:
       - (?m)\[%{TIMESTAMP_ISO8601:kafka.log.timestamp}\] \[%{LOGLEVEL:log.level} ?\]
         \[%{NOTSPACE:kafka.log.thread}\] \[%{NOTSPACE:kafka.log.class}\] \- %{GREEDYDATA:message}
   - grok:
+      tag: grok_message_65dff43c
       field: message
       pattern_definitions:
         KAFKA_COMPONENT: '[^\]]*'
@@ -26,23 +35,29 @@ processors:
       - \[%{KAFKA_COMPONENT:kafka.log.component}\][,:.]? +%{JAVALOGMESSAGE:message}
       on_failure:
       - set:
+          tag: set_kafka_log_component_8f55857c
           field: kafka.log.component
           value: unknown
   - grok:
+      tag: grok_kafka_log_trace_full_597db76f
       field: kafka.log.trace.full
       ignore_missing: true
       patterns:
       - '%{JAVACLASS:kafka.log.trace.class}:\s*%{JAVALOGMESSAGE:kafka.log.trace.message}'
       on_failure:
       - remove:
+          tag: remove_kafka_log_trace_f9228bdf
           field: kafka.log.trace
   - remove:
+      tag: remove_kafka_log_trace_full_9d8813a7
       field: kafka.log.trace.full
       ignore_missing: true
   - rename:
+      tag: rename_timestamp_2ebd24cd
       field: '@timestamp'
       target_field: event.created
   - date:
+      tag: date_kafka_log_timestamp_a59df553
       if: ctx.event.timezone == null
       field: kafka.log.timestamp
       target_field: '@timestamp'
@@ -50,9 +65,11 @@ processors:
       - yyyy-MM-dd HH:mm:ss,SSS
       on_failure:
       - append:
+          tag: append_error_message_0e4031de
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - date:
+      tag: date_kafka_log_timestamp_13445c1f
       if: ctx.event.timezone != null
       field: kafka.log.timestamp
       target_field: '@timestamp'
@@ -61,14 +78,18 @@ processors:
       timezone: '{{ event.timezone }}'
       on_failure:
       - append:
+          tag: append_error_message_86afd53e
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - remove:
+      tag: remove_kafka_log_timestamp_5a45c605
       field: kafka.log.timestamp
   - set:
+      tag: set_event_kind_25c8dbe8
       field: event.kind
       value: event
   - script:
+      tag: script_f8e531af
       lang: painless
       source: >-
         def errorLevels = ["ERROR", "FATAL"];
@@ -81,5 +102,14 @@ processors:
         }
 on_failure:
   - set:
+      tag: set_event_kind_1327cbca
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_19ba4c51
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
