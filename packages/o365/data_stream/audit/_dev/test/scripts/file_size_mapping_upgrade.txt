@@ -1,0 +1,278 @@
+# Test that upgrading from a release that dynamically mapped file.size as a
+# keyword gives new documents a long mapping, and that nothing else changes
+# type across the upgrade.
+#
+# Release 3.8.2 started passing numbers from the API through to the pipeline as
+# strings, and dropped the conversion of file.size to a long. file.size had no
+# explicit mapping, so on every backing index created after that upgrade it was
+# dynamically mapped as a keyword, which conflicts with the long mapping on
+# earlier indices and breaks rules and visualizations. The fix declares the
+# field explicitly. Because a keyword cannot be changed to a long in place,
+# Fleet must roll the data stream over when it applies the new mappings, so the
+# post-upgrade documents must land in a new backing index.
+#
+# The pre-upgrade version is pinned to 3.11.1, the last release with the bug,
+# rather than derived from LATEST_EPR_VERSION. Once the fix is published the
+# latest release no longer exhibits the problem and an upgrade from it would
+# prove nothing.
+#
+# The generic type comparison at the end is deliberately broad: it lists every
+# field whose indexed type differs between the pre- and post-upgrade documents.
+# The only permitted difference is file.size.
+#
+# See https://github.com/elastic/integrations/issues/21137.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!env:LATEST_EPR_VERSION] skip 'no EPR release to upgrade from'
+[!is_latest_version] skip 'dev version is not newer than latest EPR release'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock O365 API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
+
+# Install the last affected release from the registry and create a policy on it.
+install_package_from_registry -profile ${CONFIG_PROFILES}/${PROFILE} ${PACKAGE_NAME} 3.11.1
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} -version 3.11.1 test_config.yaml DATA_STREAM_NAME
+
+# One event with FileSizeBytes in scientific notation.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout before.json
+
+# Document the bug being upgraded away from: the affected release indexes the
+# raw string into a dynamically mapped keyword, so the indexed value is still
+# in scientific notation.
+exec jq -r '.hits.hits[0].fields["file.size"][0]' before.json
+stdout '^1\.3405e4$'
+exec jq -r '.hits.hits[0]._index' before.json
+stdout '-000001$'
+
+# Install the dev version from disk and upgrade the policy to it.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+upgrade_package_latest -profile ${CONFIG_PROFILES}/${PROFILE}
+stdout 'upgraded package '${PACKAGE_NAME}
+
+# Serve new events from the upgraded integration.
+docker_down o365-mock
+cp o365-mock/config-v2.yml o365-mock/config.yml
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
+
+# One pre-upgrade document plus two new ones.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout after.json
+
+# No pipeline failures and nothing dropped by ignore_malformed.
+exec jq '[.hits.hits[]._source | select(.error != null)] | length' after.json
+stdout '^0$'
+exec jq '.aggregations.all_ignored.doc_count' after.json
+stdout '^0$'
+
+# The new documents are indexed as long with the expected integer values.
+exec jq -r '[.hits.hits[] | select(.fields["event.id"][0] | startswith("sp-new")) | "\(.fields["event.id"][0])=\(.fields["file.size"][0])"] | sort | join(",")' after.json
+stdout '^sp-new-enotation=13405,sp-new-plain=2048$'
+
+# Fleet rolled the data stream over: the new documents are in the second
+# generation backing index, not the one that holds the keyword mapping.
+exec jq -r '[.hits.hits[] | select(.fields["event.id"][0] | startswith("sp-new")) | ._index] | unique | .[]' after.json
+stdout '-000002$'
+! stdout '-000001$'
+
+# The pre-upgrade document is untouched and still a keyword in its own index.
+exec jq -r '.hits.hits[] | select(.fields["event.id"][0] == "sp-old") | "\(.fields["file.size"][0]) \(._index)"' after.json
+stdout '^1\.3405e4 .*-000001$'
+
+# Generic check: for every field present both before and after the upgrade,
+# compare the JSON type of the indexed value. The only field allowed to change
+# type is file.size.
+exec jq -S '[.hits.hits[].fields | to_entries[] | {key, value: (.value[0] | type)}] | from_entries' before.json
+cp stdout types_before.json
+exec jq -S '[.hits.hits[] | select(.fields["event.id"][0] | startswith("sp-new")) | .fields | to_entries[] | {key, value: (.value[0] | type)}] | from_entries' after.json
+cp stdout types_after.json
+exec jq -c -n --slurpfile a types_before.json --slurpfile b types_after.json '[$a[0] | to_entries[] | select($b[0][.key] != null and $b[0][.key] != .value) | .key]'
+stdout '^\["file.size"\]$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down o365-mock
+
+-- test_config.yaml --
+input: cel
+vars: ~
+data_stream:
+  vars:
+    url: http://o365-mock:8080
+    token_url: http://o365-mock:8080
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.SharePoint"
+    interval: 30s
+    initial_interval: 1h
+    enable_request_tracer: false
+-- o365-mock/docker-compose.yml --
+version: '2.3'
+services:
+  o365-mock:
+    image: docker.elastic.co/observability/stream:v0.19.0
+    hostname: o365-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- o365-mock/config.yml --
+rules:
+  # Token endpoint.
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://manage.office.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-token","token_type":"Bearer","expires_in":3600,"ext_expires_in":3600}
+
+  # Subscribe Audit.SharePoint - success.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.SharePoint"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.SharePoint","status":"enabled","webhook":null}
+
+  # List content for Audit.SharePoint.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.SharePoint","contentId":"sp-content-1","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # Fetch SharePoint content: FileSizeBytes in scientific notation.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"sp-old","CreationTime":"2020-02-07T16:43:53","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/report.xlsx","SourceFileName":"report.xlsx","SourceFileExtension":"xlsx","FileSizeBytes":1.3405e4}]
+-- o365-mock/config-v2.yml --
+rules:
+  # Token endpoint.
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://manage.office.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-token","token_type":"Bearer","expires_in":3600,"ext_expires_in":3600}
+
+  # Subscribe Audit.SharePoint - success.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.SharePoint"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.SharePoint","status":"enabled","webhook":null}
+
+  # List content for Audit.SharePoint (only new content post-upgrade).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.SharePoint","contentId":"sp-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # Fetch SharePoint content (new, post-upgrade): the same scientific-notation
+  # shape as before the upgrade, plus a plain integer.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [
+            {"Id":"sp-new-enotation","CreationTime":"2020-02-07T17:10:22","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/report2.xlsx","SourceFileName":"report2.xlsx","SourceFileExtension":"xlsx","FileSizeBytes":1.3405e4},
+            {"Id":"sp-new-plain","CreationTime":"2020-02-07T17:11:22","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1","ObjectId":"https://test.sharepoint.com/sites/a/notes.txt","SourceFileName":"notes.txt","SourceFileExtension":"txt","FileSizeBytes":2048}
+          ]
