@@ -283,6 +283,45 @@ processors:
       field: json.data.alertDetails
       target_field: google_workspace.alert.data.alert_details
       ignore_missing: true
+  - script:
+      tag: script_flatten_system_defined_alert_details_7c1f9a2e
+      lang: painless
+      if: ctx.google_workspace?.alert?.data?.alert_details instanceof List
+      description: >-
+        Flattens SystemDefinedAlertData alertDetails (an array of
+        {fieldName, fieldValues:[{stringValue|intValue|boolValue|timestampValue}]})
+        into "fieldName=v1, v2" keyword strings so they fit the keyword mapping.
+        The ReportingRule base64 string is a scalar and is left untouched.
+      source: |
+        def details = ctx.google_workspace.alert.data.alert_details;
+        def out = new ArrayList();
+        for (def entry : details) {
+          if (!(entry instanceof Map)) { out.add(String.valueOf(entry)); continue; }
+          def name = entry.get('fieldName');
+          def values = entry.get('fieldValues');
+          def rendered = new ArrayList();
+          if (values instanceof List) {
+            for (def v : values) {
+              if (v instanceof Map) {
+                if (v.get('stringValue') != null) { rendered.add(v.get('stringValue')); }
+                else if (v.get('intValue') != null) { rendered.add(String.valueOf(v.get('intValue'))); }
+                else if (v.get('boolValue') != null) { rendered.add(String.valueOf(v.get('boolValue'))); }
+                else if (v.get('timestampValue') != null) { rendered.add(String.valueOf(v.get('timestampValue'))); }
+              } else if (v != null) { rendered.add(String.valueOf(v)); }
+            }
+          }
+          def prefix = name == null ? '' : name + '=';
+          out.add(prefix + String.join(', ', rendered));
+        }
+        ctx.google_workspace.alert.data.alert_details = out;
+      on_failure:
+        - append:
+            tag: append_error_message_7c1f9a2e
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 
   # Pipeline For Domain wide takeout.
   - rename:
