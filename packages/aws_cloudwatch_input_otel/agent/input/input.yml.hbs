@@ -35,6 +35,9 @@ receivers:
       collection_interval: {{collection_interval}}
       period: {{period}}
       delay: {{delay}}
+      # Without a namespace (an integration that renders its own receivers) the
+      # receiver has no discovery and makes no CloudWatch calls.
+{{#if namespace}}
       discovery:
         filters:
           namespace: "{{namespace}}"
@@ -45,6 +48,7 @@ receivers:
 {{#each autodiscover_aggregation}}
           - "{{this}}"
 {{/each}}
+{{/if}}
 {{/if}}
 
 processors:
