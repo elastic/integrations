@@ -2,20 +2,24 @@
 description: Pipeline for parsing Microsoft Foundry logs.
 processors:
   - rename:
+      tag: rename_message_f7f10312
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_683c4db4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_f6a7dc5f
       field: event.original
       target_field: azure.ai_foundry
   - rename:
+      tag: rename_azure_ai_foundry_resourceId_d442c8fb
       field: azure.ai_foundry.resourceId
       target_field: azure.resource.id
       ignore_missing: true
@@ -23,6 +27,7 @@ processors:
 # GatewayLogs
 # GatewayLlmLogs - TODO - After Azure make it for production use.
   - drop:
+      tag: drop_382e07a7
       description: Drop logs other than GatewayLogs category.
       if: "ctx.azure.ai_foundry.category != 'Audit' && ctx.azure.ai_foundry.category != 'RequestResponse' && ctx.azure.ai_foundry.category != 'GatewayLogs'"
       ignore_failure: true
@@ -32,8 +37,10 @@ processors:
       if: ctx.azure?.ai_foundry?.properties instanceof String
       on_failure:
         - remove:
+            tag: remove_azure_ai_foundry_properties_1a083765
             field: azure.ai_foundry.properties
         - append:
+            tag: append_error_message_01c749f0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
@@ -69,10 +76,12 @@ processors:
 
         ctx.azure['ai_foundry'] = keysToSnakeCase(ctx.azure.ai_foundry);
   - json:
+      tag: json_azure_ai_foundry_properties_backend_request_body_b5cf21ca
       field: azure.ai_foundry.properties.backend_request_body
       if: "ctx.azure?.ai_foundry?.properties?.backend_request_body instanceof String"
   # GatewayLogs: Extract the backend_request body content as key value pairs. Logs the actual request input, model name information.
   - script:
+      tag: script_9372467d
       lang: painless
       source: >-
         if (ctx.azure.ai_foundry.properties.backend_request != null) {
@@ -83,11 +92,13 @@ processors:
           ctx.azure.ai_foundry.properties.backend_request = ctx.temp_request; ctx.remove('temp_request');
         }
   - json:
+      tag: json_azure_ai_foundry_properties_backend_response_body_e1810062
       field: azure.ai_foundry.properties.backend_response_body
       if: "ctx.azure?.ai_foundry?.properties?.backend_response_body instanceof String"
       ignore_failure: true
   # GatewayLogs: Extract the backend_response body content as key value pairs. This logs the actual response input, usage tokens and the content filter information from the chat API.
   - script:
+      tag: script_f6dd1bf6
       lang: painless
       source: >-
         if (ctx.azure.ai_foundry.properties.backend_response != null) {
@@ -99,12 +110,14 @@ processors:
         }
       ignore_failure: true
   - date:
+      tag: date_azure_ai_foundry_time_10aa775c
       field: azure.ai_foundry.time
       target_field: '@timestamp'
       ignore_failure: true
       formats:
         - ISO8601
   - remove:
+      tag: remove_azure_ai_foundry_time_6bfd20a9
       field: azure.ai_foundry.time
       ignore_missing: true
   - convert:
@@ -133,6 +146,7 @@ processors:
             tag: rename-caller_ip_address
             on_failure:
               - append:
+                  tag: append_error_message_c8f981a6
                   field: error.message
                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -142,11 +156,13 @@ processors:
       tag: remove-gatewaylog-caller_ip_address
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_27264a89
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_b9dcff20
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -155,18 +171,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_52c8dcd6
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_2aa86103
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_outcome_241cb38c
       field: event.outcome
       value: success
       if: ctx?.azure?.ai_foundry?.result_type != null && ctx?.azure?.ai_foundry?.result_type instanceof String && ctx?.azure?.ai_foundry?.result_type.toLowerCase() == "succeeded"
   - set:
+      tag: set_event_outcome_170d6601
       field: event.outcome
       value: failure
       if: ctx?.azure?.ai_foundry?.result_type != null && ctx?.azure?.ai_foundry?.result_type instanceof String && ctx?.azure?.ai_foundry?.result_type.toLowerCase() == "failed"
@@ -177,28 +197,34 @@ processors:
       ignore_missing: true
   ## Make the request, response sizes fields same for both categories.
   - rename:
+      tag: rename_azure_ai_foundry_properties_request_size_926856d0
       field: azure.ai_foundry.properties.request_size
       target_field: azure.ai_foundry.properties.request_length
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_properties_response_size_12a29a46
       field: azure.ai_foundry.properties.response_size
       target_field: azure.ai_foundry.properties.response_length
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_properties_backend_response_body_usage_prompt_tokens_6b88e27f
       field: azure.ai_foundry.properties.backend_response_body.usage.prompt_tokens
       target_field: azure.ai_foundry.properties.backend_response_body.usage.input_tokens
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_properties_backend_response_body_usage_completion_tokens_627b923a
       field: azure.ai_foundry.properties.backend_response_body.usage.completion_tokens
       target_field: azure.ai_foundry.properties.backend_response_body.usage.output_tokens
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_properties_backend_response_body_choices_content_filter_results_protected_material_code_citation_URL_14da849b
       field: azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.URL
       target_field: azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.url
       ignore_missing: true
   ## Get content filtered results category and severity level for prompt blockers. The category name comes as field name so it is not possible to visualize the category.
   ## Performing this only for standard categories, hate, self_harm, violence and sexual. Picked based on the values displayed in Azure.
   - script:
+      tag: script_d4457841
       lang: painless
       ignore_failure: true
       source: >-
@@ -232,6 +258,7 @@ processors:
 
 ## Get content filtered results category and severity level for response blockers. The category name comes as field name so it is not possible to visualize the category.
   - script:
+      tag: script_c3888eed
       lang: painless
       ignore_failure: true
       if: ctx.azure?.ai_foundry?.properties?.backend_response_body?.choices != null
@@ -266,10 +293,12 @@ processors:
           }
           ctx.azure.ai_foundry.properties.backend_response_body.content_filtered_categories = response_categories;
   - rename:
+      tag: rename_azure_ai_foundry_properties_method_4991c5c2
       field: azure.ai_foundry.properties.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_azure_ai_foundry_properties_response_code_1efac1f1
       field: azure.ai_foundry.properties.response_code
       target_field: http.response.status_code
       ignore_missing: true
@@ -280,6 +309,7 @@ processors:
       tag: uri_parts-properties-request_uri
       on_failure:
         - append:
+            tag: append_error_message_7997a652
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
@@ -300,6 +330,7 @@ processors:
       tag: convert-duration
       ignore_missing: true
   - script:
+      tag: script_2b4974fa
       lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
         * params.param_nano;}
@@ -307,9 +338,11 @@ processors:
         param_nano: 1000000
       ignore_failure: true
   - pipeline:
+      tag: pipeline_2ad484a9
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       ignore_failure: true
   - script:
+      tag: script_90a12b93
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -328,5 +361,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_c532d502
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_c4bb2ecf
       field: error.message
-      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
