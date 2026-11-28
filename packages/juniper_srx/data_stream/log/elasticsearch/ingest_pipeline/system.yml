@@ -13,9 +13,47 @@ processors:
     # 2. SRX System Unstructured
     - '^%{GREEDYDATA:message}$'
 
+# A brief message can start with a host or component name only when the line
+# has no program (for example "- - - - node1.fpc0 PFE_FW_SYSLOG_IP: FW: ...")
+# or when the text repeats the host name, alone or followed by the program
+# (for example "kernel - - - host-1 kernel: ..."). When a program is present
+# and the text does neither, the first word belongs to the message (for
+# example "sshd 22694 - - Connection closed by ..."), so it must not be read
+# as a host name.
+- set:
+    tag: set_brief_without_host
+    field: _temp_.brief_without_host
+    value: true
+    if: >-
+      if (!(ctx._temp_?.unparsed?.system_structured_brief instanceof String)) { return false; }
+      if (ctx.syslog_program == null || ctx.syslog_program == '-') { return false; }
+      String brief = ctx._temp_.unparsed.system_structured_brief;
+      int space = brief.indexOf(' ');
+      if (space <= 0) { return true; }
+      String first = brief.substring(0, space);
+      String rest = brief.substring(space + 1);
+      if (ctx.observer?.name instanceof String && first.equalsIgnoreCase(ctx.observer.name)) { return false; }
+      return !(rest.startsWith(ctx.syslog_program + ':') || rest.startsWith(ctx.syslog_program + '['));
+
 # Parse different types of system_structured_brief messages
 - grok:
-    if: "ctx._temp_?.unparsed?.system_structured_brief != null && ctx._temp_.unparsed.system_structured_brief != ''"
+    if: "ctx._temp_?.brief_without_host == true && ctx._temp_.unparsed.system_structured_brief != ''"
+    tag: "grok_system_structured_brief_without_host"
+    field: "_temp_.unparsed.system_structured_brief"
+    patterns:
+    # 1. Has word 'negotiation'
+    - '^%{WORD:_temp_.negotiation.type} negotiation %{GREEDYDATA:_temp_.negotiation.message}$'
+    # 2. Optionally contain tag and pid, and rest of message is parsed into _temp_.message_brief
+    - '^(%{CUSTOM_TAG_BRIEF:_temp_.tag_brief}(\s\(pid=%{DATA:syslog_pid}\))?(:\s))?%{GREEDYDATA:_temp_.message_brief}$'
+    pattern_definitions:
+        CUSTOM_TAG_BRIEF: "(?!FW)[A-Za-z_]+"
+    on_failure:
+    - append:
+        tag: append_error_message_brief_without_host
+        field: error.message
+        value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
+- grok:
+    if: "ctx._temp_?.brief_without_host != true && ctx._temp_?.unparsed?.system_structured_brief != null && ctx._temp_.unparsed.system_structured_brief != ''"
     tag: "grok_system_structured_brief"
     field: "_temp_.unparsed.system_structured_brief"
     patterns:
@@ -438,6 +476,33 @@ processors:
     copy_from: _temp_.message_brief
     if: "ctx._temp_?.message_brief != null && ctx.message == null"
 
+# sshd (OpenSSH) messages that Junos does not tag carry the user and client
+# only in the text, for example:
+#   Connection closed by authenticating user elastic 192.0.2.10 port 52526 [preauth]
+#   Disconnected from invalid user admin 198.51.100.20 port 50002 [preauth]
+# Other sshd messages (and these without a client address) do not match and
+# stay in `message` unchanged, so a failed match is not an error.
+- grok:
+    tag: grok_sshd_connection_closed
+    field: message
+    if: >-
+      ctx.juniper?.srx?.process == 'sshd' && ctx.juniper?.srx?.tag == null &&
+      ctx.message instanceof String &&
+      (ctx.message.startsWith('Connection closed by ') || ctx.message.startsWith('Disconnected from '))
+    patterns:
+    - '^(?:Connection closed by|Disconnected from)(?: (?:%{SSHD_USER_KIND:_temp_.sshd.user_kind} )?user %{DATA:_temp_.sshd.user_name})? %{IP:source.ip} port %{POSINT:source.port:long}(?: \[preauth\])?\s*$'
+    pattern_definitions:
+        SSHD_USER_KIND: authenticating|invalid
+    ignore_failure: true
+# OpenSSH logs an empty user name as "invalid user  <ip>"; only set
+# user.name when there is a name, so no empty user object is created.
+- set:
+    tag: set_user_name_from_sshd_user_name
+    field: user.name
+    value: '{{{_temp_.sshd.user_name}}}'
+    ignore_empty_value: true
+    if: ctx._temp_?.sshd?.user_name != null
+
 #######################
 ## ECS Event Mapping ##
 #######################
@@ -468,6 +533,26 @@ processors:
     field: event.type
     value: start
     if: ctx.juniper?.srx?.tag == "DOT1XD_USR_AUTHENTICATED"
+# An sshd connection closed before or after login names the user, so it is an
+# authentication event that has ended. It is a failure only for an invalid
+# (unknown) user; for an authenticating user the outcome is not known.
+# Gate on what grok_sshd_connection_closed captured, not on user.name, which
+# agent processors may already have set on unrelated sshd messages.
+- append:
+    tag: append_event_category_sshd_connection_closed
+    field: event.category
+    value: authentication
+    if: ctx._temp_?.sshd?.user_name != null
+- append:
+    tag: append_event_type_sshd_connection_closed
+    field: event.type
+    value: end
+    if: ctx._temp_?.sshd?.user_name != null
+- set:
+    tag: set_event_outcome_sshd_invalid_user
+    field: event.outcome
+    value: failure
+    if: ctx._temp_?.sshd?.user_kind == 'invalid'
 - append:
     tag: append_event_type_3720ee03
     field: event.type
