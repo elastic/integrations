@@ -22,6 +22,11 @@
             "statusChangeThreshold": 4
         },
         "artifacts": {
+            "dashboards": [
+                {
+                    "id": "aws_elb_metrics_otel-5a9019c8-e8b0-489c-a6b7-35a976e4cd07"
+                }
+            ],
             "investigation_guide": {
                 "blob": "## High ELB 5XX Error Rate\n\nELB-generated 5XX responses are produced by the load balancer itself — typically when no healthy targets are available, targets time out on connection, or the LB hits capacity limits.\n\n### Triage Steps\n1. Identify the affected load balancer and region from the alert context.\n2. Check `UnHealthyHostCount` and `HealthyHostCount` for all target groups behind this ALB.\n3. Verify target instances are running and passing health checks (security groups, listener rules, target registration).\n4. Look for `RejectedConnectionCount` or high `ConsumedLCUs` indicating LB capacity pressure.\n5. If targets are healthy, check for misconfigured listeners, SSL/TLS issues, or idle timeout mismatches.\n\n### Escalation\nELB 5XX with zero healthy targets is a service outage — page immediately.\n\n### Tuning\n- Adjust the `error_rate_pct` threshold (default 0.5%) to match your tolerance for edge errors.\n- Adjust `requests > 100` minimum sample size based on expected traffic volume."
             }

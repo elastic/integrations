@@ -22,6 +22,11 @@
       "statusChangeThreshold": 4
     },
     "artifacts": {
+      "dashboards": [
+        {
+          "id": "aws_rds_otel-c92e1216-83f6-4de7-9d7f-1bcb42d5988a"
+        }
+      ],
       "investigation_guide": {
         "blob": "## Read Latency High\n\n### Triage\n1. Check `DiskQueueDepth` — climbing queue depth with plateauing `ReadIOPS` indicates I/O saturation.\n2. On gp2 volumes, inspect `BurstBalance` for depleted burst credits.\n3. Review provisioned IOPS vs actual `ReadIOPS`/`WriteIOPS`.\n4. Sustained latency above your workload baseline can indicate storage contention.\n\n### Mitigation\n- Upgrade storage type (gp2 → gp3/io2) or increase provisioned IOPS.\n- Reduce read-heavy query load or add read replicas.\n- Investigate missing indexes causing excessive table scans."
       }

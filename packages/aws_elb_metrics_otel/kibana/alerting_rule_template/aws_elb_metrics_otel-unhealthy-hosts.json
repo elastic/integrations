@@ -22,6 +22,11 @@
             "statusChangeThreshold": 4
         },
         "artifacts": {
+            "dashboards": [
+                {
+                    "id": "aws_elb_metrics_otel-5a9019c8-e8b0-489c-a6b7-35a976e4cd07"
+                }
+            ],
             "investigation_guide": {
                 "blob": "## Unhealthy Targets Detected\n\n`UnHealthyHostCount > 0` means at least one target in the group failed ALB health checks during the window. If all targets become unhealthy, the ALB serves ELB 5XX and the service is effectively down.\n\n### Triage Steps\n1. Identify the affected load balancer, target group, and region.\n2. Check which targets are unhealthy in the AWS console (EC2/ECS/EKS target health view).\n3. Verify health check path, port, protocol, and expected response codes match the application.\n4. Inspect target instance/container logs for crashes, OOM, or failed readiness probes.\n5. Check security group and NACL rules between the ALB and targets.\n6. Monitor `HealthyHostCount` — if trending toward zero, treat as an outage.\n\n### Note\nThis source collects `Average`, `Maximum`, and `Sum` for `UnHealthyHostCount` (not `Minimum`, which AWS recommends for AZ-wide outage alarms). This alert uses `Average`, which AWS lists as acceptable for unhealthy-host alerting and is less noisy than `Maximum`; any non-zero average in the period triggers the alert."
             }
