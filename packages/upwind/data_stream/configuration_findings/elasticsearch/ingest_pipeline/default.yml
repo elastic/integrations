@@ -55,11 +55,21 @@ processors:
             tag: append_error_message_f2f54777
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag ''{{{_ingest.on_failure_processor_tag}}}'' failed: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: event.start
+      ignore_empty_value: true
   - rename:
       field: json.id
       target_field: event.id
       ignore_missing: true
       tag: rename_id
+  - convert:
+      field: event.id
+      type: string
+      ignore_missing: true
+      tag: convert_event_id_to_string
   - rename:
       field: json.title
       target_field: message
@@ -78,9 +88,14 @@ processors:
   - set:
       field: rule.uuid
       tag: set_rule_uuid
+      value: '{{{json.framework.id}}}-{{{rule.id}}}'
+      if: ctx.json?.framework?.id != null && ctx.rule?.id != null
+      description: Cloud security posture workflows require `rule.uuid` unique across benchmarks.
+  - set:
+      field: rule.uuid
+      tag: set_rule_uuid_fallback
       copy_from: rule.id
-      if: ctx.rule?.id != null
-      description: Cloud security posture workflows require `rule.uuid`; the check identifier is the stable rule identity.
+      if: ctx.rule?.uuid == null && ctx.rule?.id != null
   - rename:
       field: json.check.title
       target_field: rule.name
@@ -106,11 +121,56 @@ processors:
       tag: set_result_evaluation_failed
       value: failed
       if: ctx.json?.status == 'FAIL'
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.result?.evaluation == 'passed'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.result?.evaluation == 'failed'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_unknown
+      value: unknown
+      if: ctx.result?.evaluation == 'unknown'
+  - set:
+      field: rule.remediation
+      tag: set_rule_remediation
+      copy_from: json.check.remediation
+      ignore_empty_value: true
+  - set:
+      field: rule.benchmark.name
+      tag: set_rule_benchmark_name
+      copy_from: rule.ruleset
+      ignore_empty_value: true
+  - set:
+      field: rule.benchmark.version
+      tag: set_rule_benchmark_version
+      copy_from: json.framework.version
+      ignore_empty_value: true
+  - set:
+      field: rule.benchmark.rule_number
+      tag: set_rule_benchmark_rule_number
+      copy_from: rule.id
+      ignore_empty_value: true
   - rename:
       field: json.resource.id
       target_field: resource.id
       ignore_missing: true
       tag: rename_resource_id
+  - convert:
+      field: resource.id
+      type: string
+      ignore_missing: true
+      tag: convert_resource_id_to_string
   - rename:
       field: json.resource.name
       target_field: resource.name
@@ -121,6 +181,52 @@ processors:
       target_field: resource.type
       ignore_missing: true
       tag: rename_resource_type
+  - set:
+      field: resource.sub_type
+      tag: set_resource_sub_type
+      copy_from: resource.type
+      ignore_empty_value: true
+  - lowercase:
+      field: resource.name
+      target_field: host.name
+      ignore_missing: true
+      tag: lowercase_host_name
+      if: ctx.resource?.type instanceof String && (ctx.resource.type.toLowerCase().contains('instance') || ctx.resource.type.toLowerCase().contains('virtualmachine') || ctx.resource.type.toLowerCase().contains('kubernetespod') || ctx.resource.type.toLowerCase().contains('kubernetesnode') || ctx.resource.type.equalsIgnoreCase('host'))
+  - script:
+      lang: painless
+      tag: set_user_name
+      description: Set user.name from the IAM ARN when present, otherwise the resource name.
+      if: ctx.resource?.type instanceof String && (ctx.resource.type.toLowerCase().contains('iamuser') || ctx.resource.type.toLowerCase().contains('useraccount'))
+      source: |-
+        def id = ctx.resource?.id;
+        if (id instanceof String) {
+          int userIdx = id.indexOf(':user/');
+          if (userIdx >= 0) {
+            ctx.user = ctx.user ?: [:];
+            ctx.user.name = id.substring(userIdx + 6);
+            return;
+          }
+          if (id.endsWith(':root')) {
+            ctx.user = ctx.user ?: [:];
+            ctx.user.name = 'root';
+            return;
+          }
+        }
+        if (ctx.resource?.name instanceof String) {
+          ctx.user = ctx.user ?: [:];
+          ctx.user.name = ctx.resource.name;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_set_user_name
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag ''{{{_ingest.on_failure_processor_tag}}}'' failed: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
   - remove:
       field: cloud
       ignore_missing: true
@@ -150,6 +256,18 @@ processors:
       target_field: cloud.region
       ignore_missing: true
       tag: rename_cloud_region
+  - set:
+      field: cloud.instance.id
+      tag: set_cloud_instance_id
+      copy_from: resource.id
+      ignore_empty_value: true
+      if: ctx.resource?.type instanceof String && (ctx.resource.type.toLowerCase().contains('instance') || ctx.resource.type.toLowerCase().contains('virtualmachine'))
+  - set:
+      field: cloud.instance.name
+      tag: set_cloud_instance_name
+      copy_from: resource.name
+      ignore_empty_value: true
+      if: ctx.resource?.type instanceof String && (ctx.resource.type.toLowerCase().contains('instance') || ctx.resource.type.toLowerCase().contains('virtualmachine'))
   - rename:
       field: json.resource.namespace
       target_field: orchestrator.namespace
@@ -206,6 +324,12 @@ processors:
       value: '{{{resource.name}}}'
       allow_duplicates: false
       if: ctx.resource?.name != null && ['AwsInstance', 'AWS_EC2_INSTANCE'].contains(ctx.resource?.type)
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.resource?.name != null && ['AwsInstance', 'AWS_EC2_INSTANCE'].contains(ctx.resource?.type)
   - rename:
       field: json.status
       target_field: upwind.configuration_findings.status
@@ -221,11 +345,6 @@ processors:
       target_field: upwind.configuration_findings.last_sync_time
       ignore_missing: true
       tag: rename_last_sync_time
-  - rename:
-      field: json.check.remediation
-      target_field: rule.remediation
-      ignore_missing: true
-      tag: rename_check_remediation
   - rename:
       field: json.framework.id
       target_field: upwind.configuration_findings.framework.id
