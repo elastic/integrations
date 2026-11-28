@@ -2,6 +2,7 @@
 description: Pipeline for processing MongoDB Atlas Alert logs
 processors:
   - fingerprint:
+      tag: fingerprint_4ecc07b8
       fields:
         - response.id
         - response.updated
@@ -9,123 +10,154 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_ecs_version_f57ba84b
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_80cd5ccd
       field: event.kind
       value: alert
   - set:
+      tag: set_event_module_008731aa
       field: event.module
       value: mongodb_atlas
   - set:
+      tag: set_event_category_7f30394d
       field: event.category
       value: ["host"]
   - set:
+      tag: set_event_type_bc60507a
       field: event.type
       value: ["info"]
   - fail:
+      tag: fail_e73126c1
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
   - set:
+      tag: set_event_original_99b6834f
       copy_from: response
       field: event.original
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - convert:
+      tag: convert_event_original_fdd79779
       type: string
       field: event.original
       ignore_missing: true
   - date:
+      tag: date_response_created_30ad9656
       field: response.created
       target_field: '@timestamp'
       formats: [ISO8601]
       on_failure:
         - append:
+            tag: append_error_message_466a4aaf
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
   - rename:
+      tag: rename_response_id_999d835d
       field: response.id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_response_groupId_3612bcb1
       field: response.groupId
       target_field: group.id
       ignore_missing: true
   - rename:
+      tag: rename_response_orgId_4b4ae5c1
       field: response.orgId
       target_field: organization.id
       ignore_missing: true
   - rename:
+      tag: rename_response_acknowledgedUntil_b6795d3e
       field: response.acknowledgedUntil
       target_field: mongodb_atlas.alert.acknowledged.time
       ignore_missing: true
   - rename:
+      tag: rename_response_acknowledgementComment_de8be215
       field: response.acknowledgementComment
       target_field: mongodb_atlas.alert.acknowledged.comment
       ignore_missing: true
   - rename:
+      tag: rename_response_acknowledgingUsername_3aecf92e
       field: response.acknowledgingUsername
       target_field: mongodb_atlas.alert.acknowledged.user.name
       ignore_missing: true
   - rename:
+      tag: rename_response_alertConfigId_a6cc3859
       field: response.alertConfigId
       target_field: mongodb_atlas.alert.config.id
       ignore_missing: true
   - rename:
+      tag: rename_response_parentClusterId_6e02cadd
       field: response.parentClusterId
       target_field: mongodb_atlas.alert.cluster.parent.id
       ignore_missing: true
   - rename:
+      tag: rename_response_clusterId_c6b22e8c
       field: response.clusterId
       target_field: mongodb_atlas.alert.cluster.id
       ignore_missing: true
   - rename:
+      tag: rename_response_clusterName_53b6efa3
       field: response.clusterName
       target_field: mongodb_atlas.alert.cluster.name
       ignore_missing: true
   - rename:
+      tag: rename_response_currentValue_number_3598d505
       field: response.currentValue.number
       target_field: mongodb_atlas.alert.metric.value
       ignore_missing: true
   - rename:
+      tag: rename_response_currentValue_units_2bfa0fb4
       field: response.currentValue.units
       target_field: mongodb_atlas.alert.metric.unit
       ignore_missing: true
   - rename:
+      tag: rename_response_metricName_c5a6c218
       field: response.metricName
       target_field: mongodb_atlas.alert.metric.name
       ignore_missing: true
   - rename:
+      tag: rename_response_eventTypeName_acf4ad2e
       field: response.eventTypeName
       target_field: mongodb_atlas.alert.event_type.name
       ignore_missing: true
   - rename:
+      tag: rename_response_nonRunningHostIds_b766f50f
       field: response.nonRunningHostIds
       target_field: mongodb_atlas.alert.host.non_running.ids
       ignore_missing: true
   - rename:
+      tag: rename_response_hostId_2402cca6
       field: response.hostId
       target_field: mongodb_atlas.alert.host.id
       ignore_missing: true
   - rename:
+      tag: rename_response_hostnameAndPort_4922278e
       field: response.hostnameAndPort
       target_field: mongodb_atlas.alert.host_name_and_port
       ignore_missing: true
   - grok:
+      tag: grok_mongodb_atlas_alert_host_name_and_port_dc115466
       field: mongodb_atlas.alert.host_name_and_port
       patterns:
         - '%{HOSTNAME:source.address}:%{POSINT:source.port}'
       on_failure:
         - append:
+            tag: append_error_message_86c3f03f
             field: error.message
             value: 'Failed to parse host_name_and_port: {{{ _ingest.on_failure_message }}}'
       ignore_missing: true
   - convert:
+      tag: convert_source_port_23cc10c3
       field: source.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_86491fd0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -137,68 +169,84 @@ processors:
       ignore_missing: true
       on_failure:
         - set:
+            tag: set_source_domain_227c6f07
             field: source.domain
             copy_from: source.address
             ignore_empty_value: true
   - append:
+      tag: append_related_ip_cc9636d4
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
+      tag: append_related_hosts_c41dfa4b
       field: related.hosts
       value: '{{{source.domain}}}'
       allow_duplicates: false
       if: ctx.source?.domain != null
   - rename:
+      tag: rename_response_lastNotified_f2ce3bef
       field: response.lastNotified
       target_field: mongodb_atlas.alert.last_notified.time
       ignore_missing: true
   - rename:
+      tag: rename_response_replicaSetName_369458b8
       field: response.replicaSetName
       target_field: mongodb_atlas.alert.replicaset.name
       ignore_missing: true
   - rename:
+      tag: rename_response_resolved_f81ad06e
       field: response.resolved
       target_field: mongodb_atlas.alert.resolved.time
       ignore_missing: true
   - rename:
+      tag: rename_response_status_62407251
       field: response.status
       target_field: mongodb_atlas.alert.status
       ignore_missing: true
   - rename:
+      tag: rename_response_sourceTypeName_c4da551c
       field: response.sourceTypeName
       target_field: mongodb_atlas.alert.source_type.name
       ignore_missing: true
   - rename:
+      tag: rename_response_updated_881bd6be
       field: response.updated
       target_field: mongodb_atlas.alert.updated.time
       ignore_missing: true
   - rename:
+      tag: rename_response_instanceName_13b9a43f
       field: response.instanceName
       target_field: mongodb_atlas.alert.processor.instance.name
       ignore_missing: true
   - rename:
+      tag: rename_response_processorErrorMsg_90b63e65
       field: response.processorErrorMsg
       target_field: mongodb_atlas.alert.processor.error_msg
       ignore_missing: true
   - rename:
+      tag: rename_response_processorName_ce137d90
       field: response.processorName
       target_field: mongodb_atlas.alert.processor.name
       ignore_missing: true
   - rename:
+      tag: rename_response_processorState_043e60e1
       field: response.processorState
       target_field: mongodb_atlas.alert.processor.state
       ignore_missing: true
   - rename:
+      tag: rename_response_userAlias_1583ca69
       field: response.userAlias
       target_field: mongodb_atlas.alert.user.alias
       ignore_missing: true
   - rename:
+      tag: rename_response_tags_b8589ff4
       field: response.tags
       target_field: mongodb_atlas.alert.tags
       ignore_missing: true
   - script:
+      tag: script_85348a51
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -216,18 +264,25 @@ processors:
         drop(ctx);
       description: Drops null and empty values recursively from the Elasticsearch document context.
   - remove:
+      tag: remove_response_9f62e553
       field: response
       ignore_missing: true
       description: Removes temporary fields.
   - set:
+      tag: set_event_kind_b1395127
       field: event.kind
       value: pipeline_error
       if: ctx.error?.response != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
+      tag: set_event_kind_0a342689
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_e089d156
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

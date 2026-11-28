@@ -2,77 +2,97 @@
 description: Pipeline for processing MongoDB Atlas hardware metrics.
 processors:
   - set:
+      tag: set_ecs_version_638e2736
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_6ed60334
       field: event.kind
       value: metric
   - set:
+      tag: set_event_module_3299b202
       field: event.module
       value: mongodb_atlas
   - set:
+      tag: set_event_category_d362faeb
       field: event.category
       value: ["database"]
   - set:
+      tag: set_event_type_b5a0f82a
       field: event.type
       value: ["access","info"]
   - rename:
+      tag: rename_groupId_82f6c389
       field: groupId
       target_field: mongodb_atlas.group_id
       ignore_missing: true
   - set:
+      tag: set_group_id_6ea62e3a
       field: group.id
       value: "{{mongodb_atlas.group_id}}"
       ignore_empty_value: true
   - rename:
+      tag: rename_hardware_FTS_DISK_USAGE_308fd92b
       field: hardware.FTS_DISK_USAGE
       target_field: mongodb_atlas.hardware.fts.disk_usage.bytes
       ignore_missing: true
   - rename:
+      tag: rename_hardware_FTS_PROCESS_CPU_KERNEL_15c00378
       field: hardware.FTS_PROCESS_CPU_KERNEL
       target_field: mongodb_atlas.hardware.fts.process.cpu.kernel.pct
       ignore_missing: true
   - rename:
+      tag: rename_hardware_FTS_PROCESS_CPU_USER_361ecbc5
       field: hardware.FTS_PROCESS_CPU_USER
       target_field: mongodb_atlas.hardware.fts.process.cpu.user.pct
       ignore_missing: true
   - rename:
+      tag: rename_hardware_FTS_PROCESS_RESIDENT_MEMORY_1afade88
       field: hardware.FTS_PROCESS_RESIDENT_MEMORY
       target_field: mongodb_atlas.hardware.fts.process.memory.resident.bytes
       ignore_missing: true
   - rename:
+      tag: rename_hardware_FTS_PROCESS_SHARED_MEMORY_60f8f797
       field: hardware.FTS_PROCESS_SHARED_MEMORY
       target_field: mongodb_atlas.hardware.fts.process.memory.shared.bytes
       ignore_missing: true
   - rename:
+      tag: rename_hardware_FTS_PROCESS_VIRTUAL_MEMORY_927655e2
       field: hardware.FTS_PROCESS_VIRTUAL_MEMORY
       target_field: mongodb_atlas.hardware.fts.process.memory.virtual.bytes
       ignore_missing: true
   - rename:
+      tag: rename_hardware_FTS_PROCESS_NORMALIZED_CPU_KERNEL_991f83f6
       field: hardware.FTS_PROCESS_NORMALIZED_CPU_KERNEL
       target_field: mongodb_atlas.hardware.fts.process.normalized.cpu.kernel.pct
       ignore_missing: true
   - rename:
+      tag: rename_hardware_FTS_PROCESS_NORMALIZED_CPU_USER_1da9a5a2
       field: hardware.FTS_PROCESS_NORMALIZED_CPU_USER
       target_field: mongodb_atlas.hardware.fts.process.normalized.cpu.user.pct
       ignore_missing: true
   - rename:
+      tag: rename_status_JVM_MAX_MEMORY_7d093081
       field: status.JVM_MAX_MEMORY
       target_field: mongodb_atlas.hardware.status.jvm.memory.heap.available.mb
       ignore_missing: true
   - rename:
+      tag: rename_status_JVM_CURRENT_MEMORY_90a34fd1
       field: status.JVM_CURRENT_MEMORY
       target_field: mongodb_atlas.hardware.status.jvm.memory.heap.used.mb
       ignore_missing: true
   - rename:
+      tag: rename_status_PAGE_FAULTS_cce1f4ad
       field: status.PAGE_FAULTS
       target_field: mongodb_atlas.hardware.status.page_faults
       ignore_missing: true
   - rename:
+      tag: rename_processId_876fc199
       field: processId
       target_field: mongodb_atlas.process_id
       ignore_missing: true
   - remove:
+      tag: remove_end_0b8c5836
       field:
         - end
         - granularity
@@ -81,6 +101,7 @@ processors:
         - status
       ignore_missing: true
   - script:
+      tag: script_f26dcce6
       description: "Drops null/empty values recursively."
       lang: painless
       source: |
@@ -98,14 +119,20 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_0233f08f
       field: event.kind
       value: pipeline_error
       if: "ctx.error?.message != null"
 on_failure:
-  - append:
-      field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
-  - append:
+  - set:
+      tag: set_event_kind_70cca8a0
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_3da71833
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

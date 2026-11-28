@@ -5,29 +5,42 @@ processors:
       if: ctx.message == "No data for given time period or host is unreachable"
       tag: drop_empty_events
   - set:
+      tag: set_ecs_version_37d6cba3
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_575bce27
       field: event.kind
       value: event
   - set:
+      tag: set_event_module_1912f3be
       field: event.module
       value: mongodb_atlas
   - set:
+      tag: set_event_category_a274219e
       field: event.category
       value: ["network", "database"]
   - set:
+      tag: set_event_type_216829e3
       field: event.type
       value: ["access", "info"]
   - fail:
+      tag: fail_543f97d1
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
   - rename:
+      tag: rename_message_bda4e074
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      tag: remove_message_ffc433f4
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
   - rename:
+      tag: rename_host_name_dfe34a84
       field: host_name
       target_field: mongodb_atlas.mongod_database.hostname
       ignore_missing: true
@@ -38,14 +51,17 @@ processors:
       allow_duplicate_keys: true
       on_failure:
         - append:
+            tag: append_error_message_54ec4099
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_t_date_02524c56
       field: json.t.$date
       target_field: '@timestamp'
       formats: [ISO8601]
       on_failure:
         - append:
+            tag: append_error_message_e99f1262
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
   - script:
@@ -54,6 +70,7 @@ processors:
       tag: informative_log_level
       on_failure:
         - append:
+            tag: append_error_message_aa4d8b2f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       params:
@@ -73,42 +90,52 @@ processors:
             ctx.severity = params.severity_levels.getOrDefault(value, null);
           }
   - rename:
+      tag: rename_severity_9a4524e8
       field: severity
       target_field: log.level
       ignore_missing: true
   - rename:
+      tag: rename_json_msg_789452d7
       field: json.msg
       target_field: mongodb_atlas.mongod_database.message
       ignore_missing: true
   - rename:
+      tag: rename_json_c_92523692
       field: json.c
       target_field: mongodb_atlas.mongod_database.component
       ignore_missing: true
   - rename:
+      tag: rename_json_id_3d43b0d7
       field: json.id
       target_field: mongodb_atlas.mongod_database.id
       ignore_missing: true
   - rename:
+      tag: rename_json_ctx_99aa14b0
       field: json.ctx
       target_field: mongodb_atlas.mongod_database.thread.name
       ignore_missing: true
   - rename:
+      tag: rename_json_attr_eb156c64
       field: json.attr
       target_field: mongodb_atlas.mongod_database.attributes
       ignore_missing: true
   - rename:
+      tag: rename_json_tags_cf2c8383
       field: json.tags
       target_field: mongodb_atlas.mongod_database.tags
       ignore_missing: true
   - rename:
+      tag: rename_json_truncated_a5e6ecd6
       field: json.truncated
       target_field: mongodb_atlas.mongod_database.truncated
       ignore_missing: true
   - rename:
+      tag: rename_json_size_cf0e9626
       field: json.size
       target_field: mongodb_atlas.mongod_database.size
       ignore_missing: true
   - script:
+      tag: script_d12b970f
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -132,19 +159,26 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - remove:
+      tag: remove_json_45122195
       field:
         - json
       ignore_missing: true
       description: Removes temporary fields.
   - set:
+      tag: set_event_kind_0b3db907
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
-  - append:
+  - set:
+      tag: set_event_kind_1d6ed9d9
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false
+  - append:
+      tag: append_error_message_8f740c9b
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}

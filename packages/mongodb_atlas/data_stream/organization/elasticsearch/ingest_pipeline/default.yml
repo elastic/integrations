@@ -2,83 +2,104 @@
 description: Pipeline for processing MongoDB Atlas Organization logs
 processors:
   - fingerprint:
+      tag: fingerprint_e8bdd575
       fields: 
         - response.id
       target_field: _id
       ignore_missing: true 
   - set:
+      tag: set_ecs_version_01cfb159
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_3105e78b
       field: event.kind
       value: event
   - set:
+      tag: set_event_module_97ed91c1
       field: event.module
       value: mongodb_atlas
   - set:
+      tag: set_event_dataset_3655144f
       field: event.dataset
       value: mongodb_atlas.organization
   - set:
+      tag: set_event_category_2bbc683e
       field: event.category
       value: ["configuration", "database"]
   - set:
+      tag: set_event_type_3a648f4a
       field: event.type
       value: ["info","access","change"]
   - fail:
+      tag: fail_b87bf7bb
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
   - set:
+      tag: set_event_original_8b1439c2
       copy_from: response
       field: event.original
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - convert:
+      tag: convert_event_original_f9b37be7
       type: string
       field: event.original
       ignore_missing: true
   - date:
+      tag: date_response_created_98ca32c9
       field: response.created
       target_field: '@timestamp'
       formats: [ISO8601]
       on_failure:
         - append:
+            tag: append_error_message_79315a6a
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
   - rename:
+      tag: rename_response_remoteAddress_7b343285
       field: response.remoteAddress
       target_field: client.ip
       ignore_missing: true 
   - rename:
+      tag: rename_response_id_35d0bdf7
       field: response.id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_response_groupId_ae691da9
       field: response.groupId
       target_field: group.id
       ignore_missing: true
   - rename:
+      tag: rename_response_orgId_27524378
       field: response.orgId
       target_field: organization.id
       ignore_missing: true
   - append:
+      tag: append_related_user_607fb775
       field: related.user
       value: '{{{response.targetUsername}}}'
       if: ctx.response?.targetUsername != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_38bd2e43
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
   - rename:
+      tag: rename_response_port_24df8571
       field: response.port
       target_field: server.port
       ignore_missing: true
   - rename:
+      tag: rename_response_userId_7ba43d0f
       field: response.userId
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_response_username_45a7df33
       field: response.username
       target_field: user.name
       ignore_missing: true
@@ -95,11 +116,13 @@ processors:
       ignore_failure: true
       if: ctx.user?.name == null
   - append:
+      tag: append_related_user_7dfb2862
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_b6903d64
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
@@ -110,6 +133,7 @@ processors:
       lang: painless
       on_failure:
         - append:
+            tag: append_error_message_4e8b9e0a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       source: |
@@ -141,128 +165,159 @@ processors:
           ctx.response['raw'] = keysToSnakeCase(ctx.response.raw);
         }
   - rename:
+      tag: rename_response_raw_1365cbac
       field: response.raw
       target_field: mongodb_atlas.organization.additional_info
       ignore_missing: true
   - rename:
+      tag: rename_response_alertConfigId_ef1702bb
       field: response.alertConfigId
       target_field: mongodb_atlas.organization.alert.config.id
       ignore_missing: true
   - rename:
+      tag: rename_response_alertId_6caac6da
       field: response.alertId
       target_field: mongodb_atlas.organization.alert.id
       ignore_missing: true
   - rename:
+      tag: rename_response_apiKeyId_737f4bf9
       field: response.apiKeyId
       target_field: mongodb_atlas.organization.api_key.id
       ignore_missing: true
   - rename:
+      tag: rename_response_clusterId_41c81be2
       field: response.clusterId
       target_field: mongodb_atlas.organization.cluster.id
       ignore_missing: true
   - rename:
+      tag: rename_response_clusterName_ab0819b6
       field: response.clusterName
       target_field: mongodb_atlas.organization.cluster.name
       ignore_missing: true
   - rename:
+      tag: rename_response_collection_8b8e023e
       field: response.collection
       target_field: mongodb_atlas.organization.collection.name
       ignore_missing: true
   - rename:
+      tag: rename_response_currentValue_number_67ae89d2
       field: response.currentValue.number
       target_field: mongodb_atlas.organization.metric.value
       ignore_missing: true
   - rename:
+      tag: rename_response_currentValue_units_31dbaf09
       field: response.currentValue.units
       target_field: mongodb_atlas.organization.metric.unit
       ignore_missing: true
   - rename:
+      tag: rename_response_database_1923828e
       field: response.database
       target_field: mongodb_atlas.organization.database.name
       ignore_missing: true
   - rename:
+      tag: rename_response_eventTypeName_15a81b6b
       field: response.eventTypeName
       target_field: mongodb_atlas.organization.event_type.name
       ignore_missing: true
   - rename:
+      tag: rename_response_hostId_659c88e7
       field: response.hostId
       target_field: mongodb_atlas.organization.host.id
       ignore_missing: true
   - convert:
+      tag: convert_response_hostname_8d7a8ca7
       field: response.hostname
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_related_hosts_45fd8eb5
             field: related.hosts
             value: '{{{response.hostname}}}'
             allow_duplicates: false
   - append:
+      tag: append_related_ip_05dcda57
       field: related.ip
       value: '{{{response.hostname}}}'
       if: ctx.related?.hosts == null
       allow_duplicates: false
   - rename:
+      tag: rename_response_hostname_a77ab346
       field: response.hostname
       target_field: mongodb_atlas.organization.host.name
       ignore_missing: true
   - rename:
+      tag: rename_response_invoiceId_836b5a2c
       field: response.invoiceId
       target_field: mongodb_atlas.organization.invoice.id
       ignore_missing: true
   - rename:
+      tag: rename_response_isGlobalAdmin_2e08f1b8
       field: response.isGlobalAdmin
       target_field: mongodb_atlas.organization.is_global_admin
       ignore_missing: true
   - rename:
+      tag: rename_response_metricName_585d33f9
       field: response.metricName
       target_field: mongodb_atlas.organization.metric.name
       ignore_missing: true
   - rename:
+      tag: rename_response_opType_bdc8950e
       field: response.opType
       target_field: mongodb_atlas.organization.operation.type
       ignore_missing: true
   - rename:
+      tag: rename_response_paymentId_4bc61829
       field: response.paymentId
       target_field: mongodb_atlas.organization.payment.id
       ignore_missing: true
   - rename:
+      tag: rename_response_publicKey_c0134f96
       field: response.publicKey
       target_field: mongodb_atlas.organization.public_key
       ignore_missing: true
   - rename:
+      tag: rename_response_replicaSetName_e9e8fd6b
       field: response.replicaSetName
       target_field: mongodb_atlas.organization.replicaset.name
       ignore_missing: true
   - rename:
+      tag: rename_response_resourceId_7f2e3786
       field: response.resourceId
       target_field: mongodb_atlas.organization.resource.id
       ignore_missing: true
   - rename:
+      tag: rename_response_resourceType_6aad2424
       field: response.resourceType
       target_field: mongodb_atlas.organization.resource.type
       ignore_missing: true
   - rename:
+      tag: rename_response_shardName_6dd9c17c
       field: response.shardName
       target_field: mongodb_atlas.organization.shard.name
       ignore_missing: true
   - rename:
+      tag: rename_response_targetPublicKey_8be284aa
       field: response.targetPublicKey
       target_field: mongodb_atlas.organization.target_public_key
       ignore_missing: true
   - rename:
+      tag: rename_response_targetUsername_c90f12ce
       field: response.targetUsername
       target_field: mongodb_atlas.organization.target.username
       ignore_missing: true
   - rename:
+      tag: rename_response_teamId_7081d2c5
       field: response.teamId
       target_field: mongodb_atlas.organization.team.id
       ignore_missing: true
   - rename:
+      tag: rename_response_whitelistEntry_984632e3
       field: response.whitelistEntry
       target_field: mongodb_atlas.organization.whitelist_entry
       ignore_missing: true
   - script:
+      tag: script_5ecb8f58
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -280,18 +335,25 @@ processors:
         drop(ctx);
       description: Drops null and empty values recursively from the Elasticsearch document context.
   - remove:
+      tag: remove_response_1454d42b
       field: response
       ignore_missing: true
       description: Removes temporary fields.
   - set:
+      tag: set_event_kind_55da5147
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - append:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
+      tag: set_event_kind_d551f08d
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false      
+  - append:
+      tag: append_error_message_6b8ec990
+      field: error.message
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
