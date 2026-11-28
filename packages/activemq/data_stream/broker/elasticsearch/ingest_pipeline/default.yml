@@ -2,24 +2,29 @@
 description: Pipeline for parsing ActiveMQ broker metrics.
 processors:
   - set:
+      tag: set_ecs_version_43f0f3f2
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_category_6b03f2ab
       field: event.category
       value: [web]
       ignore_failure: true
       ignore_empty_value: true
   - set:
+      tag: set_event_kind_968637b5
       field: event.kind
       value: metric
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      tag: set_event_type_d2750905
       field: event.type
       value: [info]
       ignore_empty_value: true
       ignore_failure: true
   - script:
+      tag: script_c3d24e7a
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -39,5 +44,14 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_d449709a
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_b2c49a17
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor {{{ _ingest.on_failure_processor_type }}}
+        with tag {{{ _ingest.on_failure_processor_tag }}}
+        in pipeline {{{ _ingest.pipeline }}}
+        failed with message: {{{ _ingest.on_failure_message }}}
