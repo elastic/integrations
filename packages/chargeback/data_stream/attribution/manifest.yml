@@ -1,0 +1,157 @@
+title: "Chargeback Sub-Data-Stream Attribution"
+type: metrics
+dataset: chargeback.attribution
+elasticsearch:
+  source_mode: synthetic
+streams:
+  - input: cel
+    title: Sub-Data-Stream Tenant & Service Attribution
+    description: >-
+      Opt-in daily collector attributing shared data stream costs across tenants or services (for example, service.name on traces-apm* or organization.id on multi-tenant logs/metrics) using paginated composite aggregations, _field_caps resolution, and zero-query dedicated namespace passthrough.
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: default_tenant_field
+        type: text
+        title: Default Tenant / Service Field
+        description: >-
+          Default document property used to attribute shared data streams (for example, organization.id, service.name, tenant.id, or labels.team).
+        multi: false
+        required: true
+        show_user: true
+        default: "organization.id"
+      - name: shared_namespaces
+        type: text
+        title: Shared Data Stream Namespaces
+        description: >-
+          Fleet data stream namespaces (ds_namespace) queried via _search composite aggregations. Dedicated namespaces outside this list emit zero-query passthrough rows (tenant_id = ds_namespace, share = 1.0). Use "*" to query all non-system namespaces.
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - "default"
+      - name: default_size_field
+        type: text
+        title: Default Size Field (Optional)
+        description: >-
+          Optional numeric byte-size field (for example, _size when mapper-size is enabled, or event.size) used to weight shares instead of document count. Automatically falls back to doc_count when unmapped.
+        multi: false
+        required: false
+        show_user: true
+        default: ""
+      - name: attribution_rules
+        type: yaml
+        title: Attribution Rule Overrides (Optional YAML)
+        description: >-
+          Optional YAML list of exception rules evaluated by most-specific match (at most one winning rule per data stream). Supports index_pattern, optional targets list, skip: true, field, size_field, and storage_mode.
+        multi: false
+        required: false
+        show_user: true
+        default: |
+          # - index_pattern: "traces-apm*"
+          #   field: "service.name"
+          # - index_pattern: "logs-legacy-*"
+          #   field: "org_id"
+          #   size_field: "event.size"
+          # - index_pattern: "logs-internal-*"
+          #   skip: true
+      - name: storage_attribution_mode
+        type: text
+        title: Storage Attribution Mode
+        description: >-
+          Storage share calculation strategy: rolling_hub (default; combines Hub rolling retention history with zero extra target scans) or live_open (scans open non-frozen backing indices via paginated composite aggregation; never touches frozen snapshots).
+        multi: false
+        required: true
+        show_user: true
+        default: "rolling_hub"
+      - name: storage_rolling_days
+        type: integer
+        title: Rolling Storage Window (Days)
+        description: >-
+          Number of days (1 to 365) aggregated on the Hub when Storage Attribution Mode is rolling_hub (default: 30).
+        multi: false
+        required: true
+        show_user: true
+        default: 30
+      - name: query_attribution_fallback
+        type: text
+        title: Query Share Estimation Mode
+        description: >-
+          Query share attribution strategy derived from per-driver shares: blend (default; 50% ingest + 50% storage), ingest, or storage.
+        multi: false
+        required: true
+        show_user: true
+        default: "blend"
+      - name: max_buckets
+        type: integer
+        title: Maximum Tenant Buckets per Stream
+        description: >-
+          Safety ceiling on distinct tenant buckets emitted per shared data stream and day (1 to 10000, default: 5000). Excess tail cardinality is conserved in the overflow bucket.
+        multi: false
+        required: true
+        show_user: true
+        default: 5000
+      - name: lookbehind
+        type: integer
+        title: Attribution Lookbehind Days
+        description: >-
+          Number of completed UTC days to backfill on initial enablement (1 to 30, default: 1).
+        multi: false
+        required: true
+        show_user: true
+        default: 1
+      - name: unattributed_label
+        type: text
+        title: Unattributed Fallback Label
+        description: >-
+          Explicit tenant_id used for documents missing the attribution field or streams where the field is unmapped (default: __unattributed__).
+        multi: false
+        required: true
+        show_user: true
+        default: "__unattributed__"
+      - name: overflow_label
+        type: text
+        title: Cardinality Overflow Label
+        description: >-
+          Explicit tenant_id used to conserve volume above Maximum Tenant Buckets per Stream (default: __overflow__).
+        multi: false
+        required: true
+        show_user: true
+        default: "__overflow__"
+      - name: interval
+        type: text
+        title: Collection Interval
+        description: >-
+          Polling interval for the CEL attribution stream (default: 1h).
+        multi: false
+        required: false
+        show_user: false
+        default: 1h
+      - name: page_size
+        type: integer
+        title: Composite Aggregation Page Size
+        description: >-
+          Number of composite buckets requested per paginated _search call (1 to 10000, default: 1000).
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
+      - name: tags
+        type: text
+        title: Tags
+        description: List of tags to include in remotely collected attribution events.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - chargeback
+          - attribution
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Optional Beat processors applied before events are published.

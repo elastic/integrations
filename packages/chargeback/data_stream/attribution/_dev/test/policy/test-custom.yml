@@ -1,0 +1,42 @@
+vars:
+  organization_id: "2222"
+  cloud_api_key: "test-custom-cloud-api-key"
+  hub_es_url: "https://hub.example.com:9200/"
+  hub_es_api_key: "test-hub-key"
+  deployment_api_keys: "dep-1:key-1"
+  sync_fleet_config: true
+  config_owner_id: "primary-owner"
+  billing_api_base: "https://billing.example.com"
+  cloud_api_base: "https://api.example.com"
+  proxy_url: "http://proxy.example.com:8080"
+  ssl: |-
+    verification_mode: full
+    certificate_authorities:
+      - /etc/ssl/ca.pem
+  http_client_timeout: "60s"
+  enable_request_tracer: true
+data_stream:
+  vars:
+    default_tenant_field: "service.name"
+    shared_namespaces:
+      - "default"
+      - "shared"
+    default_size_field: "event.size"
+    attribution_rules: |
+      - index_pattern: "traces-apm*"
+        field: "service.name"
+      - index_pattern: "logs-legacy-*"
+        field: "org_id"
+        size_field: "event.size"
+        targets:
+          - "dep-1"
+        storage_mode: "live_open"
+      - index_pattern: "logs-internal-*"
+        skip: true
+    storage_attribution_mode: "live_open"
+    storage_rolling_days: 14
+    query_attribution_fallback: "ingest"
+    max_buckets: 2500
+    lookbehind: 7
+    unattributed_label: "__missing_tenant__"
+    overflow_label: "__tail_overflow__"

@@ -1,0 +1,693 @@
+description: Aggregates daily per-driver sub-data-stream tenant and service attribution shares across shared and dedicated data streams into a unified tenant_id lookup table, ignoring incomplete paginated runs.
+source:
+  index:
+    - metrics-chargeback.attribution-*
+  query:
+    bool:
+      filter:
+        - term:
+            doc_type: "sub_attribution"
+        - term:
+            pass_complete: true
+  runtime_mappings:
+    cb_cluster_name:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['elasticsearch.cluster.name.keyword', 'elasticsearch.cluster.name']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          def sv = params._source?.elasticsearch?.cluster?.name;
+          if (sv != null && sv.toString() != '') {
+            emit(sv.toString());
+          }
+    cb_datastream:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['elasticsearch.index.datastream.keyword', 'elasticsearch.index.datastream']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          def sv = params._source?.elasticsearch?.index?.datastream;
+          if (sv != null && sv.toString() != '') {
+            emit(sv.toString());
+          }
+    cb_tenant_id:
+      type: keyword
+      script:
+        source: |
+          for (String f : ['tenant_id.keyword', 'tenant_id']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                String v = doc[f].value.toString();
+                if (v != '') { emit(v); return; }
+              }
+            } catch (Exception e) {}
+          }
+          def sv = params._source?.get('tenant_id');
+          if (sv != null && sv.toString() != '') {
+            emit(sv.toString());
+          }
+    cb_sync_ts:
+      type: date
+      script:
+        source: |
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              emit(doc['event.ingested'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            if (doc.containsKey('event.created') && !doc['event.created'].empty) {
+              emit(doc['event.created'].value.toInstant().toEpochMilli());
+              return;
+            }
+          } catch (Exception e) {}
+          try {
+            def rawVal = (params._source?.event instanceof Map) ? ((Map)params._source.event).get('ingested') : null;
+            if (rawVal == null && params._source != null) { rawVal = params._source.get('event.ingested'); }
+            if (rawVal != null) {
+              if (rawVal instanceof Number) { emit(((Number)rawVal).longValue()); return; }
+              String s = rawVal.toString().trim();
+              if (s != '') { emit(ZonedDateTime.parse(s).toInstant().toEpochMilli()); return; }
+            }
+          } catch (Exception e) {}
+          if (doc.containsKey('@timestamp') && !doc['@timestamp'].empty) {
+            emit(doc['@timestamp'].value.toInstant().toEpochMilli());
+          }
+dest:
+  index: chargeback_lookup.dest_cluster_sub_attribution-1
+  aliases:
+    - alias: chargeback_lookup.cluster_sub_attribution
+      move_on_creation: true
+  pipeline: 'logs-chargeback.lookup-{{ ingestPipelineName "sub_attribution" }}'
+frequency: 5m
+sync:
+  time:
+    field: cb_sync_ts
+    delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 365d
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_name:
+      terms:
+        field: cb_cluster_name
+    datastream:
+      terms:
+        field: cb_datastream
+    tenant_id:
+      terms:
+        field: cb_tenant_id
+  aggregations:
+    sub_rollup:
+      scripted_metric:
+        init_script: |
+          state.runs = new HashMap();
+          state.dep_name = '';
+          state.dep_name_ing = -1L;
+          state.dep_group = '';
+          state.dep_group_ing = -1L;
+          state.has_dep_group = false;
+        map_script: |
+          if (!doc.containsKey('@timestamp') || doc['@timestamp'].empty) { return; }
+          long ts = doc['@timestamp'].value.toInstant().toEpochMilli();
+          long ingTs = ts;
+          try {
+            if (doc.containsKey('event.ingested') && !doc['event.ingested'].empty) {
+              ingTs = doc['event.ingested'].value.toInstant().toEpochMilli();
+            } else if (params._source?.event?.ingested != null) {
+              ingTs = ZonedDateTime.parse(params._source.event.ingested.toString().trim()).toInstant().toEpochMilli();
+            }
+          } catch (Exception e) {}
+
+          String dn = '';
+          for (String dnf : ['deployment_name.keyword', 'deployment_name']) {
+            try {
+              if (doc.containsKey(dnf) && !doc[dnf].empty) {
+                dn = doc[dnf].value.toString();
+                if (dn != '') { break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (dn == '' && params._source?.get('deployment_name') != null) {
+            dn = params._source.get('deployment_name').toString();
+          }
+          if (dn != '' && ingTs >= state.dep_name_ing) {
+            state.dep_name_ing = ingTs;
+            state.dep_name = dn;
+          }
+
+          boolean hasDg = false;
+          String dg = '';
+          if (params._source != null && params._source.containsKey('deployment_group') && params._source.get('deployment_group') != null) {
+            hasDg = true;
+            dg = params._source.get('deployment_group').toString();
+          } else {
+            for (String dgf : ['deployment_group.keyword', 'deployment_group']) {
+              try {
+                if (doc.containsKey(dgf) && !doc[dgf].empty) {
+                  hasDg = true;
+                  dg = doc[dgf].value.toString();
+                  break;
+                }
+              } catch (Exception e) {}
+            }
+          }
+          if (hasDg && ingTs >= state.dep_group_ing) {
+            state.has_dep_group = true;
+            state.dep_group_ing = ingTs;
+            state.dep_group = dg;
+          }
+
+          String ns = 'default';
+          for (String nf : ['data_stream.namespace.keyword', 'data_stream.namespace']) {
+            try {
+              if (doc.containsKey(nf) && !doc[nf].empty) {
+                String v = doc[nf].value.toString().trim();
+                if (v != '') { ns = v; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (ns == 'default') {
+            try {
+              def sns = params._source?.data_stream instanceof Map ? params._source.data_stream.get('namespace') : params._source?.get('data_stream.namespace');
+              if (sns != null && sns.toString().trim() != '') { ns = sns.toString().trim(); }
+            } catch (Exception e) {}
+          }
+
+          String polId = '';
+          for (String pf : ['conf_policy_id.keyword', 'conf_policy_id', 'package_policy_id.keyword', 'package_policy_id', 'input.package_policy_id.keyword', 'input.package_policy_id', 'input.id.keyword', 'input.id']) {
+            try {
+              if (doc.containsKey(pf) && !doc[pf].empty) {
+                String pv = doc[pf].value.toString().trim();
+                if (pv != '') { polId = pv; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (polId == '' && params._source != null) {
+            if (params._source.get('conf_policy_id') != null) { polId = params._source.get('conf_policy_id').toString().trim(); }
+            else if (params._source.get('package_policy_id') != null) { polId = params._source.get('package_policy_id').toString().trim(); }
+            else if (params._source.input instanceof Map && params._source.input.get('package_policy_id') != null) { polId = params._source.input.get('package_policy_id').toString().trim(); }
+            else if (params._source.input instanceof Map && params._source.input.get('id') != null) { polId = params._source.input.get('id').toString().trim(); }
+          }
+          if (polId == '') { polId = '_default_'; }
+
+          String collectorId = '';
+          for (String cf : ['agent.id.keyword', 'agent.id', 'elastic_agent.id.keyword', 'elastic_agent.id', 'host.id.keyword', 'host.id', 'host.name.keyword', 'host.name']) {
+            try {
+              if (doc.containsKey(cf) && !doc[cf].empty) {
+                String cv = doc[cf].value.toString().trim();
+                if (cv != '') { collectorId = cv; break; }
+              }
+            } catch (Exception e) {}
+          }
+          if (collectorId == '' && params._source != null) {
+            if (params._source.agent instanceof Map && params._source.agent.get('id') != null) { collectorId = params._source.agent.get('id').toString().trim(); }
+            else if (params._source.elastic_agent instanceof Map && params._source.elastic_agent.get('id') != null) { collectorId = params._source.elastic_agent.get('id').toString().trim(); }
+            else if (params._source.host instanceof Map && params._source.host.get('id') != null) { collectorId = params._source.host.get('id').toString().trim(); }
+            else if (params._source.host instanceof Map && params._source.host.get('name') != null) { collectorId = params._source.host.get('name').toString().trim(); }
+          }
+          if (collectorId == '') { collectorId = '_default_'; }
+
+          String dpass = 'ingest';
+          for (String f : ['driver_pass.keyword', 'driver_pass']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                dpass = doc[f].value.toString().trim();
+                break;
+              }
+            } catch (Exception e) {}
+          }
+          if (params._source?.get('driver_pass') != null) {
+            dpass = params._source.get('driver_pass').toString().trim();
+          }
+
+          String runId = '_default_';
+          for (String f : ['run_id.keyword', 'run_id']) {
+            try {
+              if (doc.containsKey(f) && !doc[f].empty) {
+                runId = doc[f].value.toString().trim();
+                break;
+              }
+            } catch (Exception e) {}
+          }
+          if (runId == '_default_' && params._source?.get('run_id') != null) {
+            runId = params._source.get('run_id').toString().trim();
+          }
+
+          boolean passComp = true;
+          try {
+            if (doc.containsKey('pass_complete') && !doc['pass_complete'].empty) {
+              passComp = Boolean.TRUE.equals(doc['pass_complete'].value) || 'true'.equalsIgnoreCase(doc['pass_complete'].value.toString());
+            } else if (params._source != null && params._source.containsKey('pass_complete')) {
+              passComp = Boolean.TRUE.equals(params._source.get('pass_complete'));
+            }
+          } catch (Exception e) {}
+
+          long ingDocs = 0L;
+          double ingBytes = 0.0;
+          long stoDocs = 0L;
+          double stoBytes = 0.0;
+          long stTotDocs = 0L;
+          double stTotBytes = 0.0;
+          long stPriorDocs = 0L;
+          double stPriorBytes = 0.0;
+          long ingStreamDocs = 0L;
+          double ingStreamBytes = 0.0;
+          long stStoDocs = 0L;
+          double stStoBytes = 0.0;
+          boolean stoPassComp = false;
+          double preIng = 0.0;
+          double preSto = 0.0;
+          double preQry = 0.0;
+          try { if (doc.containsKey('ingest_doc_count') && !doc['ingest_doc_count'].empty) { ingDocs = ((Number)doc['ingest_doc_count'].value).longValue(); } else if (params._source?.get('ingest_doc_count') instanceof Number) { ingDocs = ((Number)params._source.get('ingest_doc_count')).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('ingest_bytes') && !doc['ingest_bytes'].empty) { ingBytes = ((Number)doc['ingest_bytes'].value).doubleValue(); } else if (params._source?.get('ingest_bytes') instanceof Number) { ingBytes = ((Number)params._source.get('ingest_bytes')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('storage_doc_count') && !doc['storage_doc_count'].empty) { stoDocs = ((Number)doc['storage_doc_count'].value).longValue(); } else if (params._source?.get('storage_doc_count') instanceof Number) { stoDocs = ((Number)params._source.get('storage_doc_count')).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('storage_bytes') && !doc['storage_bytes'].empty) { stoBytes = ((Number)doc['storage_bytes'].value).doubleValue(); } else if (params._source?.get('storage_bytes') instanceof Number) { stoBytes = ((Number)params._source.get('storage_bytes')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_total_docs') && !doc['stream_total_docs'].empty) { stTotDocs = ((Number)doc['stream_total_docs'].value).longValue(); } else if (params._source?.get('stream_total_docs') instanceof Number) { stTotDocs = ((Number)params._source.get('stream_total_docs')).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_total_bytes') && !doc['stream_total_bytes'].empty) { stTotBytes = ((Number)doc['stream_total_bytes'].value).doubleValue(); } else if (params._source?.get('stream_total_bytes') instanceof Number) { stTotBytes = ((Number)params._source.get('stream_total_bytes')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_prior_docs') && !doc['stream_prior_docs'].empty) { stPriorDocs = ((Number)doc['stream_prior_docs'].value).longValue(); } else if (params._source?.get('stream_prior_docs') instanceof Number) { stPriorDocs = ((Number)params._source.get('stream_prior_docs')).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_prior_bytes') && !doc['stream_prior_bytes'].empty) { stPriorBytes = ((Number)doc['stream_prior_bytes'].value).doubleValue(); } else if (params._source?.get('stream_prior_bytes') instanceof Number) { stPriorBytes = ((Number)params._source.get('stream_prior_bytes')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_ingest_docs') && !doc['stream_ingest_docs'].empty) { ingStreamDocs = ((Number)doc['stream_ingest_docs'].value).longValue(); } else if (params._source?.get('stream_ingest_docs') instanceof Number) { ingStreamDocs = ((Number)params._source.get('stream_ingest_docs')).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_ingest_bytes') && !doc['stream_ingest_bytes'].empty) { ingStreamBytes = ((Number)doc['stream_ingest_bytes'].value).doubleValue(); } else if (params._source?.get('stream_ingest_bytes') instanceof Number) { ingStreamBytes = ((Number)params._source.get('stream_ingest_bytes')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_sto_docs') && !doc['stream_sto_docs'].empty) { stStoDocs = ((Number)doc['stream_sto_docs'].value).longValue(); } else if (params._source?.get('stream_sto_docs') instanceof Number) { stStoDocs = ((Number)params._source.get('stream_sto_docs')).longValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('stream_sto_bytes') && !doc['stream_sto_bytes'].empty) { stStoBytes = ((Number)doc['stream_sto_bytes'].value).doubleValue(); } else if (params._source?.get('stream_sto_bytes') instanceof Number) { stStoBytes = ((Number)params._source.get('stream_sto_bytes')).doubleValue(); } } catch (Exception e) {}
+          try {
+            if (doc.containsKey('sto_pass_complete') && !doc['sto_pass_complete'].empty) {
+              stoPassComp = Boolean.TRUE.equals(doc['sto_pass_complete'].value) || 'true'.equalsIgnoreCase(doc['sto_pass_complete'].value.toString());
+            } else if (params._source != null && params._source.containsKey('sto_pass_complete')) {
+              stoPassComp = Boolean.TRUE.equals(params._source.get('sto_pass_complete'));
+            }
+          } catch (Exception e) {}
+          try { if (doc.containsKey('ingest_share_pct') && !doc['ingest_share_pct'].empty) { preIng = ((Number)doc['ingest_share_pct'].value).doubleValue(); } else if (params._source?.get('ingest_share_pct') instanceof Number) { preIng = ((Number)params._source.get('ingest_share_pct')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('storage_share_pct') && !doc['storage_share_pct'].empty) { preSto = ((Number)doc['storage_share_pct'].value).doubleValue(); } else if (params._source?.get('storage_share_pct') instanceof Number) { preSto = ((Number)params._source.get('storage_share_pct')).doubleValue(); } } catch (Exception e) {}
+          try { if (doc.containsKey('query_share_pct') && !doc['query_share_pct'].empty) { preQry = ((Number)doc['query_share_pct'].value).doubleValue(); } else if (params._source?.get('query_share_pct') instanceof Number) { preQry = ((Number)params._source.get('query_share_pct')).doubleValue(); } } catch (Exception e) {}
+
+          String attrField = '';
+          String attrSrc = 'field';
+          String wMetric = 'doc_count';
+          String sField = '';
+          String stoSrc = 'rolling_hub';
+          String qrySrc = 'blend';
+          String rawKind = 'tenant';
+          boolean isFb = false;
+          for (String f : ['attribution_field.keyword', 'attribution_field']) { try { if (doc.containsKey(f) && !doc[f].empty) { attrField = doc[f].value.toString(); break; } } catch (Exception e) {} }
+          if (attrField == '' && params._source?.get('attribution_field') != null) { attrField = params._source.get('attribution_field').toString(); }
+          for (String f : ['attribution_source.keyword', 'attribution_source']) { try { if (doc.containsKey(f) && !doc[f].empty) { attrSrc = doc[f].value.toString(); break; } } catch (Exception e) {} }
+          if (params._source?.get('attribution_source') != null) { attrSrc = params._source.get('attribution_source').toString(); }
+          for (String f : ['weight_metric.keyword', 'weight_metric']) { try { if (doc.containsKey(f) && !doc[f].empty) { wMetric = doc[f].value.toString(); break; } } catch (Exception e) {} }
+          if (params._source?.get('weight_metric') != null) { wMetric = params._source.get('weight_metric').toString(); }
+          for (String f : ['size_field.keyword', 'size_field']) { try { if (doc.containsKey(f) && !doc[f].empty) { sField = doc[f].value.toString(); break; } } catch (Exception e) {} }
+          if (sField == '' && params._source?.get('size_field') != null) { sField = params._source.get('size_field').toString(); }
+          for (String f : ['storage_share_source.keyword', 'storage_share_source']) { try { if (doc.containsKey(f) && !doc[f].empty) { stoSrc = doc[f].value.toString(); break; } } catch (Exception e) {} }
+          if (params._source?.get('storage_share_source') != null) { stoSrc = params._source.get('storage_share_source').toString(); }
+          for (String f : ['query_share_source.keyword', 'query_share_source']) { try { if (doc.containsKey(f) && !doc[f].empty) { qrySrc = doc[f].value.toString(); break; } } catch (Exception e) {} }
+          if (params._source?.get('query_share_source') != null) { qrySrc = params._source.get('query_share_source').toString(); }
+          for (String f : ['raw_bucket_kind.keyword', 'raw_bucket_kind']) { try { if (doc.containsKey(f) && !doc[f].empty) { rawKind = doc[f].value.toString(); break; } } catch (Exception e) {} }
+          if (params._source?.get('raw_bucket_kind') != null) { rawKind = params._source.get('raw_bucket_kind').toString(); }
+          try {
+            if (doc.containsKey('is_fallback_bucket') && !doc['is_fallback_bucket'].empty) {
+              isFb = Boolean.TRUE.equals(doc['is_fallback_bucket'].value) || 'true'.equalsIgnoreCase(doc['is_fallback_bucket'].value.toString());
+            } else if (params._source != null && params._source.containsKey('is_fallback_bucket')) {
+              isFb = Boolean.TRUE.equals(params._source.get('is_fallback_bucket'));
+            }
+          } catch (Exception e) {}
+
+          String baseRunId = runId;
+          if ('storage'.equals(dpass) && baseRunId.endsWith(':sto')) {
+            baseRunId = baseRunId.substring(0, baseRunId.length() - 4);
+          } else if ('storage_prior'.equals(dpass) && baseRunId.endsWith(':prior')) {
+            baseRunId = baseRunId.substring(0, baseRunId.length() - 6);
+          }
+
+          String rk = ns + '|' + polId + '|' + collectorId + '||' + dpass + '||' + runId;
+          Map r = (Map)state.runs.get(rk);
+          if (r == null) {
+            r = new HashMap();
+            r.put('pass', dpass);
+            r.put('run_id', runId);
+            r.put('base_run_id', baseRunId);
+            r.put('ing_ts', ingTs);
+            r.put('complete', passComp);
+            r.put('ing_docs', 0L);
+            r.put('ing_bytes', 0.0);
+            r.put('sto_docs', 0L);
+            r.put('sto_bytes', 0.0);
+            r.put('tot_docs', stTotDocs);
+            r.put('tot_bytes', stTotBytes);
+            r.put('prior_docs', stPriorDocs);
+            r.put('prior_bytes', stPriorBytes);
+            r.put('ing_stream_docs', ingStreamDocs);
+            r.put('ing_stream_bytes', ingStreamBytes);
+            r.put('sto_stream_docs', stStoDocs);
+            r.put('sto_stream_bytes', stStoBytes);
+            r.put('sto_complete', stoPassComp);
+            r.put('pre_ing', preIng);
+            r.put('pre_sto', preSto);
+            r.put('pre_qry', preQry);
+            r.put('attr_field', attrField);
+            r.put('attr_src', attrSrc);
+            r.put('w_metric', wMetric);
+            r.put('size_field', sField);
+            r.put('sto_src', stoSrc);
+            r.put('qry_src', qrySrc);
+            r.put('raw_kind', rawKind);
+            r.put('is_fb', isFb);
+            state.runs.put(rk, r);
+          }
+          if (passComp) { r.put('complete', true); }
+          if (stoPassComp) { r.put('sto_complete', true); }
+          if (ingTs > ((Number)r.get('ing_ts')).longValue()) { r.put('ing_ts', ingTs); }
+          r.put('ing_docs', ((Number)r.get('ing_docs')).longValue() + ingDocs);
+          r.put('ing_bytes', ((Number)r.get('ing_bytes')).doubleValue() + ingBytes);
+          r.put('sto_docs', ((Number)r.get('sto_docs')).longValue() + stoDocs);
+          r.put('sto_bytes', ((Number)r.get('sto_bytes')).doubleValue() + stoBytes);
+          if (stTotDocs > ((Number)r.get('tot_docs')).longValue()) { r.put('tot_docs', stTotDocs); }
+          if (stTotBytes > ((Number)r.get('tot_bytes')).doubleValue()) { r.put('tot_bytes', stTotBytes); }
+          if (stPriorDocs > ((Number)r.get('prior_docs')).longValue()) { r.put('prior_docs', stPriorDocs); }
+          if (stPriorBytes > ((Number)r.get('prior_bytes')).doubleValue()) { r.put('prior_bytes', stPriorBytes); }
+          if (ingStreamDocs > ((Number)r.get('ing_stream_docs')).longValue()) { r.put('ing_stream_docs', ingStreamDocs); }
+          if (ingStreamBytes > ((Number)r.get('ing_stream_bytes')).doubleValue()) { r.put('ing_stream_bytes', ingStreamBytes); }
+          if (stStoDocs > ((Number)r.get('sto_stream_docs')).longValue()) { r.put('sto_stream_docs', stStoDocs); }
+          if (stStoBytes > ((Number)r.get('sto_stream_bytes')).doubleValue()) { r.put('sto_stream_bytes', stStoBytes); }
+          if ('overflow'.equals(attrSrc) || 'field_unmapped'.equals(attrSrc)) { r.put('attr_src', attrSrc); }
+          if ('empty_day'.equals(rawKind)) { r.put('raw_kind', 'empty_day'); }
+          if (isFb) { r.put('is_fb', true); }
+        combine_script: "return state;"
+        reduce_script: |
+          Map mergedRuns = new HashMap();
+          String depName = '';
+          long depNameIng = -1L;
+          String depGroup = '';
+          long depGroupIng = -1L;
+          boolean hasDepGroup = false;
+
+          for (def st : states) {
+            if (!(st instanceof Map)) { continue; }
+            String sdn = st.get('dep_name') != null ? st.get('dep_name').toString() : '';
+            long sdnIng = st.get('dep_name_ing') instanceof Number ? ((Number)st.get('dep_name_ing')).longValue() : -1L;
+            if (sdn != '' && sdnIng >= depNameIng) {
+              depNameIng = sdnIng;
+              depName = sdn;
+            }
+            if (Boolean.TRUE.equals(st.get('has_dep_group'))) {
+              String sdg = st.get('dep_group') != null ? st.get('dep_group').toString() : '';
+              long sdgIng = st.get('dep_group_ing') instanceof Number ? ((Number)st.get('dep_group_ing')).longValue() : -1L;
+              if (!hasDepGroup || sdgIng >= depGroupIng) {
+                hasDepGroup = true;
+                depGroupIng = sdgIng;
+                depGroup = sdg;
+              }
+            }
+            if (!(st.get('runs') instanceof Map)) { continue; }
+            for (def re : ((Map)st.get('runs')).entrySet()) {
+              String rk = re.getKey().toString();
+              Map sr = (Map)re.getValue();
+              Map dr = (Map)mergedRuns.get(rk);
+              if (dr == null) {
+                dr = new HashMap(sr);
+                mergedRuns.put(rk, dr);
+              } else {
+                if (Boolean.TRUE.equals(sr.get('complete'))) { dr.put('complete', true); }
+                if (Boolean.TRUE.equals(sr.get('sto_complete'))) { dr.put('sto_complete', true); }
+                long srTs = ((Number)sr.get('ing_ts')).longValue();
+                if (srTs > ((Number)dr.get('ing_ts')).longValue()) { dr.put('ing_ts', srTs); }
+                dr.put('ing_docs', ((Number)dr.get('ing_docs')).longValue() + ((Number)sr.get('ing_docs')).longValue());
+                dr.put('ing_bytes', ((Number)dr.get('ing_bytes')).doubleValue() + ((Number)sr.get('ing_bytes')).doubleValue());
+                dr.put('sto_docs', ((Number)dr.get('sto_docs')).longValue() + ((Number)sr.get('sto_docs')).longValue());
+                dr.put('sto_bytes', ((Number)dr.get('sto_bytes')).doubleValue() + ((Number)sr.get('sto_bytes')).doubleValue());
+                long srTotD = ((Number)sr.get('tot_docs')).longValue();
+                if (srTotD > ((Number)dr.get('tot_docs')).longValue()) { dr.put('tot_docs', srTotD); }
+                double srTotB = ((Number)sr.get('tot_bytes')).doubleValue();
+                if (srTotB > ((Number)dr.get('tot_bytes')).doubleValue()) { dr.put('tot_bytes', srTotB); }
+                long srPrD = ((Number)sr.get('prior_docs')).longValue();
+                if (srPrD > ((Number)dr.get('prior_docs')).longValue()) { dr.put('prior_docs', srPrD); }
+                double srPrB = ((Number)sr.get('prior_bytes')).doubleValue();
+                if (srPrB > ((Number)dr.get('prior_bytes')).doubleValue()) { dr.put('prior_bytes', srPrB); }
+                long srIngSD = ((Number)sr.get('ing_stream_docs')).longValue();
+                if (srIngSD > ((Number)dr.get('ing_stream_docs')).longValue()) { dr.put('ing_stream_docs', srIngSD); }
+                double srIngSB = ((Number)sr.get('ing_stream_bytes')).doubleValue();
+                if (srIngSB > ((Number)dr.get('ing_stream_bytes')).doubleValue()) { dr.put('ing_stream_bytes', srIngSB); }
+                long srStoSD = sr.get('sto_stream_docs') instanceof Number ? ((Number)sr.get('sto_stream_docs')).longValue() : 0L;
+                if (srStoSD > (dr.get('sto_stream_docs') instanceof Number ? ((Number)dr.get('sto_stream_docs')).longValue() : 0L)) { dr.put('sto_stream_docs', srStoSD); }
+                double srStoSB = sr.get('sto_stream_bytes') instanceof Number ? ((Number)sr.get('sto_stream_bytes')).doubleValue() : 0.0;
+                if (srStoSB > (dr.get('sto_stream_bytes') instanceof Number ? ((Number)dr.get('sto_stream_bytes')).doubleValue() : 0.0)) { dr.put('sto_stream_bytes', srStoSB); }
+                String srAttrSrc = sr.get('attr_src') != null ? sr.get('attr_src').toString() : '';
+                if ('overflow'.equals(srAttrSrc) || 'field_unmapped'.equals(srAttrSrc)) { dr.put('attr_src', srAttrSrc); }
+                if ('empty_day'.equals(sr.get('raw_kind'))) { dr.put('raw_kind', 'empty_day'); }
+                if (Boolean.TRUE.equals(sr.get('is_fb'))) { dr.put('is_fb', true); }
+              }
+            }
+          }
+
+          Map bestByPass = new HashMap();
+          for (def re : mergedRuns.entrySet()) {
+            Map r = (Map)re.getValue();
+            if (!Boolean.TRUE.equals(r.get('complete'))) { continue; }
+            String dp = r.get('pass') != null ? r.get('pass').toString() : 'ingest';
+            Map cur = (Map)bestByPass.get(dp);
+            if (cur == null) {
+              bestByPass.put(dp, r);
+            } else {
+              long rTs = ((Number)r.get('ing_ts')).longValue();
+              long cTs = ((Number)cur.get('ing_ts')).longValue();
+              String rId = r.get('run_id') != null ? r.get('run_id').toString() : '';
+              String cId = cur.get('run_id') != null ? cur.get('run_id').toString() : '';
+              if (rTs > cTs || (rTs == cTs && rId.compareTo(cId) > 0)) {
+                bestByPass.put(dp, r);
+              }
+            }
+          }
+
+          Map ptRun = (Map)bestByPass.get('passthrough');
+          Map ingRun = (Map)bestByPass.get('ingest');
+          Map stoLiveRun = (Map)bestByPass.get('storage');
+          Map stoPriorRun = (Map)bestByPass.get('storage_prior');
+          Map latestActiveRun = ingRun;
+          for (Map cand : [stoLiveRun, stoPriorRun]) {
+            if (cand == null) { continue; }
+            if (latestActiveRun == null) {
+              latestActiveRun = cand;
+            } else {
+              long cTs = ((Number)cand.get('ing_ts')).longValue();
+              long aTs = ((Number)latestActiveRun.get('ing_ts')).longValue();
+              String cId = cand.get('run_id') != null ? cand.get('run_id').toString() : '';
+              String aId = latestActiveRun.get('run_id') != null ? latestActiveRun.get('run_id').toString() : '';
+              if (cTs > aTs || (cTs == aTs && cId.compareTo(aId) > 0)) {
+                latestActiveRun = cand;
+              }
+            }
+          }
+          boolean usePassthrough = false;
+          if (ptRun != null && latestActiveRun == null) {
+            usePassthrough = true;
+          } else if (ptRun != null && latestActiveRun != null) {
+            long ptTs = ((Number)ptRun.get('ing_ts')).longValue();
+            long acTs = ((Number)latestActiveRun.get('ing_ts')).longValue();
+            String ptId = ptRun.get('run_id') != null ? ptRun.get('run_id').toString() : '';
+            String acId = latestActiveRun.get('run_id') != null ? latestActiveRun.get('run_id').toString() : '';
+            if (ptTs > acTs || (ptTs == acTs && ptId.compareTo(acId) > 0)) {
+              usePassthrough = true;
+            }
+          }
+          Map metaRun = usePassthrough ? ptRun : (ingRun != null ? ingRun : latestActiveRun);
+          if (metaRun == null) {
+            return null;
+          }
+
+          Map effStoLiveRun = stoLiveRun;
+          if (effStoLiveRun != null && ingRun != null) {
+            String lvBase = effStoLiveRun.get('base_run_id') != null ? effStoLiveRun.get('base_run_id').toString() : '';
+            String inBase = ingRun.get('base_run_id') != null ? ingRun.get('base_run_id').toString() : '';
+            long lvTs = ((Number)effStoLiveRun.get('ing_ts')).longValue();
+            long inTs = ((Number)ingRun.get('ing_ts')).longValue();
+            if (!lvBase.equals(inBase) && lvTs <= inTs) {
+              effStoLiveRun = null;
+            }
+          }
+          Map effStoPriorRun = stoPriorRun;
+          if (effStoPriorRun != null && ingRun != null) {
+            String prBase = effStoPriorRun.get('base_run_id') != null ? effStoPriorRun.get('base_run_id').toString() : '';
+            String inBase = ingRun.get('base_run_id') != null ? ingRun.get('base_run_id').toString() : '';
+            long prTs = ((Number)effStoPriorRun.get('ing_ts')).longValue();
+            long inTs = ((Number)ingRun.get('ing_ts')).longValue();
+            if (!prBase.equals(inBase) && prTs <= inTs) {
+              effStoPriorRun = null;
+            }
+          }
+
+          boolean liveStoMode = false;
+          if (effStoLiveRun != null && effStoPriorRun != null) {
+            long lvTs = ((Number)effStoLiveRun.get('ing_ts')).longValue();
+            long prTs = ((Number)effStoPriorRun.get('ing_ts')).longValue();
+            String lvBase = effStoLiveRun.get('base_run_id') != null ? effStoLiveRun.get('base_run_id').toString() : '';
+            String prBase = effStoPriorRun.get('base_run_id') != null ? effStoPriorRun.get('base_run_id').toString() : '';
+            if (lvTs > prTs || (lvTs == prTs && lvBase.compareTo(prBase) >= 0)) {
+              liveStoMode = true;
+              effStoPriorRun = null;
+            } else {
+              effStoLiveRun = null;
+            }
+          } else if (effStoLiveRun != null) {
+            liveStoMode = true;
+          } else if (effStoPriorRun == null && ingRun != null && 'live_open'.equals(ingRun.get('sto_src'))) {
+            liveStoMode = true;
+          }
+
+          String attrField = metaRun.get('attr_field') != null ? metaRun.get('attr_field').toString() : '';
+          String attrSrc = metaRun.get('attr_src') != null ? metaRun.get('attr_src').toString() : 'field';
+          String wMetric = metaRun.get('w_metric') != null ? metaRun.get('w_metric').toString() : 'doc_count';
+          String sField = metaRun.get('size_field') != null ? metaRun.get('size_field').toString() : '';
+          String stoSrc = (!usePassthrough && liveStoMode) ? 'live_open' : (metaRun.get('sto_src') != null ? metaRun.get('sto_src').toString() : 'rolling_hub');
+          String qrySrc = metaRun.get('qry_src') != null ? metaRun.get('qry_src').toString() : 'blend';
+          boolean isFb = Boolean.TRUE.equals(metaRun.get('is_fb'));
+
+          long outIngDocs = (!usePassthrough && ingRun != null) ? ((Number)ingRun.get('ing_docs')).longValue() : 0L;
+          double outIngBytes = (!usePassthrough && ingRun != null) ? ((Number)ingRun.get('ing_bytes')).doubleValue() : 0.0;
+          long outStoDocs = 0L;
+          double outStoBytes = 0.0;
+          double ingShare = 0.0;
+          double stoShare = 0.0;
+          double qryShare = 0.0;
+
+          if (usePassthrough) {
+            ingShare = ((Number)ptRun.get('pre_ing')).doubleValue();
+            stoShare = ((Number)ptRun.get('pre_sto')).doubleValue();
+            qryShare = ((Number)ptRun.get('pre_qry')).doubleValue();
+            attrSrc = 'ds_namespace_passthrough';
+            wMetric = 'passthrough';
+          } else if ('field_unmapped'.equals(attrSrc)) {
+            ingShare = 1.0;
+            stoShare = 1.0;
+            qryShare = 1.0;
+            isFb = true;
+          } else {
+            boolean ingUseBytes = (ingRun != null && 'bytes'.equals(ingRun.get('w_metric')) && ((Number)ingRun.get('tot_bytes')).doubleValue() > 0.0);
+            double ingDenom = (ingRun != null) ? (ingUseBytes ? ((Number)ingRun.get('tot_bytes')).doubleValue() : (double)((Number)ingRun.get('tot_docs')).longValue()) : 0.0;
+            boolean isEmptyIngFallback = (ingRun != null && 'empty_day'.equals(ingRun.get('raw_kind')) && ingDenom <= 0.0);
+            if (ingDenom > 0.0) {
+              double ingNum = ingUseBytes ? outIngBytes : (double)outIngDocs;
+              ingShare = ingNum / ingDenom;
+            } else if (isEmptyIngFallback) {
+              ingShare = 1.0;
+            }
+
+            boolean hasStoSignal = false;
+            if (liveStoMode) {
+              if (effStoLiveRun != null) {
+                outStoDocs = ((Number)effStoLiveRun.get('sto_docs')).longValue();
+                outStoBytes = ((Number)effStoLiveRun.get('sto_bytes')).doubleValue();
+                boolean stoUseBytes = ('bytes'.equals(effStoLiveRun.get('w_metric')) && ((Number)effStoLiveRun.get('tot_bytes')).doubleValue() > 0.0);
+                double stoDenom = stoUseBytes ? ((Number)effStoLiveRun.get('tot_bytes')).doubleValue() : (double)((Number)effStoLiveRun.get('tot_docs')).longValue();
+                if (stoDenom > 0.0) {
+                  double stoNum = stoUseBytes ? outStoBytes : (double)outStoDocs;
+                  stoShare = stoNum / stoDenom;
+                  hasStoSignal = true;
+                } else if ('empty_day'.equals(effStoLiveRun.get('raw_kind'))) {
+                  stoShare = 1.0;
+                  hasStoSignal = true;
+                }
+              } else {
+                long ingStoSD = (ingRun != null && ingRun.get('sto_stream_docs') instanceof Number) ? ((Number)ingRun.get('sto_stream_docs')).longValue() : 0L;
+                double ingStoSB = (ingRun != null && ingRun.get('sto_stream_bytes') instanceof Number) ? ((Number)ingRun.get('sto_stream_bytes')).doubleValue() : 0.0;
+                boolean liveCompletedWithTotals = (ingRun != null && Boolean.TRUE.equals(ingRun.get('sto_complete'))
+                  && (ingStoSD > 0L || ingStoSB > 0.0));
+                if (liveCompletedWithTotals) {
+                  outStoDocs = 0L;
+                  outStoBytes = 0.0;
+                  stoShare = 0.0;
+                  hasStoSignal = true;
+                }
+              }
+            } else {
+              boolean priorPassComplete = (effStoPriorRun != null) || (ingRun != null && Boolean.TRUE.equals(ingRun.get('sto_complete')));
+              long priorDocs = effStoPriorRun != null ? ((Number)effStoPriorRun.get('sto_docs')).longValue() : 0L;
+              double priorBytes = effStoPriorRun != null ? ((Number)effStoPriorRun.get('sto_bytes')).doubleValue() : 0.0;
+              outStoDocs = outIngDocs + priorDocs;
+              outStoBytes = outIngBytes + priorBytes;
+              long totTodayD = ingRun != null ? ((Number)ingRun.get('tot_docs')).longValue() : (effStoPriorRun != null ? ((Number)effStoPriorRun.get('tot_docs')).longValue() : 0L);
+              double totTodayB = ingRun != null ? ((Number)ingRun.get('tot_bytes')).doubleValue() : (effStoPriorRun != null ? ((Number)effStoPriorRun.get('tot_bytes')).doubleValue() : 0.0);
+              long totPriorD = effStoPriorRun != null ? ((Number)effStoPriorRun.get('prior_docs')).longValue() : (priorPassComplete && ingRun != null ? ((Number)ingRun.get('prior_docs')).longValue() : 0L);
+              double totPriorB = effStoPriorRun != null ? ((Number)effStoPriorRun.get('prior_bytes')).doubleValue() : (priorPassComplete && ingRun != null ? ((Number)ingRun.get('prior_bytes')).doubleValue() : 0.0);
+              boolean combUseBytes = (wMetric.equals('bytes') && (totTodayB + totPriorB) > 0.0 && (totTodayD <= 0L || totTodayB > 0.0) && (totPriorD <= 0L || totPriorB > 0.0));
+              double combDenom = combUseBytes ? (totTodayB + totPriorB) : (double)(totTodayD + totPriorD);
+              if (combDenom > 0.0) {
+                double combNum = combUseBytes ? outStoBytes : (double)outStoDocs;
+                stoShare = combNum / combDenom;
+                hasStoSignal = true;
+              } else if (isEmptyIngFallback) {
+                stoShare = 1.0;
+                hasStoSignal = true;
+              }
+            }
+
+            boolean streamHadIngest = (ingDenom > 0.0)
+              || (effStoPriorRun != null && (((Number)effStoPriorRun.get('tot_docs')).longValue() > 0L || ((Number)effStoPriorRun.get('tot_bytes')).doubleValue() > 0.0))
+              || (liveStoMode && effStoLiveRun != null && (((Number)effStoLiveRun.get('ing_stream_docs')).longValue() > 0L || ((Number)effStoLiveRun.get('ing_stream_bytes')).doubleValue() > 0.0));
+            boolean hasIngSignal = (streamHadIngest || isEmptyIngFallback);
+            if (!hasIngSignal && hasStoSignal) {
+              ingShare = stoShare;
+            }
+            if (!hasStoSignal && hasIngSignal) {
+              stoShare = ingShare;
+            }
+            if ('ingest'.equals(qrySrc)) {
+              qryShare = (hasIngSignal || !hasStoSignal) ? ingShare : stoShare;
+            } else if ('storage'.equals(qrySrc)) {
+              qryShare = hasStoSignal ? stoShare : ingShare;
+            } else {
+              qryShare = (hasIngSignal && hasStoSignal) ? (0.5 * ingShare + 0.5 * stoShare) : (hasStoSignal ? stoShare : ingShare);
+            }
+          }
+
+          if (ingShare < 0.0) { ingShare = 0.0; }
+          if (ingShare > 1.0) { ingShare = 1.0; }
+          if (stoShare < 0.0) { stoShare = 0.0; }
+          if (stoShare > 1.0) { stoShare = 1.0; }
+          if (qryShare < 0.0) { qryShare = 0.0; }
+          if (qryShare > 1.0) { qryShare = 1.0; }
+
+          Map res = new HashMap();
+          res.put('attribution_field', attrField);
+          res.put('attribution_source', attrSrc);
+          res.put('weight_metric', wMetric);
+          if (sField != '') { res.put('size_field', sField); }
+          res.put('ingest_doc_count', outIngDocs);
+          res.put('ingest_bytes', outIngBytes);
+          res.put('storage_doc_count', outStoDocs);
+          res.put('storage_bytes', outStoBytes);
+          res.put('ingest_share_pct', ingShare);
+          res.put('storage_share_pct', stoShare);
+          res.put('query_share_pct', qryShare);
+          res.put('storage_share_source', stoSrc);
+          res.put('query_share_source', qrySrc);
+          res.put('is_fallback_bucket', isFb);
+          if (depName != '') { res.put('deployment_name', depName); }
+          if (hasDepGroup) { res.put('deployment_group', depGroup); }
+          return res;
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  order: 14
+  run_as_kibana_system: false
+  fleet_transform_version: 0.8.0
