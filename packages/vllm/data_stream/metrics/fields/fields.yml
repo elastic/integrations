@@ -1,0 +1,111 @@
+- name: vllm
+  type: group
+  fields:
+    - name: labels.*
+      type: object
+      object_type: keyword
+      object_type_mapping_type: "*"
+      description: >-
+        Prometheus labels of the series, such as `model_name`, `engine` and `finished_reason`.
+    - name: labels_fingerprint
+      type: keyword
+      dimension: true
+      description: >-
+        Fingerprint of the series labels, used to tell series apart.
+    - name: requests
+      type: group
+      fields:
+        - name: running
+          type: long
+          metric_type: gauge
+          description: >-
+            Number of requests in model execution batches (`vllm:num_requests_running`).
+        - name: waiting
+          type: long
+          metric_type: gauge
+          description: >-
+            Number of requests waiting to be processed (`vllm:num_requests_waiting`).
+        - name: finished.count
+          type: long
+          metric_type: counter
+          description: >-
+            Number of finished requests, by `finished_reason` label: stop, length, abort, error or repetition (`vllm:request_success_total`).
+    - name: kv_cache.usage.pct
+      type: double
+      metric_type: gauge
+      unit: percent
+      description: >-
+        Fraction of the KV cache in use, from 0 to 1 (`vllm:kv_cache_usage_perc`).
+    - name: tokens
+      type: group
+      fields:
+        - name: prompt.count
+          type: long
+          metric_type: counter
+          description: >-
+            Number of prefill (prompt) tokens processed (`vllm:prompt_tokens_total`).
+        - name: generation.count
+          type: long
+          metric_type: counter
+          description: >-
+            Number of generation tokens processed (`vllm:generation_tokens_total`).
+    - name: prefix_cache
+      type: group
+      fields:
+        - name: queries.count
+          type: long
+          metric_type: counter
+          description: >-
+            Prefix cache queries, in number of queried tokens (`vllm:prefix_cache_queries_total`).
+        - name: hits.count
+          type: long
+          metric_type: counter
+          description: >-
+            Prefix cache hits, in number of cached tokens (`vllm:prefix_cache_hits_total`).
+    - name: preemptions.count
+      type: long
+      metric_type: counter
+      description: >-
+        Number of preemptions from the engine (`vllm:num_preemptions_total`).
+    - name: latency
+      type: group
+      fields:
+        - name: time_to_first_token.histogram
+          type: histogram
+          description: >-
+            Time to first token, in seconds (`vllm:time_to_first_token_seconds`).
+        - name: inter_token.histogram
+          type: histogram
+          description: >-
+            Inter-token latency, in seconds (`vllm:inter_token_latency_seconds`).
+        - name: e2e.histogram
+          type: histogram
+          description: >-
+            End to end request latency, in seconds (`vllm:e2e_request_latency_seconds`).
+        - name: queue.histogram
+          type: histogram
+          description: >-
+            Time spent in the WAITING phase, in seconds (`vllm:request_queue_time_seconds`).
+        - name: inference.histogram
+          type: histogram
+          description: >-
+            Time spent in the RUNNING phase, in seconds (`vllm:request_inference_time_seconds`).
+        - name: prefill.histogram
+          type: histogram
+          description: >-
+            Time spent in the PREFILL phase, in seconds (`vllm:request_prefill_time_seconds`).
+        - name: decode.histogram
+          type: histogram
+          description: >-
+            Time spent in the DECODE phase, in seconds (`vllm:request_decode_time_seconds`).
+    - name: request
+      type: group
+      fields:
+        - name: prompt_tokens.histogram
+          type: histogram
+          description: >-
+            Prompt tokens per request (`vllm:request_prompt_tokens`).
+        - name: generation_tokens.histogram
+          type: histogram
+          description: >-
+            Generation tokens per request (`vllm:request_generation_tokens`).
