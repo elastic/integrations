@@ -1,0 +1,1242 @@
+---
+description: Claude Desktop app + MCP logs (main.log, mcp.log, mcp-server-*.log) to ECS
+processors:
+- set:
+    field: event.kind
+    value: event
+    tag: set_event_kind
+- set:
+    field: service.name
+    value: claude-desktop
+    tag: set_service_name
+- set:
+    field: ecs.version
+    value: 9.3.0
+    tag: set_ecs_version
+- set:
+    field: event.action
+    value: log
+    tag: set_event_action
+- set:
+    field: claude_desktop
+    value: {}
+    override: false
+    tag: set_claude_desktop
+- rename:
+    description: >-
+      Work on a copy of the raw line under claude_desktop.tmp. The field is not mapped
+      (claude_desktop is dynamic: false) and is removed at the end of the pipeline, so the
+      unredacted line is never stored.
+    field: message
+    target_field: claude_desktop.tmp.line
+    ignore_missing: true
+    tag: rename_message
+- grok:
+    description: chrome-native-host style, electron-log main.log style and MCP '[server] [level]' style; ISO with or without T/Z/brackets
+    field: claude_desktop.tmp.line
+    pattern_definitions:
+      LVL: (?i:error|warn(?:ing)?|info|verbose|debug|silly|trace|fatal|log)
+      ANY: (?m:.*)
+    patterns:
+    - ^\[%{TIMESTAMP_ISO8601:claude_desktop.tmp.ts} %{LVL:log.level} %{DATA:claude_desktop.tmp.component}\] %{ANY:claude_desktop.tmp.msg}
+    - ^\[?%{TIMESTAMP_ISO8601:claude_desktop.tmp.ts}\]? \[%{LVL:log.level}\] %{ANY:claude_desktop.tmp.msg}
+    - ^\[?%{TIMESTAMP_ISO8601:claude_desktop.tmp.ts}\]? \[%{DATA:claude_desktop.mcp.server}\] \[%{LVL:log.level}\] %{ANY:claude_desktop.tmp.msg}
+    - ^%{ANY:claude_desktop.tmp.msg}
+    ignore_missing: true
+    tag: grok_tmp_line
+- set:
+    field: claude_desktop.tmp.tz
+    copy_from: event.timezone
+    ignore_empty_value: true
+    tag: set_tmp_tz
+- set:
+    field: claude_desktop.tmp.tz
+    value: UTC
+    override: false
+    tag: set_tmp_tz_2
+- date:
+    if: ctx.claude_desktop?.tmp?.ts != null
+    field: claude_desktop.tmp.ts
+    timezone: '{{{claude_desktop.tmp.tz}}}'
+    formats:
+    - ISO8601
+    - yyyy-MM-dd HH:mm:ss.SSS
+    - yyyy-MM-dd HH:mm:ss
+    on_failure:
+    - append:
+        field: error.message
+        value: >-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+          failed with message '{{{ _ingest.on_failure_message }}}'
+        tag: date_tmp_ts_on_failure_append_error_message
+    tag: date_tmp_ts
+- append:
+    if: ctx.claude_desktop?.tmp?.ts == null
+    field: tags
+    value: claude_desktop_unparsed_line
+    tag: append_tags
+- grok:
+    description: User from the log path (Windows %APPDATA% / %LOCALAPPDATA%, macOS ~/Library/Logs)
+    field: log.file.path
+    pattern_definitions:
+      SEP: '[\\/]'
+      SEG: '[^\\/]+'
+    patterns:
+    - (?i)%{SEP}(?:Users|home)%{SEP}%{SEG:user.name}%{SEP}
+    ignore_missing: true
+    ignore_failure: true
+    tag: grok_log_file_path
+- append:
+    if: ctx.user?.name != null
+    field: related.user
+    value: '{{{user.name}}}'
+    allow_duplicates: false
+    tag: append_related_user
+- script:
+    lang: painless
+    description: >-
+      Derive claude_desktop.log_file from the log file name without its directory or ".log"
+      extension (main, mcp, mcp-server-<name>, chrome-native-host, ...). Use it as log.logger
+      when the line names no component, and take claude_desktop.mcp.server from
+      mcp-server-<name>.log files. Lowercase log.level and map electron-log's "warning" to the
+      ECS value "warn".
+    source: |
+      String path = ctx.log?.file?.path;
+      if (path == null) {
+        return;
+      }
+
+      // The path may use either separator: Windows logs come from %APPDATA% and %LOCALAPPDATA%.
+      int s1 = path.lastIndexOf('/');
+      int s2 = path.lastIndexOf('\\');
+      int s = s1 > s2 ? s1 : s2;
+      String base = path.substring(s + 1);
+
+      if (base.toLowerCase().endsWith('.log')) {
+        base = base.substring(0, base.length() - 4);
+      }
+      ctx.claude_desktop.log_file = base;
+      if (ctx.log.logger == null) {
+        ctx.log.logger = base;
+      }
+      if (base.startsWith('mcp-server-')) {
+        if (ctx.claude_desktop.mcp == null) {
+          ctx.claude_desktop.mcp = new HashMap();
+        }
+        if (ctx.claude_desktop.mcp.server == null) {
+          ctx.claude_desktop.mcp.server = base.substring(11);
+        }
+      }
+
+      if (ctx.log.level != null) {
+        String l = ctx.log.level.toLowerCase();
+        if (l == 'warning') {
+          l = 'warn';
+        }
+        ctx.log.level = l;
+      }
+    tag: script_log_file_name_mcp_server_from_file_name_
+- script:
+    lang: painless
+    description: >-
+      Build message from the text after the timestamp and level: strip electron-log's
+      " { metadata: undefined }" suffix and truncate at 64 KiB (setting
+      claude_desktop.truncated). A leading "[component]" becomes log.logger; in mcp.log the
+      component is the MCP server name. Then recognise MCP traffic ("Message from client" or
+      "Message from server"). Current Desktop builds log only a summary of each message
+      (method="tools/call" id=10 params, id=10 result(1 blocks)), which is parsed here into
+      claude_desktop.mcp.*, event.action, event.outcome and the gen_ai tool call fields. Older
+      builds log the full JSON-RPC message, which is left in claude_desktop.tmp.rpc_raw for
+      the json processor and the next script.
+    source: |
+      String m = ctx.claude_desktop.tmp.msg;
+      if (m == null) {
+        m = '';
+      }
+      String suf = ' { metadata: undefined }';
+      if (m.endsWith(suf)) {
+        m = m.substring(0, m.length() - suf.length());
+      }
+      int max = 65536;
+      if (m.length() > max) {
+        m = m.substring(0, max);
+        ctx.claude_desktop.truncated = true;
+      }
+      ctx.message = m;
+      if (ctx.log == null) {
+        ctx.log = new HashMap();
+      }
+
+      // Component prefix: "[RemotePluginManager] ...", or "[my-mcp-server] ..." in mcp.log.
+      String comp = ctx.claude_desktop.tmp.component;
+      String rest = m;
+      if (comp == null && m.startsWith('[')) {
+        int e = m.indexOf('] ');
+        if (1 < e && e < 64) {
+          comp = m.substring(1, e);
+          rest = m.substring(e + 2);
+        }
+      }
+      if (comp != null) {
+        ctx.log.logger = comp;
+        if (ctx.claude_desktop.log_file == 'mcp') {
+          if (ctx.claude_desktop.mcp == null) {
+            ctx.claude_desktop.mcp = new HashMap();
+          }
+          ctx.claude_desktop.mcp.server = comp;
+        }
+      }
+
+      // MCP JSON-RPC traffic: "Message from client: ..." or "Message from server: ...".
+      int p = rest.indexOf('Message from ');
+      if (p < 0 || rest.length() < p + 21) {
+        return;
+      }
+      boolean fromClient = rest.startsWith('client', p + 13);
+      if (!fromClient && !rest.startsWith('server', p + 13)) {
+        return;
+      }
+      if (ctx.claude_desktop.mcp == null) {
+        ctx.claude_desktop.mcp = new HashMap();
+      }
+      def mcp = ctx.claude_desktop.mcp;
+      mcp.direction = fromClient ? 'client_to_server' : 'server_to_client';
+
+      String body = rest.substring(p + 21).trim();
+      if (body.startsWith('{')) {
+        // Older Desktop builds log the full JSON-RPC message. A truncated message is not
+        // valid JSON, so it is not parsed.
+        if (!ctx.claude_desktop.containsKey('truncated')) {
+          ctx.claude_desktop.tmp.rpc_raw = body;
+        }
+        return;
+      }
+
+      // Current builds log a summary:
+      //   method="tools/call" id=10 params | id=10 result(1 blocks) | id=3 error ...
+      String method = null;
+      String id = null;
+      def mm = /method="([^"]+)"/.matcher(body);
+      if (mm.find()) {
+        method = mm.group(1);
+        mcp.method = method;
+      }
+      def mi = /(?:^|\s)id=([^\s]+)/.matcher(body);
+      if (mi.find()) {
+        id = mi.group(1);
+        mcp.id = id;
+      }
+      // At most 9 digits, so the count always fits in an int.
+      def mb = /result\((\d{1,9}) blocks?\)/.matcher(body);
+      if (mb.find()) {
+        mcp.result_blocks = Integer.parseInt(mb.group(1));
+      }
+
+      if (method != null && id != null) {
+        ctx.event.action = fromClient ? 'mcp-request' : 'mcp-server-request';
+      } else if (method != null) {
+        ctx.event.action = 'mcp-notification';
+      } else if (id != null) {
+        ctx.event.action = 'mcp-response';
+        boolean failed = /(?:^|\s)error\b/.matcher(body).find();
+        ctx.event.outcome = failed ? 'failure' : 'success';
+      }
+
+      if (method == 'tools/call') {
+        ctx.gen_ai = ['operation': ['name': 'execute_tool']];
+        if (id != null) {
+          ctx.gen_ai.tool = ['call': ['id': id]];
+        }
+      }
+    tag: script_message_text_truncation_detect_mcp_json_
+- json:
+    if: ctx.claude_desktop?.tmp?.rpc_raw != null
+    field: claude_desktop.tmp.rpc_raw
+    target_field: claude_desktop.tmp.rpc
+    on_failure:
+    - append:
+        field: tags
+        value: claude_desktop_rpc_unparsed
+        tag: json_tmp_rpc_raw_on_failure_append_tags
+    tag: json_tmp_rpc_raw
+- script:
+    if: ctx.claude_desktop?.tmp?.rpc instanceof Map
+    lang: painless
+    description: >-
+      Map a full JSON-RPC message (older Desktop builds) to ECS and claude_desktop.mcp.*.
+      A message with a method and an id is a request (mcp-request from the client,
+      mcp-server-request from the server), a method without an id is an mcp-notification,
+      and anything else is an mcp-response. tools/call requests set gen_ai.operation.name
+      and the gen_ai.tool name and call id. A JSON-RPC error object sets event.outcome to
+      failure and is copied to claude_desktop.mcp.error; error.* is left for pipeline errors.
+      The message itself is kept, unindexed, in claude_desktop.mcp.payload, and is redacted
+      by the next processor.
+    source: |
+      def r = ctx.claude_desktop.tmp.rpc;
+      def mcp = ctx.claude_desktop.mcp;
+      boolean fromClient = mcp.direction == 'client_to_server';
+
+      if (r.method != null) {
+        mcp.method = r.method;
+      }
+      if (r.id != null) {
+        mcp.id = r.id.toString();
+      }
+
+      String act;
+      if (r.method != null && r.id != null) {
+        act = fromClient ? 'mcp-request' : 'mcp-server-request';
+      } else if (r.method != null) {
+        act = 'mcp-notification';
+      } else {
+        act = 'mcp-response';
+      }
+      ctx.event.action = act;
+
+      if (r.method == 'tools/call' && r.params instanceof Map && r.params.name != null) {
+        ctx.gen_ai = [
+          'operation': ['name': 'execute_tool'],
+          'tool': ['name': r.params.name]
+        ];
+        if (r.id != null) {
+          ctx.gen_ai.tool.call = ['id': r.id.toString()];
+        }
+      }
+
+      if (r.error instanceof Map) {
+        ctx.event.outcome = 'failure';
+        Map err = new HashMap();
+        if (r.error.code != null) {
+          err.code = r.error.code.toString();
+        }
+        if (r.error.message != null) {
+          err.message = r.error.message.toString();
+        }
+        mcp.error = err;
+      } else if (act == 'mcp-response') {
+        boolean isError = r.result instanceof Map && r.result.isError == true;
+        ctx.event.outcome = isError ? 'failure' : 'success';
+      }
+
+      // Stored, not indexed (enabled: false), and redacted by the next processor.
+      mcp.payload = r;
+    tag: script_json_rpc_event_action_mcp_method_id_gen_
+- script:
+    tag: redact-secrets
+    lang: painless
+    description: >-
+      Find credentials in every field that holds text from the line (message,
+      claude_desktop.mcp.*, gen_ai.*, log.logger and error.*) and replace each, in every
+      written form, with [REDACTED:<type>]. Only the type and length of each finding are
+      recorded, in claude_desktop.secrets; the values themselves are never stored. scan()
+      below explains what is detected and how. If the script fails, its handler drops those
+      fields instead of storing them unredacted.
+    source: |
+      // plausible() decides whether a captured value looks like a real secret rather than a
+      // placeholder or prose: stop words ("required", "your", ...), template variables ($VAR,
+      // <value>, {value}, %VAR%), paths, masks such as **** or xxxx, and our own
+      // [REDACTED:...] marker are rejected. With strong set, the value must also contain a
+      // digit or symbol; this is used for the plain-language "password is X" pattern.
+      boolean plausible(String v, List stop, boolean strong) {
+        if (v == null) {
+          return false;
+        }
+        String s = v.trim();
+        while (s.length() > 0 && ".,;:!?)]}'\"`".indexOf(s.substring(s.length() - 1)) >= 0) {
+          s = s.substring(0, s.length() - 1);
+        }
+        if (s.length() < 4) {
+          return false;
+        }
+        if (stop.contains(s.toLowerCase())) {
+          return false;
+        }
+        if (s.startsWith('[REDACTED')) {
+          return false;
+        }
+
+        // A leading $ < { % / ~ or . marks a variable, placeholder or path.
+        char c0 = s.charAt(0);
+        if (c0 == (char) 36 || c0 == (char) 60 || c0 == (char) 123 || c0 == (char) 37
+            || c0 == (char) 47 || c0 == (char) 126 || c0 == (char) 46) {
+          return false;
+        }
+
+        // A value made only of * x X or . is a mask.
+        boolean allMask = true;
+        for (int i = 0; i < s.length(); i++) {
+          char ch = s.charAt(i);
+          if (ch != (char) 42 && ch != (char) 120 && ch != (char) 88 && ch != (char) 46) {
+            allMask = false;
+            break;
+          }
+        }
+        if (allMask) {
+          return false;
+        }
+
+        if (!strong) {
+          return true;
+        }
+        for (int i = 0; i < s.length(); i++) {
+          if (!Character.isLetter(s.charAt(i))) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // hit() records one finding. Values are de-duplicated, so the first (most specific)
+      // type to claim a value wins. The value itself is kept only in memory, in seen, for
+      // the replacement step; the finding records its type and length.
+      // hit() trims trailing punctuation from values found in free text; hitExact() is used
+      // when the value's boundaries are known, as for a JSON string.
+      void hit(List f, List seen, String type, String raw) {
+        String val = raw.trim();
+        while (val.length() > 0 && ".,;:!?)]}'\"`".indexOf(val.substring(val.length() - 1)) >= 0) {
+          val = val.substring(0, val.length() - 1);
+        }
+        hitExact(f, seen, type, val);
+      }
+
+      void hitExact(List f, List seen, String type, String val) {
+        // Weak, context-free types need longer values.
+        int minLen = (type == 'password' || type == 'sudo_password') ? 4 : 6;
+        if (val.length() < minLen || seen.contains(val)) {
+          return;
+        }
+        seen.add(val);
+        Map m = new HashMap();
+        m.put('type', type);
+        m.put('length', val.length());
+        f.add(m);
+      }
+
+      // variant() adds another written form of a found value (such as its raw, escaped JSON
+      // text) to the values to replace. It is marked as a variant so that it is not counted
+      // as a separate finding.
+      void variant(List f, List seen, String type, String val) {
+        if (val.length() < 4 || seen.contains(val)) {
+          return;
+        }
+        seen.add(val);
+        Map m = new HashMap();
+        m.put('type', type);
+        m.put('variant', true);
+        f.add(m);
+      }
+
+      // unescapeOne() decodes the JSON escape sequence that starts with the backslash at
+      // t[i], appends the decoded character to sb, and returns the index after the sequence.
+      int unescapeOne(String t, int i, StringBuilder sb) {
+        char e = t.charAt(i + 1);
+        if (e == (char) 110) {
+          sb.append((char) 10);
+        } else if (e == (char) 116) {
+          sb.append((char) 9);
+        } else if (e == (char) 114) {
+          sb.append((char) 13);
+        } else if (e == (char) 98) {
+          sb.append((char) 8);
+        } else if (e == (char) 102) {
+          sb.append((char) 12);
+        } else if (e == (char) 117 && i + 5 < t.length()) {
+          try {
+            sb.append((char) Integer.parseInt(t.substring(i + 2, i + 6), 16));
+            return i + 6;
+          } catch (NumberFormatException x) {
+            sb.append(e);
+          }
+        } else {
+          // \" \\ \/ and anything else: the character itself.
+          sb.append(e);
+        }
+        return i + 2;
+      }
+
+      // jsonString() reads a JSON string value from t, starting at i (just after its opening
+      // quote) and following escapes up to the closing quote, or to the end of t when the
+      // line was cut short. It returns the decoded value and the index of the closing quote.
+      List jsonString(String t, int i) {
+        StringBuilder sb = new StringBuilder();
+        int n = t.length();
+        while (i < n) {
+          char c = t.charAt(i);
+          if (c == (char) 34) {
+            break;
+          }
+          if (c == (char) 92 && i + 1 < n) {
+            i = unescapeOne(t, i, sb);
+          } else {
+            sb.append(c);
+            i++;
+          }
+        }
+        return [sb.toString(), i];
+      }
+
+      // unescape() undoes one level of JSON string escaping, for JSON that was itself
+      // written inside a JSON string (\"key\": \"value\").
+      String unescape(String s) {
+        StringBuilder sb = new StringBuilder();
+        int n = s.length();
+        int i = 0;
+        while (i < n) {
+          if (s.charAt(i) == (char) 92 && i + 1 < n) {
+            i = unescapeOne(s, i, sb);
+          } else {
+            sb.append(s.charAt(i));
+            i++;
+          }
+        }
+        return sb.toString();
+      }
+
+      // jsonEscape() escapes a value the way JSON.stringify does: quote, backslash and
+      // control characters. A value found decoded (in the parsed payload) is written escaped
+      // in message, so both forms must be replaced.
+      String jsonEscape(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+          char c = s.charAt(i);
+          if (c == (char) 34 || c == (char) 92) {
+            sb.append((char) 92);
+            sb.append(c);
+          } else if (c == (char) 10) {
+            sb.append('\\n');
+          } else if (c == (char) 13) {
+            sb.append('\\r');
+          } else if (c == (char) 9) {
+            sb.append('\\t');
+          } else if (c == (char) 8) {
+            sb.append('\\b');
+          } else if (c == (char) 12) {
+            sb.append('\\f');
+          } else if (c < (char) 32) {
+            String h = Integer.toHexString((int) c);
+            sb.append('\\u');
+            sb.append('0000'.substring(h.length()));
+            sb.append(h);
+          } else {
+            sb.append(c);
+          }
+        }
+        return sb.toString();
+      }
+
+      // findAll() records every match of a fixed-format pattern. Each pattern runs in its own
+      // try/catch so a pattern that fails (for example, on the regex complexity limit) only
+      // adds its name to errs. The exception message is not kept, because Painless regex
+      // errors echo the input text.
+      void findAll(String text, Pattern p, int group, String type, String name,
+                   List f, List seen, List errs) {
+        try {
+          Matcher m = p.matcher(text);
+          while (m.find()) {
+            hit(f, seen, type, m.group(group));
+          }
+        } catch (Exception e) {
+          errs.add(name);
+        }
+      }
+
+      // sensitiveKey() is true when a field or JSON key names a credential. The key is
+      // lowercased and stripped of _ - and . first, so apiKey, api_key and API-KEY all match.
+      boolean sensitiveKey(def k, def params) {
+        if (k == null) {
+          return false;
+        }
+        String n = k.toString().toLowerCase().replace('_', '').replace('-', '').replace('.', '');
+        if (params.secret_keys.contains(n)) {
+          return true;
+        }
+        for (def sfx : params.secret_key_suffixes) {
+          if (n.endsWith((String) sfx)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      String keyType(def k) {
+        String n = k.toString().toLowerCase();
+        return (n.indexOf('pass') >= 0 || n.indexOf('pwd') >= 0) ? 'password' : 'secret_field';
+      }
+
+      // keyHit() records the string value of a map entry whose key names a credential.
+      void keyHit(List f, List seen, def k, def v, def params) {
+        if (!(v instanceof String) || !sensitiveKey(k, params)) {
+          return;
+        }
+        // The whole value is the secret, whatever its length.
+        String s = (String) v;
+        if (!plausible(s, params.stop, false)) {
+          return;
+        }
+        hitExact(f, seen, keyType(k), s);
+      }
+
+      // scan() finds credentials in one string and records each one with hit().
+      //
+      // Intent: catch secrets that end up in log lines and MCP messages (pasted tokens,
+      // connection strings, CLI flags, "the password is ..." in prose) with few false
+      // positives, and never fail the document because of the scan.
+      //
+      // Approach, from most to least specific. Because hit() de-duplicates by value, a value
+      // keeps the type of the first pattern that found it.
+      //   1. Fixed-format tokens with a distinctive prefix or shape: cloud and SaaS API keys,
+      //      PEM private key blocks, JWTs and Authorization headers. One regex each.
+      //   2. JSON "key": "value" pairs, including backslash-escaped JSON, where the key names
+      //      a credential (params.secret_keys and params.secret_key_suffixes).
+      //   3. Context patterns: NAME=value with NAME containing PASSWORD, SECRET, TOKEN or
+      //      API_KEY; echo ... | sudo -S; curl "user = name:pass" configs; -u/--user CLI
+      //      credentials; plain-language "password is X"; and scheme://user:pass@host URLs.
+      //      These find a keyword with indexOf and run a short, anchored regex on a bounded
+      //      window after it, instead of one unanchored regex over the whole text. That keeps
+      //      the cost linear in the text length and avoids backtracking on long lines.
+      // Captured values from groups 2 and 3 must also pass plausible().
+      void scan(String text, List f, List seen, List errs, def params) {
+        if (text == null || text.length() < 4) {
+          return;
+        }
+        List stop = params.stop;
+        def m;
+
+        // 1. Fixed-format tokens.
+        findAll(text, /A(?:KIA|SIA|BIA|CCA)[0-9A-Z]{16}/, 0,
+            'aws_access_key', 'aws_access_key', f, seen, errs);
+        findAll(text, /(?i)aws[_ \-]?secret[_ \-]?(?:access[_ \-]?)?key["']?\s?[=:]\s?['"]?([A-Za-z0-9\/+=]{40})(?![A-Za-z0-9\/+=])/, 1,
+            'aws_secret_key', 'aws_secret_key', f, seen, errs);
+        findAll(text, /gh[pousr]_[A-Za-z0-9]{36}/, 0,
+            'github_token', 'github_token', f, seen, errs);
+        findAll(text, /github_pat_[A-Za-z0-9_]{60,}/, 0,
+            'github_token', 'github_pat', f, seen, errs);
+        findAll(text, /glpat-[A-Za-z0-9_\-]{20,}/, 0,
+            'gitlab_token', 'gitlab_token', f, seen, errs);
+        findAll(text, /xox[abposr]-[A-Za-z0-9\-]{10,}/, 0,
+            'slack_token', 'slack_token', f, seen, errs);
+        findAll(text, /https:\/\/hooks\.slack\.com\/services\/[A-Za-z0-9\/]{20,}/, 0,
+            'slack_webhook', 'slack_webhook', f, seen, errs);
+        findAll(text, /sk-ant-[A-Za-z0-9_\-]{20,}/, 0,
+            'anthropic_api_key', 'anthropic_api_key', f, seen, errs);
+        findAll(text, /(?<![A-Za-z0-9])sk-(?!ant-)(?:proj-|svcacct-)?[A-Za-z0-9_\-]{32,}/, 0,
+            'openai_api_key', 'openai_api_key', f, seen, errs);
+        findAll(text, /AIza[0-9A-Za-z_\-]{35}/, 0,
+            'google_api_key', 'google_api_key', f, seen, errs);
+        findAll(text, /[sr]k_live_[0-9A-Za-z]{24,}/, 0,
+            'stripe_key', 'stripe_key', f, seen, errs);
+        // The whole PEM block: BEGIN line, optional headers, base64 body (raw or with
+        // escaped \r\n newlines, as in JSON text) and END line.
+        findAll(text, /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----(?:(?:\\r)?(?:\\n|\r?\n)[A-Za-z\-]{2,16}: ?[^\r\n\\]*)*(?:[A-Za-z0-9+\/=\r\n]|\\[rn])*(?:-----END (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----)?/, 0,
+            'private_key', 'private_key', f, seen, errs);
+        findAll(text, /eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/, 0,
+            'jwt', 'jwt', f, seen, errs);
+        findAll(text, /(?i)authorization\s?[:=]\s?['"]?(?:apikey|bearer|basic) ([A-Za-z0-9+\/=._\-]{16,})/, 1,
+            'auth_header', 'auth_header', f, seen, errs);
+
+        // 2. "key": "value" in JSON text where the key names a credential, including JSON
+        // that is itself escaped inside a string (\"key\": \"value\"). The regex finds only the
+        // key and the opening quote of the value; jsonString() then reads the value up to its
+        // closing quote, following escapes, so a value with spaces, escaped quotes or any
+        // length is redacted whole.
+        try {
+          m = /\\?"([A-Za-z0-9_.\-]{1,64})\\?"\s{0,8}:\s{0,8}(\\?)"/.matcher(text);
+          while (m.find()) {
+            String key = m.group(1);
+            if (!sensitiveKey(key, params)) {
+              continue;
+            }
+            int vs = m.end();
+            String val;
+            String raw = null;
+            if (m.group(2).isEmpty()) {
+              List r = jsonString(text, vs);
+              val = (String) r.get(0);
+              raw = text.substring(vs, (int) r.get(1));
+            } else {
+              // Escaped JSON: undo one level of escaping, then read the value.
+              val = (String) jsonString(unescape(text.substring(vs)), 0).get(0);
+            }
+            if (plausible(val, stop, false)) {
+              hitExact(f, seen, keyType(key), val);
+              // The value as written in the line, which may use escapes such as A.
+              if (raw != null) {
+                variant(f, seen, keyType(key), raw);
+              }
+            }
+          }
+        } catch (Exception e) {
+          errs.add('json_secret_field');
+        }
+
+        // 3a. NAME=value or "NAME": "value", where NAME is an upper-case identifier that
+        // contains one of params.env_keywords. The identifier is widened around the
+        // keyword by hand, then an anchored regex reads the value from a 120-character window.
+        try {
+          int tl = text.length();
+          for (def kwd : params.env_keywords) {
+            String kw = (String) kwd;
+            int from = 0;
+            while (true) {
+              int p = text.indexOf(kw, from);
+              if (p < 0) {
+                break;
+              }
+              from = p + kw.length();
+
+              // Widen to the whole identifier: A-Z, 0-9 and _ on both sides.
+              int s0 = p;
+              while (s0 > 0) {
+                char ch = text.charAt(s0 - 1);
+                if ((ch >= (char) 65 && ch <= (char) 90) || (ch >= (char) 48 && ch <= (char) 57) || ch == (char) 95) {
+                  s0--;
+                } else {
+                  break;
+                }
+              }
+              int e0 = from;
+              while (e0 < tl) {
+                char ch = text.charAt(e0);
+                if ((ch >= (char) 65 && ch <= (char) 90) || (ch >= (char) 48 && ch <= (char) 57) || ch == (char) 95) {
+                  e0++;
+                } else {
+                  break;
+                }
+              }
+              // Skip a keyword inside a lowercase or mixed-case word.
+              if (s0 > 0 && Character.isLetterOrDigit(text.charAt(s0 - 1))) {
+                continue;
+              }
+              from = e0;
+
+              int we = e0 + 120;
+              if (we > tl) {
+                we = tl;
+              }
+              m = /^['"]? ?[=:] ?['"]?([^\s'",}]{4,})/.matcher(text.substring(e0, we));
+              if (m.find() && plausible(m.group(1), stop, false)) {
+                hit(f, seen, 'env_secret', m.group(1));
+              }
+            }
+          }
+        } catch (Exception e) {
+          errs.add('env_secret');
+        }
+
+        // 3b. echo 'secret' | sudo -S, and curl config "user = name:pass".
+        try {
+          m = /echo ['"]?([^\s'"|]{4,})['"]? ?\| ?sudo -S/.matcher(text);
+          while (m.find()) {
+            if (plausible(m.group(1), stop, false)) {
+              hit(f, seen, 'sudo_password', m.group(1));
+            }
+          }
+        } catch (Exception e) {
+          errs.add('sudo_password');
+        }
+        try {
+          m = /(?<![A-Za-z0-9_])user ?= ?['"]?[^\s:'"]{1,64}:([^\s'"]{4,})/.matcher(text);
+          while (m.find()) {
+            if (plausible(m.group(1), stop, false)) {
+              hit(f, seen, 'basic_auth_cli', m.group(1));
+            }
+          }
+        } catch (Exception e) {
+          errs.add('curl_config');
+        }
+
+        // 3c. CLI credentials: -u user:pass, -u user -p pass, --user/--username ... --password ...
+        // The flag must start a word; the regexes read a 200-character window from it.
+        try {
+          int tl = text.length();
+          for (def kwd : params.cli_flags) {
+            String kw = (String) kwd;
+            int from = 0;
+            while (true) {
+              int p = text.indexOf(kw, from);
+              if (p < 0) {
+                break;
+              }
+              from = p + kw.length();
+              if (p > 0) {
+                char pc0 = text.charAt(p - 1);
+                if (!(Character.isWhitespace(pc0) || pc0 == (char) 39 || pc0 == (char) 34)) {
+                  continue;
+                }
+              }
+              int we = p + 200;
+              if (we > tl) {
+                we = tl;
+              }
+              String w = text.substring(p, we);
+              m = /^(?:-u|--user|--username)[ =]['"]?[^\s:'"]{1,64}:([^\s'"@]{3,})/.matcher(w);
+              if (m.find() && plausible(m.group(1), stop, false)) {
+                hit(f, seen, 'basic_auth_cli', m.group(1));
+              }
+              m = /^(?:-u|--user|--username)[ =]['"]?[^\s'"]{1,64}['"]? (?:-p ?|--password[ =])['"]?([^\s'"]{4,})/.matcher(w);
+              if (m.find() && plausible(m.group(1), stop, false)) {
+                hit(f, seen, 'cli_password', m.group(1));
+              }
+            }
+          }
+        } catch (Exception e) {
+          errs.add('cli_credentials');
+        }
+
+        // 3d. Plain language: "password is X", "api key: X", "secret key X1!". The keyword
+        // must start a word; the regex reads a 96-character window after it, and the value
+        // must pass the strong plausibility check.
+        try {
+          String lower = text.toLowerCase();
+          int tl = text.length();
+          for (def kwd : params.pw_keywords) {
+            String kw = (String) kwd;
+            int kl = kw.length();
+            int from = 0;
+            while (true) {
+              int p = lower.indexOf(kw, from);
+              if (p < 0) {
+                break;
+              }
+              from = p + kl;
+              if (p > 0 && Character.isLetterOrDigit(lower.charAt(p - 1))) {
+                continue;
+              }
+              int we = p + kl + 96;
+              if (we > tl) {
+                we = tl;
+              }
+              String win = text.substring(p + kl, we);
+              m = /^s?(?![A-Za-z0-9_])(?: (?:is|was)(?![A-Za-z0-9])| ?[=:]| (?=\S*[0-9!@#$%^&*]))(?: also(?![A-Za-z0-9]))? ?[:=]? {0,3}['"]?([^\s'",;]{4,})/.matcher(win);
+              if (m.find() && plausible(m.group(1), stop, true)) {
+                hit(f, seen, 'password', m.group(1));
+              }
+            }
+          }
+        } catch (Exception e) {
+          errs.add('password');
+        }
+
+        // 3e. scheme://user:pass@host, parsed without a regex.
+        try {
+          int from = 0;
+          while (true) {
+            int p = text.indexOf('://', from);
+            if (p < 0) {
+              break;
+            }
+            // The authority ends at whitespace, / ' or ".
+            int end = p + 3;
+            while (end < text.length()) {
+              char ch = text.charAt(end);
+              if (Character.isWhitespace(ch) || ch == (char) 47 || ch == (char) 39 || ch == (char) 34) {
+                break;
+              }
+              end++;
+            }
+            String auth = text.substring(p + 3, end);
+            int at = auth.lastIndexOf('@');
+            if (at > 0) {
+              int col = auth.indexOf(':');
+              if (col > 0 && col < at) {
+                String pw = auth.substring(col + 1, at);
+                if (pw.length() >= 3 && plausible(pw, stop, false)) {
+                  hit(f, seen, 'url_credentials', pw);
+                }
+              }
+            }
+            from = end;
+          }
+        } catch (Exception e) {
+          errs.add('url_credentials');
+        }
+      }
+
+      // walkScan() scans every string in a value, and every map entry whose key names a
+      // credential. Nesting is capped at 25 levels.
+      void walkScan(def o, List f, List seen, List errs, def params, int depth) {
+        if (o == null || depth > 25) {
+          return;
+        }
+        if (o instanceof String) {
+          scan((String) o, f, seen, errs, params);
+        } else if (o instanceof Map) {
+          for (def e : ((Map) o).entrySet()) {
+            walkScan(e.getValue(), f, seen, errs, params, depth + 1);
+            keyHit(f, seen, e.getKey(), e.getValue(), params);
+          }
+        } else if (o instanceof List) {
+          for (def v : (List) o) {
+            walkScan(v, f, seen, errs, params, depth + 1);
+          }
+        }
+      }
+
+      // walkReplace() replaces every found value with its [REDACTED:<type>] tag, in place.
+      // Anything nested deeper than walkScan() reads was never scanned, so it is replaced
+      // with [TRUNCATED:depth] rather than kept.
+      def walkReplace(def o, List vals, List tags, int depth) {
+        if (o == null) {
+          return o;
+        }
+        if (depth > 25) {
+          return '[TRUNCATED:depth]';
+        }
+        if (o instanceof String) {
+          String s = (String) o;
+          for (int i = 0; i < vals.size(); i++) {
+            String v = (String) vals.get(i);
+            if (s.indexOf(v) >= 0) {
+              s = s.replace(v, (String) tags.get(i));
+            }
+          }
+          return s;
+        }
+        if (o instanceof Map) {
+          Map mp = (Map) o;
+          for (def k : new ArrayList(mp.keySet())) {
+            mp.put(k, walkReplace(mp.get(k), vals, tags, depth + 1));
+          }
+          return mp;
+        }
+        if (o instanceof List) {
+          List l = (List) o;
+          for (int i = 0; i < l.size(); i++) {
+            l.set(i, walkReplace(l.get(i), vals, tags, depth + 1));
+          }
+          return l;
+        }
+        return o;
+      }
+
+      // Main: scan every field that holds text from the log line, then redact them all.
+      // Besides message, these are claude_desktop.mcp (server name, method, id, payload and
+      // error), gen_ai (tool name and call id), log.logger (the component) and error.*.
+      List f = new ArrayList();
+      List seen = new ArrayList();
+      List errs = new ArrayList();
+      def cd = ctx.claude_desktop;
+      walkScan(ctx.message, f, seen, errs, params, 0);
+      if (cd?.mcp != null) {
+        walkScan(cd.mcp, f, seen, errs, params, 0);
+      }
+      if (ctx.gen_ai != null) {
+        walkScan(ctx.gen_ai, f, seen, errs, params, 0);
+      }
+      if (ctx.log?.logger != null) {
+        walkScan(ctx.log.logger, f, seen, errs, params, 0);
+      }
+      if (ctx.error != null) {
+        walkScan(ctx.error, f, seen, errs, params, 0);
+      }
+
+      // The values to replace: each found value, plus its JSON-escaped forms. A value found
+      // in the parsed payload is written escaped once in message, or twice when the JSON was
+      // itself inside a string. Longer values are replaced first, so a value that contains
+      // another is replaced whole.
+      List rv = new ArrayList();
+      List rt = new ArrayList();
+      for (int i = 0; i < seen.size(); i++) {
+        String v = (String) seen.get(i);
+        String tag = '[REDACTED:' + f.get(i).type + ']';
+        String e1 = jsonEscape(v);
+        String e2 = jsonEscape(e1);
+        rv.add(v);
+        rt.add(tag);
+        if (e1 != v) {
+          rv.add(e1);
+          rt.add(tag);
+        }
+        if (e2 != e1) {
+          rv.add(e2);
+          rt.add(tag);
+        }
+      }
+      List order = new ArrayList();
+      for (int i = 0; i < rv.size(); i++) {
+        order.add(i);
+      }
+      order.sort((a, b) -> ((String) rv.get(b)).length() - ((String) rv.get(a)).length());
+      List vals = new ArrayList();
+      List tags = new ArrayList();
+      for (def i : order) {
+        vals.add(rv.get(i));
+        tags.add(rt.get(i));
+      }
+
+      // Replace even when nothing was found, so that payload subtrees too deep to scan are
+      // always cut.
+      if (ctx.message != null) {
+        ctx.message = walkReplace(ctx.message, vals, tags, 0);
+      }
+      if (cd?.mcp != null) {
+        cd.mcp = walkReplace(cd.mcp, vals, tags, 0);
+      }
+      if (ctx.gen_ai != null) {
+        ctx.gen_ai = walkReplace(ctx.gen_ai, vals, tags, 0);
+      }
+      if (ctx.log?.logger != null) {
+        ctx.log.logger = walkReplace(ctx.log.logger, vals, tags, 0);
+      }
+      if (ctx.error != null) {
+        ctx.error = walkReplace(ctx.error, vals, tags, 0);
+      }
+
+      // Findings, without the variants (other written forms of the same values).
+      List found = new ArrayList();
+      for (def x : f) {
+        if (x.variant != true) {
+          found.add(x);
+        }
+      }
+      if (found.isEmpty() && errs.isEmpty()) {
+        return;
+      }
+
+      if (cd == null) {
+        cd = new HashMap();
+        ctx.claude_desktop = cd;
+      }
+      Map sec = new HashMap();
+      if (!errs.isEmpty()) {
+        List el = new ArrayList();
+        for (def e : errs) {
+          el.add('pattern ' + e + ' could not be evaluated');
+        }
+        sec.put('errors', el);
+      }
+      if (!found.isEmpty()) {
+        List types = new ArrayList();
+        for (def x : found) {
+          if (!types.contains(x.type)) {
+            types.add(x.type);
+          }
+        }
+        sec.put('count', found.size());
+        sec.put('types', types);
+        sec.put('findings', found);
+        sec.put('redacted', true);
+      }
+      cd.secrets = sec;
+    params:
+      cli_flags:
+      - -u
+      - --user
+      stop:
+      - required
+      - wrong
+      - incorrect
+      - correct
+      - the
+      - same
+      - set
+      - empty
+      - missing
+      - not
+      - 'null'
+      - none
+      - changed
+      - expired
+      - invalid
+      - redacted
+      - hidden
+      - unknown
+      - here
+      - below
+      - above
+      - there
+      - stored
+      - saved
+      - configured
+      - needed
+      - optional
+      - default
+      - blank
+      - your
+      - mine
+      - yours
+      - different
+      - reset
+      - sent
+      - updated
+      - protected
+      - encrypted
+      - hashed
+      - masked
+      - provided
+      - too
+      - still
+      - from
+      - in
+      - 'on'
+      - at
+      - for
+      - with
+      - and
+      - or
+      - a
+      - an
+      - is
+      - be
+      - changeme_please
+      - 'true'
+      - 'false'
+      - password
+      - secret
+      - token
+      - example
+      secret_keys:
+      - token
+      - secret
+      - password
+      - passwd
+      - pwd
+      - passphrase
+      - apikey
+      - apitoken
+      - accesstoken
+      - authtoken
+      - refreshtoken
+      - idtoken
+      - sessiontoken
+      - bearertoken
+      - clientsecret
+      - secretkey
+      - privatekey
+      - secretaccesskey
+      - authorization
+      secret_key_suffixes:
+      - password
+      - passwd
+      - passphrase
+      - secret
+      - apikey
+      - apitoken
+      - accesstoken
+      - authtoken
+      - refreshtoken
+      - sessiontoken
+      - privatekey
+      - secretkey
+      env_keywords:
+      - PASSWORD
+      - PASSWD
+      - SECRET
+      - TOKEN
+      - API_KEY
+      - APIKEY
+      pw_keywords:
+      - password
+      - passwd
+      - passphrase
+      - api key
+      - api_key
+      - api-key
+      - apikey
+      - access token
+      - access_token
+      - auth token
+      - auth_token
+      - secret key
+      - secret_key
+      - client secret
+      - client_secret
+    on_failure:
+    - remove:
+        description: >-
+          Fail closed: the line could not be scanned for credentials, so drop every field that
+          holds text from it. The event is kept, as a pipeline_error, to show that a line was
+          dropped.
+        field:
+        - message
+        - claude_desktop.mcp
+        - gen_ai
+        - log.logger
+        - error
+        ignore_missing: true
+        tag: redact-secrets_on_failure_remove_unredacted_fields
+    - append:
+        description: >-
+          The failure message is left out, because a Painless error message can quote the
+          text it was working on.
+        field: error.message
+        value: >-
+          Processor '{{{ _ingest.on_failure_processor_type }}}'
+          {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+          {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+          failed; the line was dropped because it could not be scanned for credentials
+        tag: redact-secrets_on_failure_append_error_message
+    - append:
+        field: claude_desktop.secrets.errors
+        value: redaction script failed
+        tag: redact-secrets_on_failure_append_claude_desktop_secrets_errors
+    - append:
+        field: tags
+        value: claude_desktop_redaction_failed
+        tag: redact-secrets_on_failure_append_tags
+- remove:
+    description: claude_desktop.tmp holds the unredacted line; message keeps the redacted text
+    field:
+    - claude_desktop.tmp
+    ignore_missing: true
+    tag: remove_tmp
+- set:
+    if: ctx.error?.message != null
+    field: event.kind
+    value: pipeline_error
+    tag: set_event_kind_pipeline_error_on_error_message
+- append:
+    if: ctx.error?.message != null
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+    tag: append_tags_preserve_original_event_on_error_message
+on_failure:
+# A processor without its own handler failed, which can only happen before the
+# redact-secrets script has run. Fail closed: drop every field that holds text from the
+# line, and cut the failure message out of error.message, because it can quote the line
+# (for example, a NumberFormatException quotes the number it could not parse). The
+# processor type, tag and pipeline are kept for troubleshooting.
+- remove:
+    tag: remove_unredacted_fields_on_failure
+    field:
+    - message
+    - claude_desktop.mcp
+    - gen_ai
+    - log.logger
+    ignore_missing: true
+- append:
+    tag: append_error_message_on_failure
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+      failed with message '{{{ _ingest.on_failure_message }}}'
+- gsub:
+    tag: gsub_error_message_drop_unscanned_text_on_failure
+    field: error.message
+    pattern: (?s)failed with message '.*'$
+    replacement: >-
+      failed; the failure message and the line were dropped because they had not been
+      scanned for credentials
+- append:
+    tag: append_tags_redaction_failed_on_failure
+    field: tags
+    value: claude_desktop_redaction_failed
+- set:
+    tag: set_event_kind_pipeline_error
+    field: event.kind
+    value: pipeline_error
+- append:
+    tag: append_tags_preserve_original_event_on_failure
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+- remove:
+    field:
+    - claude_desktop.tmp
+    ignore_missing: true
+    tag: remove_temp_fields_on_failure
