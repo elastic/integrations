@@ -495,13 +495,13 @@ processors:
       ignore_failure: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_if_network_transport_is_tcp_26e5aa65
+      tag: set_network_iana_number_if_network_transport_is_udp_26e5aa65
       value: '17'
       if: ctx.network?.transport == 'udp'
       ignore_failure: true
   - set:
       field: network.iana_number
-      tag: set_network_iana_number_if_network_transport_is_tcp_e220aa72
+      tag: set_network_iana_number_if_network_transport_is_icmp_e220aa72
       value: '1'
       if: ctx.network?.transport == 'icmp'
       ignore_failure: true
@@ -692,7 +692,7 @@ processors:
       field: related.ip
       tag: append_user_ip_into_related_ip_884f5059
       value: '{{{zscaler_zia.tunnel.user_ip}}}'
-      if: ctx.user?.email == null
+      if: ctx.zscaler_zia?.tunnel?.user_ip != null
       allow_duplicates: false
       ignore_failure: true
   - dissect:
